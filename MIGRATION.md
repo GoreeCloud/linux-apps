@@ -16,6 +16,8 @@ This migration moves GoreeCloud Care source, packaging, tests, product documenta
 
 Care's predecessor commit history, release evidence, issues, pull requests, and exact artifact references remain preserved in `GoreeCloud/zorin-os`. The predecessor branch is retained as a recoverable provenance source rather than being force-rewritten or deleted. Historical URLs and exact revisions that prove the Stable `0.1.0` artifact remain historical evidence even after the canonical continuing-development location changes.
 
+The accepted dev17 rollback source is also preserved inside this destination repository on `archive/care-dev17` at commit `1a57ccd9b3311000c99e273877eff1af06b06b38`. Its tree `7168db501e9e2fd7ce23496f607ffe958ab4c835` contains exactly the 43 Care blobs and file modes from predecessor revision `0fda6f90a545eaf3d1bed525aae98c6529ebbf7b`; migration verification found no blob or mode differences. This archive exists so rollback-package construction remains local-only after the authority move. It is provenance/rollback material, not the active development line.
+
 ### Active development migration
 
 At migration start, the predecessor repository contains active Care development PRs including the Glaze UI 2.2 line (`zorin-os#15`) and the Glaze UI 1.4.1 optical line (`zorin-os#17`). Their exact heads are migrated as separate destination branches and cross-linked rather than collapsed into Stable `0.1.0`.
