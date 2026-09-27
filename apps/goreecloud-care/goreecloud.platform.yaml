@@ -1,0 +1,256 @@
+schema_version: "0.2"
+
+component:
+  type: application
+  id: goreecloud-care
+  product_name: GoreeCloud Care
+  repository: GoreeCloud/linux-apps
+
+# Released artifact qualification predecessor: lifecycle: release-candidate
+# Stable lifecycle governs the already-qualified immutable 0.1.0 release artifact
+# from bbc4779454c2887b810aa0ddc9e8a686a4c68ebd; this governance record does
+# not create or publish a replacement Debian package.
+lifecycle: stable
+version: 0.1.0
+
+supported_platforms:
+  - linux
+
+api:
+  versions: ["1"]
+  endpoints:
+    - name: maintenance-report
+      url: local-cli://goreecloud-care/report
+      purpose: Privacy-safe schema-versioned local maintenance snapshot for authorized local consumers.
+    - name: health
+      url: local-cli://goreecloud-care/health
+      purpose: Minimized local readiness and product-version status without telemetry or privileged execution.
+    - name: privacy-status
+      url: local-cli://goreecloud-care/privacy-status
+      purpose: Privacy Shield-shaped local privacy status for the declared Care application adapter.
+    - name: security-status
+      url: local-cli://goreecloud-care/security-status
+      purpose: Wardveil-compatible scoped status for the installed Care privilege boundary.
+    - name: continuity-status
+      url: local-cli://goreecloud-care/continuity-status
+      purpose: Everkeep continuity status for Care package restore and rollback evidence.
+
+platform_systems:
+  manager:
+    result: not-applicable-justified
+    version: null
+    evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
+    notes: Stable 0.1.0 is local single-user maintenance with no central, remote, or delegated administration.
+  privacy_shield:
+    result: applicable-conformant
+    version: null
+    evidence:
+      - PRIVACY.md
+      - contracts/privacy-shield.application.json
+      - contracts/privacy-shield.adapter.json
+      - goreecloud_care/platform_status.py
+      - https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
+      - https://github.com/GoreeCloud/goreecloud-privacy-shield/actions/runs/34183154605
+    notes: Privacy Shield accepts exact 0.1.0 release source/tree/package for telemetry-minimization, data-minimization, and privacy-status. Local source evidence intentionally does not self-promote the external governance decision.
+  wardveil_security:
+    result: applicable-conformant
+    version: null
+    evidence:
+      - SECURITY.md
+      - WARDVEIL-INTEGRATION.md
+      - goreecloud_care/platform_status.py
+      - packaging/goreecloud-care-helper
+      - packaging/com.goreecloud.care.policy
+      - tests/test_helper.py
+      - tests/test_privilege.py
+      - https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+    notes: Wardveil accepts exact 0.1.0 runtime adoption after representative package and six-check real-desktop PolicyKit acceptance. Protection permission is limited to GoreeCloud Care local-maintenance-privilege-boundary only; cross-service execution authority is false.
+  everkeep:
+    result: applicable-conformant
+    version: null
+    evidence:
+      - RECOVERY.md
+      - RELEASE-ACCEPTANCE.md
+      - contracts/everkeep.adoption.json
+      - contracts/everkeep.acceptance.json
+      - goreecloud_care/platform_status.py
+      - scripts/validate-package-lifecycle.sh
+      - scripts/run-representative-acceptance.sh
+      - https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
+    notes: Everkeep accepts exact 0.1.0 restore/rollback readiness; the trusted local record is installed and Care reports ready / everkeep-promoted with no limitations.
+  glaze_ui:
+    result: applicable-conformant
+    version: "1.2.0"
+    evidence:
+      - GLAZE-UI-CONFORMANCE.md
+      - BRANDING.md
+      - goreecloud_care/glaze_v12.py
+      - goreecloud_care/glaze_v13.py
+      - tests/test_glaze_v12_contract.py
+      - tests/test_glaze_v13_contract.py
+      - tests/test_ui_contract.py
+      - tests/test_focus_resilience.py
+      - tests/test_accessibility_identity.py
+      - tests/runtime_ui_acceptance.py
+      - https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+    notes: GLAZE UI V1.2 / 1.2.0 is the required Stable baseline. Exact Care 0.1.0 is accepted-v1 through the explicit source bridge at c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae; no new human findings are fabricated.
+  mesh:
+    result: not-applicable-justified
+    version: null
+    evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
+    notes: Stable 0.1.0 has no cross-application coordination, service discovery, Mesh event transport, or Mesh policy authority.
+    capabilities: []
+    dependencies: []
+    published_events: []
+    consumed_events: []
+  identity:
+    result: not-applicable-justified
+    version: null
+    evidence: [SPECIFICATIONS.md, API.md]
+    notes: Stable 0.1.0 has no GoreeCloud account, remote management, multi-user behavior, or delegated administration.
+
+health:
+  health_endpoint: local-cli://goreecloud-care/health
+  readiness_endpoint: local-cli://goreecloud-care/health
+
+continuity:
+  backup:
+    required: false
+    requirements:
+      - Care persists no substantial durable user application data requiring an application-owned backup workflow; continuity is exact package/source recovery evidence.
+  restore:
+    required: true
+    requirements:
+      - Exact 0.1.0 install, remove/reinstall, accepted dev17 downgrade, restore, final installed validation, provenance, and representative-target handoff passed on Zorin OS 17.3.
+      - Permanent Trash deletion is irreversible maintenance behavior and is not represented as recoverable application data.
+  export:
+    required: false
+    requirements:
+      - Care has no durable user application dataset requiring application-data export/import; read-only reports/status are available.
+  portability:
+    required: true
+    requirements:
+      - Report and local API schemas/versioning remain explicit and machine-readable.
+      - Package policy, recovery, migration, rollback, and exact provenance remain documented without proprietary durable data formats.
+
+external_dependencies:
+  - name: python3
+    purpose: Native application runtime, reports, local platform status, and Maintenance Insights.
+    required: true
+    version_constraint: ">=3.10"
+  - name: PyGObject GTK 3
+    purpose: Native Zorin OS desktop interface and Maintenance Insights.
+    required: true
+    version_constraint: null
+  - name: ATK introspection
+    purpose: Assistive-technology roles, names, descriptions, and status semantics.
+    required: true
+    version_constraint: null
+  - name: PolicyKit
+    purpose: Explicit authorization for APT cleanup and Linux file-cache reclaim.
+    required: true
+    version_constraint: null
+
+compatibility:
+  platform_contract: "0.2"
+  glaze_ui_required: "1.2.0"
+  requires: [goreecloud-platform-contract==0.2, glaze-ui==1.2.0]
+  provides:
+    - goreecloud-care-local-maintenance
+    - goreecloud-care-read-only-maintenance-report
+    - goreecloud-care-read-only-maintenance-insights
+    - goreecloud-care-local-status-api-v1
+
+evidence:
+  acceptance_tests:
+    - id: care-0.1.0-api
+      category: api
+      path: apps/goreecloud-care/API.md
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      result: passed
+      observed_at: "2026-09-08T02:48:15Z"
+    - id: care-0.1.0-accessibility
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      revision: c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      result: passed
+      observed_at: "2026-09-08T04:07:01Z"
+      notes: Exact-source V1.2 bridge preserves the accepted seven-dimensional human/native review across unchanged governed presentation behavior.
+    - id: care-0.1.0-supported-platform
+      category: supported-platform
+      path: apps/goreecloud-care/scripts/run-representative-acceptance.sh
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      result: passed
+      observed_at: "2026-09-08T03:58:15Z"
+      notes: Representative Zorin OS 17.3 exact package acceptance passed with 143 local tests and complete package lifecycle.
+    - id: care-0.1.0-security
+      category: security
+      path: https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      revision: e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      result: passed
+      observed_at: "2026-09-08T04:07:38Z"
+    - id: care-0.1.0-privacy
+      category: privacy
+      path: https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
+      revision: 0af47f4817191541e1ea12928cff5c3458baf377
+      result: passed
+      observed_at: "2026-09-08T03:20:24Z"
+    - id: care-0.1.0-backup-applicability
+      category: backup
+      path: apps/goreecloud-care/RECOVERY.md
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      result: passed
+      observed_at: "2026-09-08T03:58:15Z"
+      notes: Care owns no substantial durable user dataset; package/recovery continuity is governed through Everkeep.
+    - id: care-0.1.0-restore
+      category: restore
+      path: https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
+      revision: 4586246aad87a4038c7f8984de809d32333f2599
+      result: passed
+      observed_at: "2026-09-08T03:58:15Z"
+    - id: care-0.1.0-export-portability
+      category: export-portability
+      path: apps/goreecloud-care/API.md
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      result: passed
+      observed_at: "2026-09-08T02:48:15Z"
+    - id: care-0.1.0-documentation
+      category: documentation
+      path: apps/goreecloud-care/RELEASE-ACCEPTANCE.md
+      revision: goreecloud-care-0.1.0-stable-governance
+      result: passed
+      observed_at: "2026-09-08T04:07:38Z"
+    - id: care-0.1.0-integration
+      category: integration
+      path: apps/goreecloud-care/goreecloud.platform.yaml
+      revision: goreecloud-care-0.1.0-stable-governance
+      result: passed
+      observed_at: "2026-09-08T04:07:38Z"
+    - id: care-0.1.0-release-qualification
+      category: release
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/actions/runs/34180765807
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      result: passed
+      observed_at: "2026-09-08T02:48:15Z"
+      notes: Exact 0.1.0 golden artifact passed qualification and retained controlled artifact publication.
+  release:
+    - id: goreecloud-care-0.1.0-controlled-artifact
+      version: 0.1.0
+      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/actions/runs/34180765807
+      result: published
+      observed_at: "2026-09-08T02:48:15Z"
+      artifact_digest: 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
+      notes: Controlled published release artifact is the retained goreecloud-care_0.1.0_all.deb from artifact 10038827656. Stable governance promotes these already-qualified bytes; no replacement package is created here.
+
+conformance:
+  status: conformant
+  validated_at: "2026-09-08T04:07:38Z"
+  evidence:
+    - bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+    - 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
+    - 0af47f4817191541e1ea12928cff5c3458baf377
+    - 4586246aad87a4038c7f8984de809d32333f2599
+    - e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+    - c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+  blockers: []
