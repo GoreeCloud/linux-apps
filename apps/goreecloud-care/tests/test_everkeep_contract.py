@@ -98,28 +98,29 @@ class EverkeepContractTests(unittest.TestCase):
         self.assertNotIn('sudo goreecloud-care', source)
         self.assertNotIn('sudo sh "$ROOT/scripts/validate-installed.sh"', source)
 
-    def test_package_lifecycle_probe_reinstalls_same_version_candidate_bytes(self) -> None:
+    def test_package_lifecycle_probe_reinstalls_exact_candidate_bytes(self) -> None:
         source = (ROOT / "scripts" / "validate-package-lifecycle.sh").read_text(encoding="utf-8")
-        self.assertIn("Exact-candidate acceptance is package-byte scoped", source)
-        self.assertIn("--reinstall", source)
-        self.assertIn("same Debian version", source)
+        self.assertIn('candidate_version" = "0.2.0~dev2"', source)
+        self.assertIn("--reinstall --allow-downgrades", source)
+        self.assertIn("Reinstall 0.2.0~dev2 candidate as a fresh package state", source)
         self.assertNotIn('sudo apt install -y --allow-downgrades "$package_path"', source)
 
-    def test_package_lifecycle_probe_requires_true_older_rollback_package(self) -> None:
+    def test_package_lifecycle_probe_requires_true_stable_rollback_package(self) -> None:
         source = (ROOT / "scripts" / "validate-package-lifecycle.sh").read_text(encoding="utf-8")
         self.assertIn('dpkg --compare-versions "$previous_version" lt "$candidate_version"', source)
         self.assertIn("Previous package must sort older than the candidate", source)
-        self.assertIn("expects golden artifact candidate 0.1.0", source)
+        self.assertIn('previous_version" = "0.1.0"', source)
+        self.assertIn("must roll back to immutable Stable 0.1.0", source)
 
     def test_package_lifecycle_probe_guards_runtime_isolation_bytecode_and_provenance_cleanup(self) -> None:
         source = (ROOT / "scripts" / "validate-package-lifecycle.sh").read_text(encoding="utf-8")
-        self.assertIn("0.1.0 candidate checks deliberately exercise source/working-directory shadow resistance", source)
+        self.assertIn("Both candidate and Stable rollback launchers are validated from clean/controlled runtime directories", source)
         self.assertIn("working-directory/PYTHONPATH shadowing", source)
         self.assertIn("Private Python bytecode remained after package removal", source)
         self.assertIn("PREVIOUS_PROBE_DIR=$(mktemp -d)", source)
-        self.assertIn("dev17 predates that isolation contract", source)
         self.assertIn("/usr/share/goreecloud-care/build-provenance.json", source)
         self.assertIn("/usr/share/goreecloud-care", source)
+        self.assertIn("stable-downgrade/restore acceptance: passed", source)
 
 
 if __name__ == "__main__":

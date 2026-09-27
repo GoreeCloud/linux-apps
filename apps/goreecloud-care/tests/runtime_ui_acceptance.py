@@ -20,16 +20,29 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk  # noqa: E402
 
 from goreecloud_care.app import CareWindow
-from goreecloud_care.glaze_v13 import (
+from goreecloud_care.glaze_v22 import (
     CSS,
+    GLAZE_UI_ADOPTION_STATE,
+    GLAZE_UI_APPROVED_VISUAL_SOURCE,
     GLAZE_UI_CONSUMER_ELIGIBLE,
     GLAZE_UI_LIFECYCLE,
-    GLAZE_UI_STABLE_BASELINE,
+    GLAZE_UI_PREVIOUS_CARE_BASELINE,
+    GLAZE_UI_RELEASE_TAG,
+    GLAZE_UI_SOURCE_REVISION,
     GLAZE_UI_TARGET_VERSION,
+    MIN_TARGET_PX,
+    NATIVE_ACCESSIBILITY_EQUIVALENTS,
+    OPTIONAL_SYSTEM_SURFACES,
+    SUPPORTED_PRODUCT_FORM_FACTORS,
+    SYSTEM_GLAZE_BUDGET,
+    SYSTEM_SHELL_MAPPING,
+    TOUCH_ASSISTANCE_TARGET_PX,
+    native_form_factor_for_window_width,
 )
-from goreecloud_care.glaze_v13_global import install_glaze_v13_global_style
+from goreecloud_care.glaze_v22_global import install_glaze_v22_global_style
 from goreecloud_care.insights import CacheGroupInsight, FileInsight, InsightsSnapshot
 import goreecloud_care.insights_window as insights_window
+from goreecloud_care.ui_contract import is_high_contrast_theme
 
 
 def drain_events(limit: int = 500) -> None:
@@ -109,11 +122,96 @@ def test_core_status_accessible_mutation_and_layout(app: Gtk.Application) -> Non
     assert window._layout_environment == "medium"
     assert window.header.get_title() == "GoreeCloud Care"
     assert window.header.get_subtitle() == window.header_subtitle
+    assert window.header_subtitle == "Local maintenance • Glaze UI 2.2"
     assert window.workspace.get_orientation() == Gtk.Orientation.VERTICAL
     window._apply_layout(2200)
     assert window._layout_environment == "expanded"
     assert window.header.get_title() == "GoreeCloud Care"
     assert window.workspace.get_orientation() == Gtk.Orientation.HORIZONTAL
+    window.destroy()
+
+
+def test_v22_system_shell_runtime_contract() -> None:
+    assert GLAZE_UI_TARGET_VERSION == "2.2.0"
+    assert GLAZE_UI_SOURCE_REVISION == "6731098b28dd0393faa878c70d989a221d714a20"
+    assert GLAZE_UI_RELEASE_TAG == "v2.2.0"
+    assert GLAZE_UI_APPROVED_VISUAL_SOURCE == "0411b0f6dd877aea30e2c5674e1acde0105fd97b"
+    assert GLAZE_UI_LIFECYCLE == "current-stable-adoption"
+    assert GLAZE_UI_ADOPTION_STATE == "development"
+    assert GLAZE_UI_PREVIOUS_CARE_BASELINE == "1.4.0"
+    assert not GLAZE_UI_CONSUMER_ELIGIBLE
+
+    assert SYSTEM_SHELL_MAPPING["workspace"] == "host-desktop"
+    assert SYSTEM_SHELL_MAPPING["application"] == "goreecloud-care-window"
+    assert SYSTEM_SHELL_MAPPING["system-panel"] == "not-used-as-system-authority"
+    assert SYSTEM_SHELL_MAPPING["critical-system"] == "destructive-or-privileged-confirmation"
+    assert SYSTEM_GLAZE_BUDGET["dominant_panels_max"] == 1
+    assert SYSTEM_GLAZE_BUDGET["small_floating_controls_max"] == 3
+    assert SYSTEM_GLAZE_BUDGET["nested_backdrop_blur"] is False
+    assert OPTIONAL_SYSTEM_SURFACES == {
+        "universal_search": False,
+        "control_center": False,
+        "intelligence_components": False,
+    }
+    assert SUPPORTED_PRODUCT_FORM_FACTORS == ("desktop", "wide-desktop")
+    assert MIN_TARGET_PX == 48
+    assert TOUCH_ASSISTANCE_TARGET_PX == 56
+    assert "HighContrast" in NATIVE_ACCESSIBILITY_EQUIVALENTS["forced-colors"]
+    print("Glaze UI 2.2 System Shell/material/accessibility runtime contract: passed")
+
+
+def test_v22_form_factor_runtime_contract() -> None:
+    # GDK_DPI_SCALE=2 is set for this acceptance probe. 2.2 inherits Care's
+    # already-qualified native Desktop window adaptation as a regression layer.
+    assert native_form_factor_for_window_width(480) == "compact"
+    assert native_form_factor_for_window_width(1800) == "narrow-desktop"
+    assert native_form_factor_for_window_width(2200) == "desktop"
+    assert native_form_factor_for_window_width(2600) == "wide-desktop"
+    css = CSS.decode("utf-8")
+    assert "window.glaze-v22.form-factor-compact" in css
+    assert "window.glaze-v22.form-factor-narrow-desktop" in css
+    assert "window.glaze-v22.form-factor-desktop" in css
+    assert "window.glaze-v22.form-factor-wide-desktop" in css
+    assert "window.glaze-v14.form-factor-compact" not in css
+    print("Glaze UI 2.2 DPI-aware native Desktop adaptation contract: passed")
+
+
+def test_v22_accessibility_degradation_source_contract() -> None:
+    css = CSS.decode("utf-8")
+    assert "window.glaze-v22.touch-assistance button" in css
+    assert "min-height: 56px" in css
+    assert "window.glaze-v22.increased-contrast" in css
+    assert "window.glaze-v22.effects-reduced" in css
+    assert "window.glaze-v22.reduced-transparency" in css
+    assert "window.glaze-v22.reduced-motion" in css
+    assert "outline-width: 4px" in css
+    assert "transition:" not in css
+    assert "animation:" not in css
+    print("Glaze UI 2.2 native accessibility degradation source contract: passed")
+
+
+def test_high_contrast_palette_authority(app: Gtk.Application, glaze) -> None:
+    if not is_high_contrast_theme(os.environ.get("GTK_THEME")):
+        return
+
+    assert not glaze.provider_attached, (
+        "Glaze UI 2.2 provider must be detached while GTK HighContrast owns the palette"
+    )
+    window = CareWindow(app)
+    window.show_all()
+    drain_events()
+    context = window.get_style_context()
+    for application_palette_class in (
+        "care-shell",
+        "glaze-v22",
+        "care-dark",
+        "care-deep-dark",
+        "touch-assistance",
+        "increased-contrast",
+        "effects-reduced",
+    ):
+        assert not context.has_class(application_palette_class), application_palette_class
+    print("GTK HighContrast palette authority: passed (Glaze palette provider detached)")
     window.destroy()
 
 
@@ -136,9 +234,9 @@ def test_dark_headerbar_runtime_contrast(app: Gtk.Application) -> None:
         state = context.get_state()
         foreground = context.get_color(state)
         background = context.get_background_color(state)
-        # Dev22 deliberately makes Dark/Deep Dark HeaderBar button surfaces
-        # opaque. If the cascade falls back to a transparent/light theme surface,
-        # fail instead of treating source CSS as sufficient evidence.
+        # Dark/Deep Dark HeaderBar button surfaces are deliberately opaque. If
+        # the cascade falls back to a transparent/light theme surface, fail
+        # instead of treating source CSS as sufficient evidence.
         assert background.alpha >= 0.95, (
             f"{appearance} HeaderBar button background alpha is {background.alpha:.3f}"
         )
@@ -197,16 +295,10 @@ def test_reduced_motion_runtime_contract(app: Gtk.Application) -> None:
     if not _truthy(os.environ.get("GOREECLOUD_CARE_REDUCE_MOTION")):
         return
 
-    # Care currently owns no timed animation or transition. Reduced Motion also
-    # suppresses the only application-owned expressive hover/elevation effect.
-    # This makes the gate deterministic instead of relying on a screenshot.
     css = CSS.decode("utf-8")
     assert "transition:" not in css
     assert "animation:" not in css
-    assert (
-        "window.care-shell.reduced-motion button:hover,\n"
-        "window.care-shell.reduced-motion .hero-surface { box-shadow: none; }"
-    ) in css
+    assert "window.glaze-v22.reduced-motion .hero-surface" in css
 
     window = CareWindow(app)
     window.show_all()
@@ -214,6 +306,21 @@ def test_reduced_motion_runtime_contract(app: Gtk.Application) -> None:
     assert window.scan_btn.get_can_focus()
     assert window.clean.get_can_focus()
     print("Reduced Motion application-owned behavior: passed (no timed motion; elevation suppressed)")
+    window.destroy()
+
+
+def test_touch_assistance_runtime_contract(app: Gtk.Application) -> None:
+    if not _truthy(os.environ.get("GOREECLOUD_CARE_TOUCH_ASSISTANCE")):
+        return
+    window = CareWindow(app)
+    window.show_all()
+    drain_events()
+    context = window.get_style_context()
+    assert context.has_class("touch-assistance")
+    for button in (window.scan_btn, window.clean, window.trash, window.apt, window.memory_btn):
+        minimum, _natural = button.get_preferred_height()
+        assert minimum >= TOUCH_ASSISTANCE_TARGET_PX, (button.get_label(), minimum)
+    print("Touch Assistance 56px runtime target floor: passed")
     window.destroy()
 
 
@@ -246,7 +353,6 @@ def test_insights_focus_resize_and_rendering(app: Gtk.Application) -> None:
     assert window.findings_plane.get_style_context().has_class("findings-plane")
     assert window.refresh.get_style_context().has_class("command-capsule")
 
-    # At GDK_DPI_SCALE=2 the effective layout width is half the allocated width.
     window._apply_layout(480)
     assert window.header.get_title() == "Insights"
     assert window.header.get_subtitle() is None
@@ -284,22 +390,29 @@ def main() -> int:
     if not ok:
         raise SystemExit("GTK could not initialize; run this probe under Xvfb or a desktop session")
 
-    glaze = install_glaze_v13_global_style()
-    assert GLAZE_UI_TARGET_VERSION == "1.3.0-candidate"
-    assert GLAZE_UI_LIFECYCLE == "proposed"
-    assert GLAZE_UI_STABLE_BASELINE == "1.2.0"
-    assert not GLAZE_UI_CONSUMER_ELIGIBLE
-    assert glaze.provider_attached, "Proposed GLAZE UI V1.3 provider was not attached"
+    high_contrast = is_high_contrast_theme(os.environ.get("GTK_THEME"))
+    glaze = install_glaze_v22_global_style()
+    if high_contrast:
+        assert not glaze.provider_attached, (
+            "Glaze UI 2.2 provider must be detached while GTK HighContrast owns the palette"
+        )
+    else:
+        assert glaze.provider_attached, "Glaze UI 2.2 provider was not attached"
 
     app = make_app()
+    test_v22_system_shell_runtime_contract()
+    test_high_contrast_palette_authority(app, glaze)
     test_core_status_accessible_mutation_and_layout(app)
+    test_v22_form_factor_runtime_contract()
+    test_v22_accessibility_degradation_source_contract()
     test_dark_headerbar_runtime_contrast(app)
     test_clarity_runtime_geometry(app)
     test_reduced_motion_runtime_contract(app)
+    test_touch_assistance_runtime_contract(app)
     test_insights_focus_resize_and_rendering(app)
     print(
         "Headless GTK runtime acceptance probe: passed "
-        "(Proposed GLAZE UI V1.3 Adaptive Resonance Development mapping; V1.2 Stable baseline retained)"
+        "(Glaze UI 2.2 native System Shell/Desktop adoption; application acceptance remains evidence-bound)"
     )
     return 0
 

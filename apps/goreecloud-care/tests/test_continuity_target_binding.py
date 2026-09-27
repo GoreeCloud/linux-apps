@@ -14,6 +14,8 @@ NOW = datetime(2026, 9, 7, 19, 10, tzinfo=timezone.utc)
 REVISION = "1" * 40
 TREE = "2" * 40
 PACKAGE_SHA = "3" * 64
+RUNTIME_VERSION = "0.2.0-dev2"
+PACKAGE_VERSION = "0.2.0~dev2"
 
 
 class ContinuityTargetBindingTests(unittest.TestCase):
@@ -30,8 +32,8 @@ class ContinuityTargetBindingTests(unittest.TestCase):
             "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
             "source_revision": REVISION,
             "source_tree": TREE,
-            "runtime_version": "0.1.0",
-            "package_version": "0.1.0",
+            "runtime_version": RUNTIME_VERSION,
+            "package_version": PACKAGE_VERSION,
             "source_date_epoch": 1_788_800_000,
             "package_sha256_embedded": False,
         }
@@ -44,8 +46,8 @@ class ContinuityTargetBindingTests(unittest.TestCase):
             "candidate": {
                 "source_revision": REVISION,
                 "source_tree": TREE,
-                "runtime_version": "0.1.0",
-                "package_version": "0.1.0",
+                "runtime_version": RUNTIME_VERSION,
+                "package_version": PACKAGE_VERSION,
                 "package_sha256": PACKAGE_SHA,
             },
             "target": {
@@ -55,7 +57,7 @@ class ContinuityTargetBindingTests(unittest.TestCase):
             },
             "dimensions": ["restore_capability", "provenance"],
             "evidence": {
-                "local_tests": 143,
+                "local_tests": 1,
                 "source_validation": "passed",
                 "package_lifecycle": "passed",
                 "references": ["fixture"],
@@ -65,7 +67,7 @@ class ContinuityTargetBindingTests(unittest.TestCase):
                 "exact_revision_accepted": True,
                 "everkeep_integration_promoted": promoted,
                 "everkeep_ready_promoted": promoted,
-                "freshness_rule": "Exact 0.1.0 candidate and representative target only.",
+                "freshness_rule": "Exact 0.2.0-dev2 candidate and representative target only.",
             },
         }
 

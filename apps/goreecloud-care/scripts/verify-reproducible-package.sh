@@ -3,7 +3,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$ROOT/../.." && pwd)
-PACKAGE_NAME="goreecloud-care_0.1.0_all.deb"
+PACKAGE_NAME="goreecloud-care_0.2.0~dev2_all.deb"
 REFERENCE=${1:-"$ROOT/dist/$PACKAGE_NAME"}
 
 for command_name in git cmp sha256sum awk mktemp mkdir rm sh; do
