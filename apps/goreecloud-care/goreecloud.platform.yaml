@@ -49,8 +49,8 @@ platform_systems:
       - contracts/privacy-shield.application.json
       - contracts/privacy-shield.adapter.json
       - goreecloud_care/platform_status.py
-      - https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
-      - https://github.com/GoreeCloud/goreecloud-privacy-shield/actions/runs/34183154605
+      - https://github.com/GoreeCloud/privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
+      - https://github.com/GoreeCloud/privacy-shield/actions/runs/34183154605
     notes: Privacy Shield accepts exact 0.1.0 release source/tree/package for telemetry-minimization, data-minimization, and privacy-status. Local source evidence intentionally does not self-promote the external governance decision.
   wardveil_security:
     result: applicable-conformant
@@ -63,7 +63,7 @@ platform_systems:
       - packaging/com.goreecloud.care.policy
       - tests/test_helper.py
       - tests/test_privilege.py
-      - https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      - https://github.com/GoreeCloud/wardveil/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
     notes: Wardveil accepts exact 0.1.0 runtime adoption after representative package and six-check real-desktop PolicyKit acceptance. Protection permission is limited to GoreeCloud Care local-maintenance-privilege-boundary only; cross-service execution authority is false.
   everkeep:
     result: applicable-conformant
@@ -76,7 +76,7 @@ platform_systems:
       - goreecloud_care/platform_status.py
       - scripts/validate-package-lifecycle.sh
       - scripts/run-representative-acceptance.sh
-      - https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
+      - https://github.com/GoreeCloud/everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
     notes: Everkeep accepts exact 0.1.0 restore/rollback readiness; the trusted local record is installed and Care reports ready / everkeep-promoted with no limitations.
   glaze_ui:
     result: applicable-conformant
@@ -92,7 +92,7 @@ platform_systems:
       - tests/test_focus_resilience.py
       - tests/test_accessibility_identity.py
       - tests/runtime_ui_acceptance.py
-      - https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      - https://github.com/GoreeCloud/glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
     notes: GLAZE UI V1.2 / 1.2.0 is the required Stable baseline. Exact Care 0.1.0 is accepted-v1 through the explicit source bridge at c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae; no new human findings are fabricated.
   mesh:
     result: not-applicable-justified
@@ -171,7 +171,7 @@ evidence:
       observed_at: "2026-09-08T02:48:15Z"
     - id: care-0.1.0-accessibility
       category: accessibility
-      path: https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      path: https://github.com/GoreeCloud/glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
       revision: c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
       result: passed
       observed_at: "2026-09-08T04:07:01Z"
@@ -185,13 +185,13 @@ evidence:
       notes: Representative Zorin OS 17.3 exact package acceptance passed with 143 local tests and complete package lifecycle.
     - id: care-0.1.0-security
       category: security
-      path: https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      path: https://github.com/GoreeCloud/wardveil/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
       revision: e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
       result: passed
       observed_at: "2026-09-08T04:07:38Z"
     - id: care-0.1.0-privacy
       category: privacy
-      path: https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
+      path: https://github.com/GoreeCloud/privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
       revision: 0af47f4817191541e1ea12928cff5c3458baf377
       result: passed
       observed_at: "2026-09-08T03:20:24Z"
@@ -204,7 +204,7 @@ evidence:
       notes: Care owns no substantial durable user dataset; package/recovery continuity is governed through Everkeep.
     - id: care-0.1.0-restore
       category: restore
-      path: https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
+      path: https://github.com/GoreeCloud/everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
       revision: 4586246aad87a4038c7f8984de809d32333f2599
       result: passed
       observed_at: "2026-09-08T03:58:15Z"

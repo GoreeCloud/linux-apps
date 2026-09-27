@@ -72,7 +72,7 @@ class EverkeepContractTests(unittest.TestCase):
             "source tree",
             "sha-256",
             "ci workflow",
-            "goreecloud/goreecloud-zorin-os",
+            "goreecloud/linux-apps",
             "untracked package inputs",
         ):
             self.assertIn(required, provenance)

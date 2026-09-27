@@ -155,7 +155,7 @@ path, revision, tree, runtime_version, package_version = sys.argv[1:]
 payload = json.loads(Path(path).read_text(encoding="utf-8"))
 assert payload["schema_version"] == 1
 assert payload["application"] == "GoreeCloud Care"
-assert payload["producer"] == "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care"
+assert payload["producer"] == "GoreeCloud/linux-apps/apps/goreecloud-care"
 assert payload["source_revision"] == revision
 assert payload["source_tree"] == tree
 assert payload["runtime_version"] == runtime_version
@@ -202,7 +202,7 @@ from pathlib import Path
 payload = {
     "schema_version": 1,
     "application": "GoreeCloud Care",
-    "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+    "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
     "candidate": {
         "source_revision": revision,
         "source_tree": tree,

@@ -16,7 +16,7 @@ class BrandingContractTests(unittest.TestCase):
         data = ICON.read_bytes()
         self.assertEqual(hashlib.sha256(data).hexdigest(), CANONICAL_INITIAL_SHA256)
         branding = (ROOT / "BRANDING.md").read_text(encoding="utf-8")
-        self.assertIn("GoreeCloud/goreecloud-branding-assets/products/care/app-icon.svg", branding)
+        self.assertIn("GoreeCloud/branding-assets/products/care/app-icon.svg", branding)
         self.assertIn(CANONICAL_INITIAL_GIT_BLOB, branding)
 
     def test_desktop_and_appstream_use_care_identity(self) -> None:

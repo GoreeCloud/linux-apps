@@ -175,7 +175,7 @@ class PlatformStatusTests(unittest.TestCase):
         return {
             "schema_version": 1,
             "application": "GoreeCloud Care",
-            "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+            "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
             "source_revision": SOURCE_REVISION,
             "source_tree": SOURCE_TREE,
             "runtime_version": "0.1.0",
@@ -194,7 +194,7 @@ class PlatformStatusTests(unittest.TestCase):
         return {
             "schema_version": 1,
             "application": "GoreeCloud Care",
-            "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+            "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
             "candidate": {
                 "source_revision": source_revision,
                 "source_tree": SOURCE_TREE,

@@ -1,7 +1,7 @@
 # GoreeCloud Care Branding
 
 Product name: **GoreeCloud Care**  
-Repository: `GoreeCloud/goreecloud-zorin-os`  
+Repository: `GoreeCloud/linux-apps`  
 Component path: `apps/goreecloud-care/`  
 Production application identifier reserved: `com.goreecloud.care`  
 Development application identifier: `com.goreecloud.care.dev`
@@ -10,7 +10,7 @@ Development application identifier: `com.goreecloud.care.dev`
 
 The authoritative GoreeCloud Care application icon is maintained centrally at:
 
-`GoreeCloud/goreecloud-branding-assets/products/care/app-icon.svg`
+`GoreeCloud/branding-assets/products/care/app-icon.svg`
 
 Canonical asset blob at the initial dev18 synchronization checkpoint:
 
