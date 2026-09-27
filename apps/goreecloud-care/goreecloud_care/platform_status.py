@@ -11,7 +11,7 @@ from typing import Any
 from . import __version__
 
 API_VERSION = "1"
-PACKAGE_VERSION = "0.1.0"
+PACKAGE_VERSION = "0.2.0~dev2"
 BUILD_PROVENANCE_PATH = Path("/usr/share/goreecloud-care/build-provenance.json")
 REPRESENTATIVE_ACCEPTANCE_PATH = Path(
     "/var/lib/goreecloud-care/acceptance/representative-target.json"

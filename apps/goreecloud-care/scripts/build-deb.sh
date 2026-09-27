@@ -3,8 +3,8 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$ROOT/../.." && pwd)
-VERSION="0.1.0"
-RUNTIME_VERSION="0.1.0"
+VERSION="0.2.0~dev2"
+RUNTIME_VERSION="0.2.0-dev2"
 ARCH="all"
 PKG="goreecloud-care"
 OUT=${1:-"$ROOT/dist"}
