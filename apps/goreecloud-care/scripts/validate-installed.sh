@@ -66,7 +66,7 @@ assert privacy['state'] == 'development'
 
 assert provenance['schema_version'] == 1
 assert provenance['application'] == 'GoreeCloud Care'
-assert provenance['producer'] == 'GoreeCloud/linux-apps/apps/goreecloud-care'
+assert provenance['producer'] == 'GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care'
 assert provenance['runtime_version'] == os.environ['EXPECTED_RUNTIME_VERSION']
 assert provenance['package_version'] == os.environ['EXPECTED_PACKAGE_VERSION']
 assert re.fullmatch(r'[0-9a-f]{40}', provenance['source_revision'])

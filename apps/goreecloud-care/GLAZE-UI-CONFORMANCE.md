@@ -1,100 +1,161 @@
 # GoreeCloud Care — GLAZE UI consumer record
 
-## Current authority
+## Authority and lifecycle truth
 
-GoreeCloud Care `0.1.0` is an **accepted-v1 consumer of GLAZE UI V1.2 / `1.2.0`**.
+GoreeCloud Care is **Development / nonconformant**.
 
-Exact released Care identity:
+Two Glaze UI facts are intentionally kept separate:
 
-- release source: `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`
-- Care tree: `ebe028347c978b6d09fb1d2af011729249f63bc3`
-- package SHA-256: `819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160`
-- representative target: Zorin OS 17.3
+1. **Official Stable compatibility baseline:** GLAZE UI V1.2 / `1.2.0`.
+2. **Latest Care Development design target:** GLAZE UI V1.3 — Adaptive Resonance, planned machine target `1.3.0-candidate`, pinned to Glaze qualification source `dc5ee04b09bd7d2c06d6ac1456618cbd4b1f4b80`.
 
-Authoritative Glaze consumer acceptance:
+V1.3 remains **Proposed** upstream. Its Candidate is not active, consumer eligibility is false, and no downstream application may convert this source implementation into an upstream lifecycle or conformance grant. The authoritative Glaze consumer registry still records Care as `adoption-required` with no accepted target/reference/evidence and `productionEligible=false`.
 
-- Glaze repository revision: `c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae`
-- consumer status: `accepted-v1`
-- target version: `1.2.0`
-- exact Care reference revision: `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`
-- evidence: `acceptance/goreecloud-care-v1.2-0.1.0-exact-source-bridge.json`
+## Dev20 revamp intent
 
-Glaze's registry field `productionEligible=false` means the design-system registry does not independently grant whole-product production eligibility. It does not negate the exact Care V1.2 consumer acceptance recorded above; overall Stable eligibility is governed by Care's complete Platform Contract and release evidence.
+Dev20 is not a palette refresh. It restructures the native GTK3 product around the V1.3 Adaptive Resonance rules while preserving V1.2 as the supported Stable fallback boundary.
 
-## Human/native acceptance lineage
+The master direction is implemented as a bounded native mapping of:
 
-The frozen Release Candidate source `334b53102c5fe0bd5d348397ba8b13cc5608ada2` received a governed seven-dimensional human/native V1.2 acceptance covering:
+**Adaptive Expression + Reachable Structure + Living Material + Glaze Discipline = Adaptive Resonance**
 
-1. Orca scan/completion announcement quality;
-2. Orca cancellation/failure/success announcement quality;
-3. Maintenance Insights status announcement quality;
-4. native window-control/compositor optical quality;
-5. Dark and preview Deep Dark physical optical quality;
-6. canonical Care icon physical rendering quality;
-7. confirmation, empty, failure, success, and controlled-task UX.
+For Care this means:
 
-All seven passed.
-
-The exact `0.1.0` bridge does **not** claim those observations were rerun. Instead it proves the `334b531… -> bbc4779…` transition did not change the governed Glaze implementation, canonical icon, UI contract, focus/accessibility implementation, Glaze contract tests, or runtime UI acceptance harness. The changed surface was bounded to release/package identity and lifecycle-neutral title/subtitle copy.
-
-The bridge is therefore an explicit governance transfer across unchanged Glaze behavior, not fabricated human evidence.
-
-## Exact 0.1.0 automated and representative evidence
-
-Exact `0.1.0` passed:
-
-- Care qualification run `34180765807` / #421 / 143 tests;
-- Platform Contract run `34180766156` / #416;
-- theme validation `34180765817` / #590;
-- enlarged-text GTK runtime acceptance;
-- core and Maintenance Insights AT-SPI acceptance;
-- focus and keyboard behavior guards;
-- Dark/Deep Dark HeaderBar contrast checks;
-- Clear/Balanced/Dense clarity geometry;
-- Reduced Motion application-owned behavior;
-- safe task-flow acceptance;
-- representative Zorin OS 17.3 exact package lifecycle acceptance;
-- all six prescribed real-desktop PolicyKit GUI checks and post-acceptance installed/security/continuity verification.
+- stable **Content Planes** for reading, file/path review, semantic status, and consequential decisions;
+- restrained **Chrome Planes** for HeaderBar and transient command controls;
+- one quiet signature/hero surface per window rather than universal glass or cardification;
+- grouped maintenance collections instead of a stack of repetitive independent cards;
+- semantic shape roles instead of making every button a pill;
+- capsule geometry reserved for compact continuous command chrome such as Scan and Refresh;
+- a single dominant resonant primary action for routine cleanup;
+- visually and behaviorally separate destructive and privileged actions;
+- Compact, Medium, and Expanded composition, with Expanded width exposing additional useful context instead of stretching one column;
+- expression profile separate from clarity profile;
+- accessibility and semantic authority above personalization or cosmetic expression.
 
 ## Native GTK3 material boundary
 
-Care implements the Stable V1.2 contract through a bounded native GTK3 mapping appropriate to Zorin OS 17.3:
+GTK3 on the supported Zorin OS target does not provide compositor-authoritative backdrop sampling or full Living Glaze 2.0 rendering. Care therefore implements a bounded Tier 1/Tier 0 native interpretation:
 
 - neutral material remains dominant;
-- content and critical-decision surfaces prefer stable opaque surfaces;
-- HeaderBar/signature chrome uses restrained neutral treatment;
-- semantic color is reserved for state/interaction meaning rather than substrate truth;
-- HighContrast remains system-authoritative;
-- Reduced Transparency resolves decorative translucency toward solid neutral surfaces;
-- Reduced Motion removes nonessential optical emphasis;
-- Show Borders strengthens boundaries without relying on saturation;
-- enlarged text reflows through the shared effective-width contract;
-- visible focus remains explicit and non-color-only;
-- minimum interactive target intent remains 48 pixels.
+- content and critical-decision surfaces prefer opaque Solid/Surface equivalents;
+- HeaderBar and signature chrome may use restrained neutral translucency;
+- no nested backdrop blur is claimed;
+- no network, telemetry, or remote performance signal is used to choose material behavior;
+- material/optical richness degrades before readability, semantics, focus, target size, or task correctness.
 
-GTK3 does not claim compositor-authoritative Living Glaze backdrop sampling or physical parity with rendering capabilities it does not provide.
+Care does **not** claim physical-device Living Glaze parity, production frame-time budgets, native material parity, V1.3 Candidate activation, or V1.3 consumer conformance.
 
-## Adaptive layout and hierarchy
+## Semantic shape and hierarchy
 
-The accepted native mapping uses:
+Dev20 replaces the previous universal pill-button treatment with semantic shape roles:
 
-- Content Planes for reading, status, and consequential decisions;
-- restrained Chrome Planes for transient command controls;
-- grouped maintenance collections rather than repetitive cardification;
-- semantic shape roles rather than universal pills;
-- separate destructive and privileged actions;
-- Compact, Medium, and Expanded composition;
-- independent expression and clarity dimensions used only as bounded presentation controls;
-- accessibility and semantic authority above cosmetic expression.
+- normal controls use a rounded control role;
+- Scan and Refresh use a command-capsule role because they are compact transient command chrome;
+- `Clean selected` uses a distinct resonant primary-action role;
+- destructive Trash uses a danger role without relying on color alone;
+- APT and Memory Refresh use secondary action roles;
+- grouped rows use quiet geometry and shared containing surfaces.
 
-Maintenance Insights follows the same hierarchy and preserves selectable Pango findings, `WORD_CHAR` fallback, synthetic-hyphen suppression, copy integrity, keyboard focus, and true-bottom scrolling.
+The main window now separates a **Maintenance plan** content plane from a **System actions** plane. At Expanded width they form a useful two-column workspace; at Medium/Compact width they return to a vertically reachable flow. This is the Care-specific application of the V1.3 reachability and adaptive-layout rules.
 
-## V1.3 / Adaptive Resonance boundary
+Maintenance Insights follows the same design language: a quiet summary/signature surface, semantic read-only status, a stable findings plane, and a compact command-capsule Refresh action. Dev17’s accepted selectable Pango findings behavior, `WORD_CHAR` fallback, synthetic-hyphen suppression, copy integrity, and true-bottom scrolling architecture are preserved.
 
-Care source retains forward-looking Adaptive Resonance implementation code and preview terminology. That code is not the release's conformance authority.
+## Expression and clarity
 
-Stable Care `0.1.0` is accepted against **GLAZE UI V1.2 / `1.2.0`**. Any future migration to a later formally promoted Stable Glaze release requires fresh repository-local consumer evidence according to that release's migration/conformance rules; no future Glaze lifecycle state is pre-accepted here.
+The V1.3 dimensions remain independent in Care Development acceptance:
+
+- `GOREECLOUD_CARE_GLAZE_EXPRESSION=calm|balanced|expressive`
+- `GOREECLOUD_CARE_GLAZE_CLARITY=clear|balanced|dense`
+
+Balanced is the default for each dimension. Expression may change bounded optical emphasis; clarity may change spacing/density. Neither may change semantic meaning, action authority, privacy/security behavior, minimum target size, or accessibility state.
+
+These environment controls exist for reproducible Development evidence. They do not constitute a finished GoreeCloud Personalization adapter or cross-device preference synchronization.
+
+## Dynamic color authority
+
+Care follows the V1.3 precedence boundary:
+
+1. accessibility;
+2. semantic state;
+3. product identity;
+4. user accent;
+5. context accent;
+6. default Glaze accent.
+
+The current GTK3 mapping deliberately keeps neutral material dominant and uses blue only for bounded primary/focus/interaction emphasis. Attention/success/error meanings remain semantic and textual, not color-only. Context does not recolor destructive dialogs or semantic status.
+
+A full native user-accent/product-identity/context-palette adapter is **not** claimed by dev20.
+
+## Accessibility precedence
+
+The current Development mapping keeps this precedence explicit:
+
+- **HighContrast / forced system authority:** the ordinary V1.3 provider is removed so the system palette wins.
+- **Reduced Transparency:** translucent chrome/signature surfaces resolve to solid neutral equivalents.
+- **Show Borders / increased boundary emphasis:** boundaries strengthen without depending on higher saturation.
+- **Reduced Motion:** nonessential optical emphasis is removed; direct manipulation, focus, status, and task continuity remain.
+- **Large text / magnification:** layout reflows through the shared `GDK_DPI_SCALE`-aware width contract; targets are not shrunk to compensate.
+- **Focus:** focus remains explicit and non-color-only through the shared focus resilience provider.
+
+Minimum interactive target intent remains 48 pixels for the native Development mapping.
+
+## Official V1.2 baseline retained
+
+`goreecloud_care/glaze_v12.py` and `glaze_v12_global.py` remain in the source tree as the explicit Stable-baseline implementation record. The platform manifest continues to declare `glaze_ui_required: "1.2.0"` and `glaze-ui==1.2.0` because V1.3 is not yet a Stable platform dependency.
+
+Dev20 GUI startup now activates `glaze_v13_global.py` for the Development presentation. This does not silently rewrite the platform compatibility contract or imply that the central Platform Contract has promoted V1.3.
+
+## Automated Development evidence
+
+The dev20 source contract adds automated checks for:
+
+- truthful V1.3 Proposed lifecycle identity and source revision;
+- explicit V1.2 Stable baseline retention;
+- separate expression and clarity dimensions;
+- Content Plane / Chrome Plane structure;
+- grouped maintenance collections;
+- restricted capsule use and non-universal pill geometry;
+- one resonant primary action;
+- Compact/Medium/Expanded composition;
+- Light/Dark/Deep Dark mapping;
+- Reduced Transparency, Reduced Motion, and Show Borders paths;
+- HighContrast provider removal;
+- no CSS transition/animation dependency;
+- headless enlarged-text core and Insights adaptation;
+- selectable findings focus and repeated synthetic resize timing.
+
+Automation cannot manufacture human optical review, live assistive-technology behavior, physical-device performance, native personalization acceptance, or lifecycle promotion.
+
+## Historical representative evidence
+
+Older accepted evidence remains revision-scoped to exactly what it demonstrated:
+
+- dev8 `45b5f11a49f363ebcaf753c892245a31109bc9bb` — representative 200%-text compact core layout.
+- dev10 `3524a4a82da87ea51dcde08992a402190b54c130` — HighContrast authority and requested core keyboard traversal.
+- dev12 `09c3a6bcbec094dd3cb0c828de88d084fcbd5a22` — AT-SPI application identity/static semantic slice.
+- dev17 `0fda6f90a545eaf3d1bed525aae98c6529ebbf7b` — submitted Maintenance Insights compact/wide rendering, synthetic-hyphen remediation, true-bottom reachability, visible Refresh focus, and selectable findings rendering.
+
+Those records are not V1.3 acceptance and must not be relabeled as such.
+
+## Current open acceptance gates
+
+Before Care can advance toward Release Candidate, fresh exact-dev20 evidence is still required for:
+
+- repository/source/package validation at one immutable dev20 head;
+- representative dev20 ↔ pinned dev17 package lifecycle after the dev19 isolation fix;
+- continuous `GDK_DPI_SCALE=2` drag-resize on the representative device;
+- complete forward/reverse keyboard traversal through the redesigned core window and Maintenance Insights selectable findings without focus traps;
+- live Maintenance Insights AT-SPI/Orca and dynamic core status-value/event/announcement quality;
+- representative Light/Dark, HighContrast, Reduced Transparency, Reduced Motion, Show Borders, and any claimed Deep Dark behavior;
+- Calm/Balanced/Expressive and Clear/Balanced/Dense review sufficient for the behaviors Care actually intends to expose;
+- native optical/visual-quality review of the new hierarchy, grouped rows, semantic shapes, selection/focus, statuses, confirmations, empty/failure states, and expanded/compact composition;
+- canonical icon rendering on the target;
+- representative maintenance/reporting/Insights task flows;
+- exact-candidate Privacy Shield, Wardveil, and Everkeep acceptance;
+- the applicable future governed Glaze consumer acceptance only when upstream V1.3 lifecycle permits it;
+- immutable RC regression/evidence and governed promotion.
 
 ## Fail-closed rule
 
-The V1.2 acceptance is exact-release scoped. A later change to Care presentation behavior, canonical icon, focus/accessibility behavior, supported platform/form factor, or required Glaze version invalidates any assumption that this acceptance transfers automatically. A new material design-system requirement must be governed explicitly before it can support a later Stable release.
+A version string, CSS mapping, successful package build, green headless test, historical screenshot, upstream V1.3 source artifact, or registry entry does not authorize GoreeCloud Care to claim V1.3 Candidate, V1.3 conformance, Release Candidate, Stable, production eligibility, or full current-Stable V1.2 consumer acceptance. Missing, stale, contradictory, or unverified evidence remains non-passing.

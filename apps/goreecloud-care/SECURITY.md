@@ -11,4 +11,4 @@
 - Dev18 representative lifecycle testing exposed the pre-dev19 ambient-import-path defect after downgrade; dev19 is the remediation line and must receive exact-head source plus representative lifecycle validation before the defect is considered closed.
 - Package dependencies and target PolicyKit integration require acceptance before RC.
 
-Report suspected security issues through the authoritative `GoreeCloud/linux-apps` repository/security reporting path.
+Report suspected security issues through the authoritative `GoreeCloud/goreecloud-zorin-os` repository/security reporting path.

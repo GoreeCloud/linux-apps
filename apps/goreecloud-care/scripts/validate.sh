@@ -27,7 +27,7 @@ assert all(resource.get('ai_usage') is False for resource in privacy_app['resour
 privacy_adapter = json.loads(Path('contracts/privacy-shield.adapter.json').read_text(encoding='utf-8'))
 assert privacy_adapter['schema_version'] == 1
 assert privacy_adapter['adapter']['id'] == 'goreecloud-care'
-assert privacy_adapter['adapter']['runtime_authority'] == 'GoreeCloud/linux-apps'
+assert privacy_adapter['adapter']['runtime_authority'] == 'GoreeCloud/goreecloud-zorin-os'
 assert privacy_adapter['acceptance']['runtime_acceptance_required'] is True
 assert privacy_adapter['acceptance']['production_approved'] is False
 assert set(privacy_adapter['capabilities']) == {

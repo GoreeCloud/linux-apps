@@ -27,7 +27,7 @@ class ContinuityTargetBindingTests(unittest.TestCase):
         return {
             "schema_version": 1,
             "application": "GoreeCloud Care",
-            "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
+            "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
             "source_revision": REVISION,
             "source_tree": TREE,
             "runtime_version": "0.1.0",
@@ -40,7 +40,7 @@ class ContinuityTargetBindingTests(unittest.TestCase):
         return {
             "schema_version": 1,
             "application": "GoreeCloud Care",
-            "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
+            "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
             "candidate": {
                 "source_revision": REVISION,
                 "source_tree": TREE,

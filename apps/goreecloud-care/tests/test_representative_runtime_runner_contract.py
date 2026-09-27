@@ -50,7 +50,7 @@ class RepresentativeRuntimeRunnerContractTests(unittest.TestCase):
         for required in (
             '"schema_version": 1',
             '"application": "GoreeCloud Care"',
-            '"producer": "GoreeCloud/linux-apps/apps/goreecloud-care"',
+            '"producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care"',
             '"restore_capability"',
             '"migration"',
             '"documentation"',

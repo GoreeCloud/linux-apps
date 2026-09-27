@@ -1,175 +1,225 @@
-# GoreeCloud Care — Stable 0.1.0 Specification
+# GoreeCloud Care — Release Candidate Specification
 
-**Lifecycle:** Stable  
-**Released runtime/package:** `0.1.0` / `0.1.0`  
-**Immutable release source:** `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`  
-**Care source tree:** `ebe028347c978b6d09fb1d2af011729249f63bc3`  
-**Released package SHA-256:** `819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160`  
+**Lifecycle:** Release Candidate / nonconformant  
+**Current source line:** `0.1.0-dev22`  
+**Package line:** `0.1.0~dev22`  
+**Canonical source:** `GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care/`  
 **Representative target:** Zorin OS 17.3  
-**Stable design baseline:** GLAZE UI V1.2 / `1.2.0`
+**Official Stable design baseline:** GLAZE UI V1.2 / `1.2.0`  
+**Forward design preview:** GLAZE UI V1.3 Adaptive Resonance (Proposed; consumer eligibility inactive)
 
-## Purpose and scope
+## Purpose
 
-GoreeCloud Care is a native, local-first desktop maintenance application for a person maintaining their own GoreeCloud/Zorin OS workstation. Stable `0.1.0` is deliberately bounded to local preview-first maintenance, explicit user-authorized cleanup, local storage/memory visibility, privacy-safe reporting, bounded Maintenance Insights, and narrow read-only platform-status integration.
+GoreeCloud Care is a native, local-first desktop maintenance application for a person maintaining their own GoreeCloud/Zorin OS workstation. The first release scope is deliberately bounded: preview maintenance candidates, perform explicit user-authorized cleanup, provide local system/storage visibility, expose privacy-safe read-only reporting and offer read-only Maintenance Insights without introducing remote management, telemetry or unattended deletion.
 
-The release does not provide remote administration, multi-user management, unattended deletion, cloud telemetry, cross-service maintenance execution, or a persistent application-owned user dataset.
+The current source is a **Release Candidate source**, not an RC-complete or Stable release. Exact candidate package, representative-target and governed platform evidence must still be refreshed for the final frozen RC SHA.
 
-## Release artifact authority
+## Safety model
 
-The Stable lifecycle promotes the already-qualified `goreecloud-care_0.1.0_all.deb` built from exact release source `bbc4779…`. The Stable governance revision is not a replacement package source and does not supersede package SHA `819cff6…`.
+- Preview first; scanning alone never deletes files.
+- User cache, thumbnail cache and stale temporary-file cleanup run as the logged-in user.
+- Trash is a separate irreversible action with an explicit confirmation.
+- Privilege is limited to the fixed `apt-clean` and `reclaim-memory` helper actions.
+- Privileged helpers accept no arbitrary paths, shell fragments or free-form commands.
+- Symlinks are not followed during user-file scanning/deletion.
+- Generic stale cache/temp eligibility uses a seven-day threshold.
+- Cleanup operates on eligible leaf candidates rather than recursively deleting broad cache/temp roots.
+- Errors are surfaced; failed items are not counted as success.
+- New cleanup categories begin read-only until deletion semantics, ownership, recovery and privilege boundaries are separately specified and accepted.
+- Scheduled behavior may scan or remind; unattended automatic deletion is excluded.
+- Cancellation, PolicyKit denial, helper failure and partial failure are never represented as success.
 
-Any later rebuild, source change, privilege change, supported-platform change, or material platform-integration change is a new candidate/artifact and must satisfy the validation applicable to that change.
+## Interface, accessibility and Glaze UI
+
+The official shared Stable compatibility baseline is **GLAZE UI V1.2 / `1.2.0`**. The RC source retains bounded forward-looking styling from Proposed **GLAZE UI V1.3 Adaptive Resonance**. This is not a claim that V1.3 Candidate is active, Care is an eligible V1.3 consumer, `accepted-v1` is granted, or the application is production Glaze-conformant.
+
+Current native GTK3 behavior includes:
+
+- neutral material surfaces with semantic/accent color separated from substrate color;
+- compact/medium/expanded layout behavior that reorganizes content rather than merely scaling it;
+- 48-pixel minimum target intent in the Glaze mappings;
+- `GDK_DPI_SCALE`-aware effective-width handling for representative enlarged text;
+- Light, Dark, preview Deep Dark and HighContrast support where claimed;
+- system-authoritative HighContrast plus a focus-resilience provider;
+- Reduced Transparency, Reduced Motion and Show Borders behavior;
+- separate expression and clarity preview dimensions;
+- explicit GLib/GTK application identity before GUI startup;
+- ATK status-bar semantics and dynamic accessible status-name changes;
+- keyboard-focus visibility and forward/reverse traversal requirements;
+- selectable Maintenance Insights findings using Pango `WORD_CHAR` wrapping with synthetic hyphen insertion disabled.
+
+Automated GTK/AT-SPI evidence does not manufacture final Orca speech quality, physical compositor/window-control rendering, canonical icon optical quality or desktop PolicyKit-agent experience. Those remain representative human/physical boundaries where applicable.
 
 ## Core maintenance contract
 
-Stable `0.1.0` supports:
+Current maintenance functions are:
 
-- stale application-cache cleanup;
+- application-cache cleanup for eligible stale files;
 - thumbnail-cache cleanup;
-- eligible user-owned temporary-file cleanup;
+- eligible user-owned `/tmp` cleanup;
 - Trash preview plus separately confirmed permanent emptying;
 - APT package-cache preview plus PolicyKit-authorized cleanup;
-- disk, available-memory, and Linux file-cache status;
+- disk, available-memory and Linux file-cache status;
 - separately warned and PolicyKit-authorized Linux file-cache reclaim.
 
-Scanning never deletes. Cleanup uses current preview/selection state and explicit confirmation. No-selection, stale-preview, cancellation, authorization denial, helper failure, partial failure, and successful completion remain explicit and must never be conflated.
+Post-action refresh must preserve the final operation result. No-selection, stale-preview, cancellation, denial, failure and partial-success states must remain explicit.
 
-## Safety and privilege model
+## Read-only report contract
 
-- Routine cache/temp cleanup runs as the logged-in user.
-- Trash is a separate irreversible action with explicit confirmation.
-- Privilege is restricted to the fixed `apt-clean` and `reclaim-memory` helper actions.
-- The helper accepts no arbitrary path, shell fragment, or free-form command.
-- Invalid helper actions fail closed; representative acceptance verified exit status `64`.
-- Symlinks are not followed during user-file scanning/deletion.
-- Generic stale cache/temp eligibility uses the established seven-day threshold.
-- Confirmation dialogs default safely to cancellation.
-- PolicyKit cancellation, denial, helper failure, and partial failure are never represented as success.
-- Installed application/helper entrypoints remain isolated from working-directory and Python path shadowing.
+- `goreecloud-care --report` returns a human-readable local maintenance report.
+- `goreecloud-care --report-json` returns schema-versioned JSON.
+- `goreecloud-care --version` returns installed application version.
+- Reports may read local filesystem metadata, disk usage and `/proc/meminfo` used by normal scanning.
+- Reports must not delete files, authenticate, request PolicyKit, invoke the helper, use telemetry or access the network.
+- Candidate file paths, local filenames and raw scan-error strings are omitted by default.
+- Disk-headroom classification is informational only and is not filesystem-health certification or an automatic cleanup trigger.
 
-## Real desktop PolicyKit acceptance
+## Maintenance Insights contract
 
-On the representative Zorin OS 17.3 laptop, all six required GUI checks passed for the exact released package:
+`goreecloud-care --insights-ui` opens a dedicated local read-only review surface.
 
-1. APT cleanup — Care confirmation cancellation;
-2. APT cleanup — PolicyKit authorization cancellation;
-3. APT cleanup — privileged success;
-4. file-cache reclaim — Care confirmation cancellation;
-5. file-cache reclaim — PolicyKit authorization cancellation;
-6. file-cache reclaim — privileged success.
-
-Post-session installed validation, security status, and continuity status also passed.
-
-## Read-only report and local API contract
-
-Stable read-only modes are:
-
-- `--version`;
-- `--report`;
-- `--report-json`;
-- `--api-version`;
-- `--health-json`;
-- `--privacy-status-json`;
-- `--security-status-json`;
-- `--continuity-status-json`;
-- `--insights-ui`.
-
-Report/status modes do not delete files, request PolicyKit, invoke privileged maintenance, send telemetry, or access the network. Default reports omit candidate paths, filenames, and raw scan-error strings.
-
-## Maintenance Insights
-
-Maintenance Insights is read-only and bounded. It reviews:
+The current review scope includes:
 
 - stale application-cache groups using the established >7-day policy;
 - regular user-owned files of at least 250 MB in standard user folders;
-- Downloads at least 30 days old;
+- regular user-owned Downloads at least 30 days old;
 - aggregate scan errors;
 - bounded-discovery state.
 
-Discovery does not follow symlinks and is capped. Findings are never automatically selected for deletion, movement, quarantine, package action, or privilege escalation.
+Discovery does not follow symlinks and is capped at 50,000 visited standard-folder entries per refresh. Home-relative paths may appear only in this explicitly opened local review. Findings are informational and are never automatically selected for deletion, movement, quarantine, package action or privilege escalation. The Insights engine/window contains no deletion, PolicyKit, privileged-helper, subprocess or network execution path.
 
-## Accessibility and native presentation
+## Local platform integration API
 
-Stable Care retains:
+The RC source exposes read-only local endpoints:
 
-- explicit GLib/GTK application identity;
-- ATK/AT-SPI status semantics and dynamic status updates;
-- visible keyboard focus and forward/reverse traversal requirements;
-- enlarged-text reflow through the shared effective-width contract;
-- HighContrast system authority;
-- Reduced Transparency, Reduced Motion, and Show Borders behavior;
-- compact/medium/expanded composition;
-- Light, Dark, and supported preview Deep Dark behavior;
-- selectable Maintenance Insights findings and true-bottom reachability.
+- `--api-version` → local API version `1`;
+- `--health-json` → minimized local readiness/version status;
+- `--privacy-status-json` → Privacy Shield-shaped status;
+- `--security-status-json` → Wardveil-compatible status for the installed Care privilege boundary;
+- `--continuity-status-json` → evidence-derived Everkeep continuity status.
 
-The predecessor frozen RC passed the governed seven-dimensional human/native acceptance. Exact `0.1.0` is accepted through the Glaze exact-source bridge because the release transition did not change governed Glaze implementation, icon, UI/focus/accessibility contract files, or runtime UI acceptance harness.
+Status modes remain GUI-lazy and must not delete files, authenticate, invoke privileged maintenance, send telemetry or access the network.
 
-## Privacy Shield boundary
+### Privacy Shield boundary
 
-Privacy Shield authority `0af47f4817191541e1ea12928cff5c3458baf377` accepts the exact released source/tree/package for:
+Repository-local declarations are `contracts/privacy-shield.application.json` and `contracts/privacy-shield.adapter.json`. Care declares only `telemetry-minimization`, `data-minimization` and `privacy-status`. Status output excludes raw private activity, credentials and identifiers.
 
-- telemetry minimization;
-- data minimization;
-- privacy status.
+The predecessor Development candidate has historical exact runtime evidence. That evidence does not transfer to the final RC SHA/package. Fresh exact-candidate runtime/application acceptance is required. Production approval is a separate Stable/production gate.
 
-Care remains local-first, exports no raw private activity for status, and performs no remote tracker learning or telemetry.
+### Wardveil Security boundary
 
-## Wardveil Security boundary
+`WARDVEIL-INTEGRATION.md` defines the scoped producer model. Care is authoritative only for Care-owned installation/control facts such as the fixed helper and PolicyKit policy. Passing local evidence requires trusted fixed-file ownership/write boundaries and executable `pkexec`; evidence fails closed otherwise.
 
-Wardveil authority `e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f` accepts exact `0.1.0` runtime adoption after package/target and real-desktop PolicyKit acceptance.
+`protected_by_wardveil=false` remains authoritative until Wardveil explicitly accepts/promotes the exact RC candidate. A compatible status shape does not grant broad Wardveil protection or cross-service execution authority.
 
-Protection-claim permission is restricted to:
+### Everkeep / continuity boundary
 
-`GoreeCloud Care local-maintenance-privilege-boundary only`
-
-No cross-service execution authority is granted. Care remains the technical authority for its local maintenance controls and produces bounded evidence rather than self-assigning Wardveil governance.
-
-## Everkeep / continuity boundary
-
-Everkeep authority `4586246aad87a4038c7f8984de809d32333f2599` governs exact `0.1.0` continuity readiness.
+Care produces continuity evidence; Everkeep owns continuity governance.
 
 The trust chain is:
 
-1. package-owned provenance at `/usr/share/goreecloud-care/build-provenance.json`;
-2. Care-owned representative-target evidence at `/var/lib/goreecloud-care/acceptance/representative-target.json`;
-3. Everkeep-owned governance at `/var/lib/goreecloud/everkeep/acceptance/goreecloud-care.target-runtime.json`.
+1. `/usr/share/goreecloud-care/build-provenance.json`
+   - root-controlled package-owned provenance;
+   - exact repository revision and Care tree;
+   - runtime/package versions;
+   - deterministic source timestamp.
 
-On the accepted representative device, the Everkeep path is root-owned and non-writable (`0755` directory, `0644` record), and Care reports `ready / everkeep-promoted` with exact-build-bound freshness and no limitations.
+2. `/var/lib/goreecloud-care/acceptance/representative-target.json`
+   - Care-owned representative Zorin OS 17.3 target handoff;
+   - exact package SHA-256 captured externally;
+   - exact source/tree/runtime/package binding;
+   - source validation/local-test/package-lifecycle evidence;
+   - Everkeep promotion booleans false by construction.
 
-## Glaze UI boundary
+3. `/var/lib/goreecloud/everkeep/acceptance/goreecloud-care.target-runtime.json`
+   - separate Everkeep-owned governance record;
+   - must exact-match source/tree/runtime/package/target;
+   - must use the same package SHA-256 as the Care target handoff;
+   - must explicitly promote both integration and readiness.
 
-Stable `0.1.0` is an `accepted-v1` consumer of **GLAZE UI V1.2 / `1.2.0`** under Glaze authority `c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae`.
+Fail-closed states are:
 
-Forward-looking Adaptive Resonance code remains bounded implementation detail, not a substitute for current Stable Glaze authority. A later officially promoted Glaze baseline requires fresh consumer migration/conformance evidence where applicable.
+- untrusted/missing provenance → `attention / provenance-unavailable`;
+- no matching representative target → `attention / target-acceptance-required`;
+- matching Care handoff without matching promoted Everkeep governance → `attention / target-accepted-governance-pending`;
+- complete exact promoted chain → `ready / everkeep-promoted` with `freshness=exact-build-bound`.
 
-## Recovery and rollback
+Symlinked, malformed, oversized, writable, source-mismatched, target-mismatched, package-mismatched or unpromoted evidence cannot produce `ready`.
 
-The accepted rollback checkpoint is `0.1.0~dev17`. Representative acceptance proved:
+The predecessor Development candidate reached governed Everkeep readiness, but that exact evidence does not transfer to the RC source.
 
-- exact `0.1.0` install/upgrade;
-- removal;
-- fresh reinstall;
-- explicit downgrade to dev17;
-- rollback launch/report functionality;
-- restoration to exact `0.1.0`;
-- final installed validation and provenance.
+### Manager, Mesh and Identity applicability
 
-Care persists no substantial durable application-owned user dataset, so continuity centers on package reconstruction, exact provenance, rollback/restore, documentation, and truthful irreversible-maintenance boundaries.
+For the intended first Stable scope, Care remains a local single-user utility and does not require central administration, cross-application coordination, accounts, multi-user behavior or delegated authorization. Manager, Mesh and Identity may remain `not-applicable-justified` only while that scope remains true. Any future remote, coordinated, account-based or delegated behavior reopens applicability.
 
-## Release evidence
+## Packaging and exact provenance
 
-- exact source: `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`
-- release qualification: `34180765807` / #421 / 143 tests
-- Platform Contract: `34180766156` / #416
-- theme validation: `34180765817` / #590
-- package artifact: `10038827656`
-- cross-environment artifact: `10038821545`
-- package SHA-256: `819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160`
-- Privacy Shield: `0af47f4817191541e1ea12928cff5c3458baf377`
-- Everkeep: `4586246aad87a4038c7f8984de809d32333f2599`
-- Wardveil: `e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f`
-- Glaze UI: `c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae`
+The Release Candidate Debian package remains architecture `all` and retains pre-release version `0.1.0~dev22`.
 
-## Stable change rule
+Packaging requirements:
 
-Stable does not mean permanently finished. Future controlled fixes and improvements are allowed, but a materially changed source/artifact does not inherit this exact-release acceptance automatically.
+- authoritative Git checkout required;
+- tracked Care changes must be committed/stashed;
+- every file that can enter the package must be tracked;
+- source revision and Care tree SHA are embedded in package provenance;
+- `SOURCE_DATE_EPOCH` defaults to exact `HEAD` commit time when not supplied;
+- locale/timezone are deterministic (`C`, UTC);
+- staged modes and timestamps are normalized;
+- Debian format 2.0 with `-Znone` removes compressor-version variability;
+- rebuilds must compare byte-for-byte equal;
+- Ubuntu 22.04 and Ubuntu 24.04 CI builds must compare byte-for-byte equal;
+- package removal must remove package-owned provenance and the fixed application/helper/policy/desktop/icon/AppStream/private-runtime files it owns.
+
+The package installs canonical RC runtime identity at:
+
+- `/usr/share/applications/com.goreecloud.care.desktop`;
+- `/usr/share/metainfo/com.goreecloud.care.metainfo.xml`;
+- GTK application IDs `com.goreecloud.care` and `com.goreecloud.care.insights`.
+
+## Representative target acceptance
+
+`scripts/prepare-representative-acceptance.sh` prepares read-only evidence and human checklists for the exact RC source.
+
+`scripts/run-representative-acceptance.sh` is the automated exact-target handoff runner. On Zorin OS 17.3 as the normal desktop user, it requires `lifecycle: release-candidate`, validates source, builds/verifies the reproducible package, builds the immutable dev17 rollback package, executes the complete install/remove/reinstall/downgrade/restore lifecycle, verifies final installed provenance, computes package SHA-256, installs only the Care-owned target handoff and proves that handoff cannot self-promote Everkeep.
+
+Neither runner invokes a Care cleanup action. The automated runner does not write Everkeep governance.
+
+## Branding authority
+
+The canonical product icon is `GoreeCloud/goreecloud-branding-assets/products/care/app-icon.svg`. The package carries a synchronized derivative at `packaging/icons/com.goreecloud.care.svg` and installs it in the freedesktop hicolor application-icon path. The consumer copy is not the branding authority.
+
+## Data and privacy
+
+Care reads local filesystem metadata, `/proc/meminfo`, disk usage and fixed installation metadata. It sends nothing over the network and contains no telemetry. Default reports/status are minimized. Maintenance Insights may show home-relative paths only in the explicitly opened local review surface.
+
+## Platform and toolkit
+
+- Python 3.10+
+- GTK 3 / PyGObject
+- ATK / AT-SPI
+- Pango
+- PolicyKit / `pkexec` for the two fixed privileged maintenance actions
+- Debian architecture `all`
+- GLAZE UI V1.2 Stable compatibility baseline plus bounded Proposed V1.3 preview mapping
+
+## Exclusions
+
+- No unattended scheduled deletion.
+- No browser-history, cookie, password or credential deletion.
+- No process killer or one-click optimizer.
+- No swap manipulation.
+- No automatic package autoremove or old-kernel removal.
+- No arbitrary kernel tuning or root shell execution.
+- No claim that dropping file caches permanently improves RAM/performance.
+- No unbounded whole-home/whole-filesystem Insights discovery.
+- No GoreeCloud account, remote management or cross-application execution authority in the first-release scope.
+- No claim of compositor-wide GTK3 backdrop-blur fidelity.
+- No Stable/production Privacy Shield, Wardveil, Everkeep or Glaze claim before the exact candidate satisfies the governing acceptance.
+
+## Release status
+
+GoreeCloud Care is now a **Release Candidate source / nonconformant**. The source transition freezes the intended first-release behavior and canonicalizes Release Candidate application/package metadata, but it does not transfer predecessor acceptance to the new exact source.
+
+RC completion still requires the final atomic source SHA to pass all exact-head CI, deterministic/cross-environment package checks and representative Zorin OS 17.3 lifecycle acceptance. Privacy Shield, Wardveil and Everkeep exact-candidate governance must then be refreshed against that same source/tree/package SHA.
+
+Human-only review may remain explicitly pending at RC where the governing lifecycle permits it. Stable remains blocked until all applicable production-readiness, Platform System, final Glaze/product, security/privacy/recovery, human/physical and immutable-release evidence gates are satisfied. `RELEASE-ACCEPTANCE.md` is the authoritative component-local promotion checklist.
