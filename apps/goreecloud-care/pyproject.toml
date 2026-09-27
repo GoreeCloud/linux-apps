@@ -1,0 +1,14 @@
+[project]
+name = "goreecloud-care"
+version = "0.1.0"
+description = "Local-first GoreeCloud maintenance utility for Zorin OS"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-or-later" }
+authors = [{ name = "GoreeCloud" }]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: X11 Applications :: GTK",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+]

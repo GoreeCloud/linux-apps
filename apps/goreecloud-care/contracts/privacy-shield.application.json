@@ -1,0 +1,30 @@
+{
+  "manifest_version": 1,
+  "application_id": "goreecloud-care",
+  "display_name": "GoreeCloud Care",
+  "purposes": [
+    {
+      "id": "local-maintenance",
+      "description": "Inspect local maintenance state and perform only user-authorized local maintenance actions."
+    },
+    {
+      "id": "local-status",
+      "description": "Produce minimized read-only status for local GoreeCloud consumers without telemetry or raw private activity."
+    }
+  ],
+  "resources": [
+    {
+      "resource": "local-maintenance-metadata",
+      "purposes": ["local-maintenance", "local-status"],
+      "operations": ["read", "aggregate"],
+      "processing_zones": ["local"],
+      "destinations": [],
+      "retention": {
+        "mode": "ephemeral",
+        "description": "Generated in memory for the current process; GoreeCloud Care does not persist report/status history."
+      },
+      "ai_usage": false,
+      "external_processors": []
+    }
+  ]
+}

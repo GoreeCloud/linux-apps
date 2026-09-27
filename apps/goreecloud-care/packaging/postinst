@@ -1,0 +1,24 @@
+#!/bin/sh
+set -e
+
+# Care's private Python package must not retain root-created bytecode from an
+# older package revision. The launchers use -B, but historical Development
+# versions could have created this fixed cache directory through the privileged
+# helper. Removing it after install/upgrade guarantees source is reloaded from
+# the package that dpkg just installed.
+rm -rf -- /usr/lib/goreecloud-care/goreecloud_care/__pycache__
+
+# Exact build provenance is a package-owned trust anchor. Reinstallation over an
+# older Development package must repair stale ownership/modes rather than leave
+# a previously group-writable directory able to make continuity evidence fail
+# closed. Only the fixed package-owned provenance path is touched here.
+if [ -d /usr/share/goreecloud-care ]; then
+  chown root:root /usr/share/goreecloud-care
+  chmod 0755 /usr/share/goreecloud-care
+fi
+if [ -f /usr/share/goreecloud-care/build-provenance.json ]; then
+  chown root:root /usr/share/goreecloud-care/build-provenance.json
+  chmod 0644 /usr/share/goreecloud-care/build-provenance.json
+fi
+
+exit 0

@@ -1,0 +1,17 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=GoreeCloud Care
+Comment=Preview and clean local cache, temporary files, Trash, and package cache
+Exec=goreecloud-care
+Icon=com.goreecloud.care
+Terminal=false
+Categories=System;Utility;
+Keywords=cleaner;cache;temporary;trash;memory;maintenance;storage;insights;
+Actions=Insights;
+StartupNotify=true
+StartupWMClass=com.goreecloud.care
+
+[Desktop Action Insights]
+Name=Maintenance Insights (Read-only)
+Exec=goreecloud-care --insights-ui

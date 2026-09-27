@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.goreecloud.care</id>
+  <name>GoreeCloud Care</name>
+  <summary>Local-first maintenance utility for GoreeCloud Linux systems</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <description><p>Preview and clean stale user cache, thumbnails, temporary files and Trash, with separately authorized package-cache and Linux file-cache maintenance, privacy-safe read-only reports, bounded local Maintenance Insights review, minimized local platform-status output, and compatibility with the Stable GLAZE UI V1.2 baseline while retaining bounded V1.3 Adaptive Resonance preview styling.</p></description>
+  <launchable type="desktop-id">com.goreecloud.care.desktop</launchable>
+  <icon type="stock">com.goreecloud.care</icon>
+  <releases>
+    <release version="0.1.0" date="2026-09-07" type="stable"/>
+    <release version="0.1.0-dev22" date="2026-09-07" type="development"/>
+    <release version="0.1.0-dev21" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev20" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev19" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev18" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev17" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev16" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev15" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev14" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev13" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev12" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev11" date="2026-09-06" type="development"/>
+    <release version="0.1.0-dev10" date="2026-09-05" type="development"/>
+    <release version="0.1.0-dev9" date="2026-09-05" type="development"/>
+    <release version="0.1.0-dev8" date="2026-09-05" type="development"/>
+    <release version="0.1.0-dev7" date="2026-09-05" type="development"/>
+    <release version="0.1.0-dev6" date="2026-09-05" type="development"/>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

@@ -1,0 +1,6 @@
+#!/bin/sh
+set -eu
+# Isolated mode prevents the invoking working directory, PYTHONPATH, user site,
+# and other ambient Python path state from shadowing the installed Care package.
+# -B also prevents runtime bytecode writes into the private package directory.
+exec /usr/bin/python3 -I -B -m goreecloud_care "$@"

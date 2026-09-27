@@ -1,0 +1,241 @@
+name: GoreeCloud Care 0.1.0 Stable Artifact Qualification
+
+on:
+  pull_request:
+    paths:
+      - 'apps/goreecloud-care/**'
+      - '.github/workflows/care-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/goreecloud-care/**'
+      - '.github/workflows/care-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/goreecloud-care
+    steps:
+      - name: Check out exact source revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify exact source revision
+        run: |
+          expected='${{ github.event.pull_request.head.sha || github.sha }}'
+          actual="$(git rev-parse HEAD)"
+          printf 'Expected source revision: %s\nActual source revision:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Install native GTK and accessibility test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            python3-gi gir1.2-gtk-3.0 gir1.2-atk-1.0 xvfb \
+            at-spi2-core python3-pyatspi dbus-x11
+
+      - name: Validate Care source
+        run: sh ./scripts/validate.sh
+
+      - name: Run headless GTK runtime acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 python3 tests/runtime_ui_acceptance.py
+
+      - name: Run headless safe task-flow acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 python3 tests/runtime_task_flow_acceptance.py
+
+      - name: Run live AT-SPI dynamic status acceptance
+        run: |
+          dbus-run-session -- xvfb-run -a bash -euc '
+            export NO_AT_BRIDGE=0
+            export GDK_DPI_SCALE=2
+            export GSETTINGS_BACKEND=memory
+            gsettings set org.gnome.desktop.interface toolkit-accessibility true
+            python3 -m goreecloud_care >/tmp/goreecloud-care-atspi.log 2>&1 &
+            care_pid=$!
+            cleanup() {
+              kill "$care_pid" 2>/dev/null || true
+              wait "$care_pid" 2>/dev/null || true
+            }
+            trap cleanup EXIT INT TERM
+            sleep 1
+            if ! python3 tests/atspi_runtime_acceptance.py; then
+              cat /tmp/goreecloud-care-atspi.log >&2 || true
+              exit 1
+            fi
+          '
+
+      - name: Run live Maintenance Insights AT-SPI acceptance
+        run: |
+          dbus-run-session -- xvfb-run -a bash -euc '
+            export NO_AT_BRIDGE=0
+            export GDK_DPI_SCALE=2
+            export GSETTINGS_BACKEND=memory
+            gsettings set org.gnome.desktop.interface toolkit-accessibility true
+            python3 -m goreecloud_care --insights-ui >/tmp/goreecloud-care-insights-atspi.log 2>&1 &
+            insights_pid=$!
+            cleanup() {
+              kill "$insights_pid" 2>/dev/null || true
+              wait "$insights_pid" 2>/dev/null || true
+            }
+            trap cleanup EXIT INT TERM
+            sleep 1
+            if ! python3 tests/atspi_insights_runtime_acceptance.py; then
+              cat /tmp/goreecloud-care-insights-atspi.log >&2 || true
+              exit 1
+            fi
+          '
+
+      - name: Run Dark HeaderBar runtime contrast acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_APPEARANCE=dark python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Deep Dark HeaderBar runtime contrast acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_APPEARANCE=deep-dark python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Clear clarity runtime acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_GLAZE_CLARITY=clear python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Balanced clarity runtime acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_GLAZE_CLARITY=balanced python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Dense clarity runtime acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_GLAZE_CLARITY=dense python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Reduced Motion runtime acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_REDUCE_MOTION=1 python3 tests/runtime_ui_acceptance.py
+
+      - name: Build 0.1.0 golden artifact candidate
+        run: sh ./scripts/build-deb.sh dist
+
+      - name: Verify reproducible GoreeCloud Care package
+        run: sh ./scripts/verify-reproducible-package.sh ./dist/goreecloud-care_0.1.0_all.deb
+
+      - name: Inspect 0.1.0 golden artifact candidate
+        run: |
+          dpkg-deb -I dist/goreecloud-care_0.1.0_all.deb
+          dpkg-deb -c dist/goreecloud-care_0.1.0_all.deb
+
+      - name: Build immutable accepted dev17 rollback package
+        run: sh ./scripts/build-dev17-rollback-package.sh dist/rollback
+
+      - name: Run installed package lifecycle and Wardveil prequalification
+        run: |
+          sh ./scripts/validate-package-lifecycle.sh \
+            ./dist/goreecloud-care_0.1.0_all.deb \
+            ./dist/rollback/goreecloud-care_0.1.0~dev17_all.deb
+
+      - name: Record 0.1.0 golden artifact provenance
+        run: |
+          cd dist
+          sha256sum goreecloud-care_0.1.0_all.deb | tee SHA256SUMS
+          printf 'source_revision=%s\nworkflow_run_id=%s\nlifecycle=release-candidate\nartifact_version=0.1.0\nstable_promotion_authorized=false\nreproducible_package_verification=passed\ninstalled_lifecycle_prequalification=passed\nwardveil_installed_boundary_prequalification=passed\n' \
+            '${{ github.event.pull_request.head.sha || github.sha }}' \
+            '${{ github.run_id }}' \
+            > SOURCE_REVISION
+          cat SOURCE_REVISION
+
+      - name: Preserve 0.1.0 golden artifact evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: goreecloud-care-0.1.0-golden-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            apps/goreecloud-care/dist/goreecloud-care_0.1.0_all.deb
+            apps/goreecloud-care/dist/SHA256SUMS
+            apps/goreecloud-care/dist/SOURCE_REVISION
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17_all.deb
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17.sha256
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17.SOURCE_REVISION
+          if-no-files-found: error
+          retention-days: 30
+
+  package-reproducibility:
+    name: Package reproducibility (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    steps:
+      - name: Check out exact source revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Verify exact source revision
+        run: |
+          expected='${{ github.event.pull_request.head.sha || github.sha }}'
+          actual="$(git rev-parse HEAD)"
+          printf 'Expected source revision: %s\nActual source revision:   %s\n' "$expected" "$actual"
+          test "$actual" = "$expected"
+
+      - name: Build portable 0.1.0 golden artifact candidate
+        working-directory: apps/goreecloud-care
+        run: |
+          printf 'Build OS: %s\n' '${{ matrix.os }}'
+          dpkg-deb --version | head -n 1
+          sh ./scripts/build-deb.sh dist-portable
+          sha256sum dist-portable/goreecloud-care_0.1.0_all.deb
+
+      - name: Preserve cross-environment candidate
+        uses: actions/upload-artifact@v4
+        with:
+          name: care-0.1.0-golden-repro-${{ matrix.os }}
+          path: apps/goreecloud-care/dist-portable/goreecloud-care_0.1.0_all.deb
+          if-no-files-found: error
+          retention-days: 14
+
+  compare-package-reproducibility:
+    name: Compare cross-environment package reproducibility
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: package-reproducibility
+    steps:
+      - name: Download Ubuntu 22.04 package
+        uses: actions/download-artifact@v4
+        with:
+          name: care-0.1.0-golden-repro-ubuntu-22.04
+          path: cross-env/jammy
+
+      - name: Download Ubuntu 24.04 package
+        uses: actions/download-artifact@v4
+        with:
+          name: care-0.1.0-golden-repro-ubuntu-24.04
+          path: cross-env/noble
+
+      - name: Compare cross-environment package bytes
+        run: |
+          set -eu
+          JAMMY='cross-env/jammy/goreecloud-care_0.1.0_all.deb'
+          NOBLE='cross-env/noble/goreecloud-care_0.1.0_all.deb'
+          JAMMY_SHA=$(sha256sum "$JAMMY" | awk '{print $1}')
+          NOBLE_SHA=$(sha256sum "$NOBLE" | awk '{print $1}')
+          printf 'Ubuntu 22.04 SHA-256: %s\nUbuntu 24.04 SHA-256: %s\n' "$JAMMY_SHA" "$NOBLE_SHA"
+          cmp -s "$JAMMY" "$NOBLE" || {
+            echo 'Cross-environment package reproducibility failed.' >&2
+            exit 1
+          }
+          mkdir -p cross-env/evidence
+          printf '%s  goreecloud-care_0.1.0_all.deb\n' "$JAMMY_SHA" > cross-env/evidence/SHA256SUMS.cross-environment
+          printf 'source_revision=%s\nlifecycle=release-candidate\nartifact_version=0.1.0\nstable_promotion_authorized=false\ncross_environment_reproducibility=passed\nubuntu_22_04_sha256=%s\nubuntu_24_04_sha256=%s\n' \
+            '${{ github.event.pull_request.head.sha || github.sha }}' \
+            "$JAMMY_SHA" "$NOBLE_SHA" \
+            > cross-env/evidence/SOURCE_REVISION.cross-environment
+          cat cross-env/evidence/SOURCE_REVISION.cross-environment
+
+      - name: Preserve cross-environment reproducibility evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: goreecloud-care-0.1.0-golden-cross-environment-${{ github.event.pull_request.head.sha || github.sha }}
+          path: cross-env/evidence/
+          if-no-files-found: error
+          retention-days: 30

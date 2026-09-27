@@ -1,0 +1,25 @@
+# Benefits
+
+- **Predictable:** every deletion category is previewed before cleanup, and scanning never deletes anything.
+- **Least privilege:** normal user maintenance stays unprivileged; only explicitly system-level actions authenticate through PolicyKit.
+- **Truthful:** memory-cache reclaim is described as temporary cache reclaim, not a magical RAM or performance boost.
+- **Private:** no telemetry, advertising, cloud upload, or remote service is required for core maintenance.
+- **Recoverability-aware:** permanent Trash deletion is isolated behind explicit confirmation rather than bundled into routine cleanup.
+- **Native:** integrates with the Linux desktop using GTK, ATK/AT-SPI, and PolicyKit instead of wrapping an unrelated cleaner product.
+- **Accessible:** keyboard traversal, visible focus, HighContrast behavior, large-text adaptation, constrained-window layout, and assistive-technology semantics are treated as acceptance requirements rather than optional polish.
+- **Transparent:** users can see category sizes, item counts, disk headroom, memory availability, and file-cache estimates before deciding what to do.
+- **Actionable without being aggressive:** Care can surface useful maintenance opportunities without turning every finding into an automatic deletion recommendation.
+- **Support-friendly:** dev13 produces a human-readable local maintenance report for troubleshooting without performing maintenance.
+- **Automation-ready:** dev13 emits machine-readable JSON for local scripts and future governed GoreeCloud Manager/Metrics/Notify integrations.
+- **Privacy-safe by default:** generated reports omit candidate file paths, filenames, and raw scan-error strings unless an explicit local review workflow requests path visibility.
+- **Storage-understanding before storage-deletion:** dev14 Maintenance Insights helps identify which stale application-cache groups consume space, where unusually large files exist in standard user folders, and which Downloads are old enough to deserve manual review.
+- **Review-only discovery:** dev14 insights never select, move, quarantine, or delete a finding automatically; users can understand the situation before deciding whether any separate action is appropriate.
+- **Bounded resource use:** the new standard-folder discovery has an explicit 50,000-entry ceiling per refresh and discloses when results are partial, preventing a maintenance review from silently becoming an unlimited home-directory crawl.
+- **Safer path visibility:** file paths remain hidden from default reports but may be shown home-relative inside the explicitly opened local Insights window, improving troubleshooting usefulness without weakening report redaction defaults.
+- **Symlink-resistant inspection:** Maintenance Insights does not follow symlinks while traversing standard user folders, reducing the chance that a local review unexpectedly escapes its intended scope.
+- **Separation of inspection and execution:** the insights engine/window contains no deletion, PolicyKit, privileged-helper, subprocess, or network path, preserving a clear architectural boundary between “understand” and “change.”
+- **Auditable:** fixed cleanup categories, allowlisted privileged actions, exact package versions, tests, Platform Contract evidence, and Development lifecycle labeling make behavior easier to review.
+- **Conservative under failure:** errors remain visible, failed items are not counted as successful deletion, and cancellation is never presented as success.
+- **Low lock-in:** the current application stores no proprietary durable user dataset and its dev13 report format is plain text or JSON.
+- **Extensible:** the maintenance engine, reporting layer, Insights engine, GTK surfaces, and Platform Contract can grow into duplicate discovery, system-health insights, diagnostics, history, and safe guided maintenance without weakening existing deletion boundaries.
+- **Human-centered:** recommendations are intended to explain what can be reclaimed, why it may deserve review, what requires privilege, and what cannot be undone before the user acts.
