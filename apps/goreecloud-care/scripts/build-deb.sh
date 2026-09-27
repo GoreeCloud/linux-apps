@@ -3,8 +3,8 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$ROOT/../.." && pwd)
-VERSION="0.1.0"
-RUNTIME_VERSION="0.1.0"
+VERSION="0.2.0~dev3"
+RUNTIME_VERSION="0.2.0-dev3"
 ARCH="all"
 PKG="goreecloud-care"
 OUT=${1:-"$ROOT/dist"}
@@ -16,9 +16,6 @@ for command_name in git python3 dpkg-deb find touch install mktemp grep chmod; d
   }
 done
 
-# Release/acceptance provenance is bound to one exact committed source revision.
-# The package intentionally refuses tracked dirty source so the embedded identity
-# cannot describe different bytes than the files actually staged into the .deb.
 if ! git -C "$REPO_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   echo "GoreeCloud Care package builds require the authoritative Git checkout." >&2
   exit 2
@@ -38,7 +35,6 @@ require_tracked() {
   }
 }
 
-# Every working-tree file that can enter the package must itself be tracked.
 for packaged_source in \
   "$ROOT/packaging/postinst" \
   "$ROOT/packaging/postrm" \
@@ -66,9 +62,6 @@ printf '%s\n' "$SOURCE_TREE" | grep -Eq '^[0-9a-f]{40}$' || {
   exit 2
 }
 
-# Debian package output must be reproducible for an exact source revision. Use an
-# explicit SOURCE_DATE_EPOCH when supplied; otherwise bind the package timestamp
-# to the exact repository HEAD being built.
 if [ -z "${SOURCE_DATE_EPOCH:-}" ]; then
   SOURCE_DATE_EPOCH=$(git -C "$REPO_ROOT" show -s --format=%ct HEAD)
 fi
@@ -79,10 +72,6 @@ case "$SOURCE_DATE_EPOCH" in
     ;;
 esac
 export SOURCE_DATE_EPOCH
-
-# Keep locale/timezone behavior deterministic and avoid compressor-version drift
-# across the supported Zorin/Ubuntu build boundary. The package is small, so
-# deterministic portability is more important than archive compression here.
 export LC_ALL=C
 export TZ=UTC
 
@@ -131,10 +120,6 @@ chmod 0644 "$STAGE/usr/lib/goreecloud-care/goreecloud_care.pth"
 mkdir -p "$STAGE/usr/lib/python3/dist-packages"
 install -m 0644 "$STAGE/usr/lib/goreecloud-care/goreecloud_care.pth" "$STAGE/usr/lib/python3/dist-packages/goreecloud_care.pth"
 
-# Package-owned build provenance lets installed Care bind later target/runtime
-# acceptance to the exact Git source without relying on the invoking directory,
-# user-writable state, or a retained .deb archive. The package SHA-256 remains an
-# external acceptance property because embedding a package's own hash is circular.
 python3 - "$STAGE/usr/share/goreecloud-care/build-provenance.json" \
   "$SOURCE_REVISION" "$SOURCE_TREE" "$RUNTIME_VERSION" "$VERSION" "$SOURCE_DATE_EPOCH" <<'PY'
 import json
@@ -142,6 +127,7 @@ import sys
 from pathlib import Path
 
 out, revision, tree, runtime_version, package_version, epoch = sys.argv[1:]
+# The package digest is intentionally external: embedding a package's own hash is circular.
 payload = {
     "schema_version": 1,
     "application": "GoreeCloud Care",
@@ -157,15 +143,10 @@ Path(out).write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encod
 PY
 chmod 0644 "$STAGE/usr/share/goreecloud-care/build-provenance.json"
 
-# Caller umask is not part of package identity or the installed trust boundary.
-# mkdir and generated files otherwise inherit it, which can change package bytes
-# and can make the provenance parent directory group-writable on a developer host.
+# Caller umask is not part of package identity. Canonicalize generated/staged modes.
 find "$STAGE" -type d -exec chmod 0755 {} +
-
-# Normalize every staged filesystem timestamp before dpkg-deb sees it. Explicit
-# format 2.0 plus -Znone removes xz/zstd/gzip implementation differences from
-# the byte-for-byte package identity.
+chmod 0644 "$STAGE/DEBIAN/control"
+chmod 0644 "$STAGE/usr/lib/goreecloud-care/goreecloud_care.pth"
 find "$STAGE" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-
 dpkg-deb --root-owner-group --deb-format=2.0 -Znone --build "$STAGE" "$OUT/${PKG}_${VERSION}_${ARCH}.deb" >/dev/null
 printf '%s\n' "$OUT/${PKG}_${VERSION}_${ARCH}.deb"
