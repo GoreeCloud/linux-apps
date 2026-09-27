@@ -145,7 +145,7 @@ out, revision, tree, runtime_version, package_version, epoch = sys.argv[1:]
 payload = {
     "schema_version": 1,
     "application": "GoreeCloud Care",
-    "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+    "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
     "source_revision": revision,
     "source_tree": tree,
     "runtime_version": runtime_version,

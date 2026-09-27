@@ -73,7 +73,7 @@ def build_privacy_status(
         "producer": {
             "adapter_id": "goreecloud-care",
             "product": "GoreeCloud Care",
-            "runtime_authority": "GoreeCloud/goreecloud-zorin-os",
+            "runtime_authority": "GoreeCloud/linux-apps",
             "adapter_contract_version": 1,
         },
         "generated_at": _iso(observed),
@@ -225,7 +225,7 @@ def _valid_build_provenance(payload: dict[str, Any]) -> bool:
     return (
         payload.get("schema_version") == 1
         and payload.get("application") == "GoreeCloud Care"
-        and payload.get("producer") == "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care"
+        and payload.get("producer") == "GoreeCloud/linux-apps/apps/goreecloud-care"
         and payload.get("runtime_version") == __version__
         and payload.get("package_version") == PACKAGE_VERSION
         and isinstance(payload.get("source_revision"), str)
@@ -269,7 +269,7 @@ def _acceptance_matches_build(
     accepted_target = (
         acceptance.get("schema_version") == 1
         and acceptance.get("application") == "GoreeCloud Care"
-        and acceptance.get("producer") == "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care"
+        and acceptance.get("producer") == "GoreeCloud/linux-apps/apps/goreecloud-care"
         and target.get("representative") is True
         and target.get("status") == "passed"
         and "restore_capability" in dimensions

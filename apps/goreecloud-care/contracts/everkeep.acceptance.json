@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "application": "GoreeCloud Care",
-  "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+  "producer": "GoreeCloud/linux-apps/apps/goreecloud-care",
   "status_schema": "contracts/continuity.status.schema.json",
   "authority": {
     "care_owned_target_record": "/var/lib/goreecloud-care/acceptance/representative-target.json",
@@ -48,7 +48,7 @@
       "Exact source revision and Care source tree are embedded in package-owned root-controlled build provenance.",
       "Exact Debian package SHA-256 is recorded externally by representative acceptance and matches the governed Everkeep record.",
       "Exact CI workflow run and retained artifact identity are recorded during release qualification.",
-      "The accepted package is built from the GoreeCloud/goreecloud-zorin-os Care component authority.",
+      "The accepted package is built from the GoreeCloud/linux-apps Care component authority.",
       "Untracked package inputs are rejected so working-tree glob expansion cannot escape the committed source identity."
     ]
   },
