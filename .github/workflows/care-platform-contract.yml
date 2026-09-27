@@ -10,6 +10,11 @@ on:
       - 'apps/goreecloud-care/API.md'
       - 'apps/goreecloud-care/WARDVEIL-INTEGRATION.md'
       - 'apps/goreecloud-care/GLAZE-UI-CONFORMANCE.md'
+      - 'apps/goreecloud-care/GLAZE-UI-V2.2-MIGRATION.md'
+      - 'apps/goreecloud-care/GLAZE-UI-V1.4-MIGRATION.md'
+      - 'apps/goreecloud-care/goreecloud_care/glaze_v22.py'
+      - 'apps/goreecloud-care/goreecloud_care/glaze_v22_global.py'
+      - 'apps/goreecloud-care/tests/test_glaze_v22_contract.py'
       - 'apps/goreecloud-care/RELEASE-ACCEPTANCE.md'
       - 'apps/goreecloud-care/contracts/**'
       - '.github/workflows/care-platform-contract.yml'
@@ -24,6 +29,11 @@ on:
       - 'apps/goreecloud-care/API.md'
       - 'apps/goreecloud-care/WARDVEIL-INTEGRATION.md'
       - 'apps/goreecloud-care/GLAZE-UI-CONFORMANCE.md'
+      - 'apps/goreecloud-care/GLAZE-UI-V2.2-MIGRATION.md'
+      - 'apps/goreecloud-care/GLAZE-UI-V1.4-MIGRATION.md'
+      - 'apps/goreecloud-care/goreecloud_care/glaze_v22.py'
+      - 'apps/goreecloud-care/goreecloud_care/glaze_v22_global.py'
+      - 'apps/goreecloud-care/tests/test_glaze_v22_contract.py'
       - 'apps/goreecloud-care/RELEASE-ACCEPTANCE.md'
       - 'apps/goreecloud-care/contracts/**'
       - '.github/workflows/care-platform-contract.yml'
@@ -33,6 +43,6 @@ permissions:
 
 jobs:
   platform-contract:
-    uses: GoreeCloud/GoreeCloud/.github/workflows/reusable-platform-manifest.yml@c941ce1d8d1eff3c9df994d1e16f83147eadae00
+    uses: GoreeCloud/GoreeCloud/.github/workflows/reusable-platform-manifest.yml@908701c6795ffcd608bd3d8a1e787395a04f1d62
     with:
       manifest-path: apps/goreecloud-care/goreecloud.platform.yaml

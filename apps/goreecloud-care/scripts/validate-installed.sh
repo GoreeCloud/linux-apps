@@ -3,9 +3,9 @@ set -eu
 EXPECTED_PACKAGE_VERSION=${1:-0.1.0}
 EXPECTED_RUNTIME_VERSION=${2:-0.1.0}
 
-for command_name in goreecloud-care dpkg-query mktemp mkdir rm python3; do
+for command_name in goreecloud-care dpkg-query mktemp mkdir rm python3 grep; do
   command -v "$command_name" >/dev/null
- done
+done
 
 installed=$(dpkg-query -W -f='${Status} ${Version}' goreecloud-care)
 [ "$installed" = "install ok installed $EXPECTED_PACKAGE_VERSION" ]
@@ -54,8 +54,8 @@ assert health['network_used'] is False
 assert health['telemetry_used'] is False
 assert health['privileged_action_performed'] is False
 
-# Care's local privacy endpoint remains fail-closed until exact Stable-adapter
-# governance is supplied; the source does not self-promote external approval.
+# Care's local privacy endpoint remains fail-closed until exact candidate
+# governance is supplied; source/installation state cannot self-promote it.
 assert privacy['producer']['adapter_id'] == 'goreecloud-care'
 assert privacy['privacy']['raw_private_activity_included'] is False
 assert privacy['privacy']['contains_credentials'] is False
@@ -144,7 +144,16 @@ grep -F 'Name=GoreeCloud Care' /usr/share/applications/com.goreecloud.care.deskt
 ! grep -F 'Release Candidate' /usr/share/applications/com.goreecloud.care.desktop >/dev/null
 
 grep -F '<name>GoreeCloud Care</name>' /usr/share/metainfo/com.goreecloud.care.metainfo.xml >/dev/null
-grep -F '<release version="0.1.0"' /usr/share/metainfo/com.goreecloud.care.metainfo.xml >/dev/null
+grep -F "<release version=\"$EXPECTED_RUNTIME_VERSION\"" /usr/share/metainfo/com.goreecloud.care.metainfo.xml >/dev/null
+
+if [ "$EXPECTED_RUNTIME_VERSION" = "0.2.0-dev2" ]; then
+  test -f /usr/lib/goreecloud-care/goreecloud_care/glaze_v22.py
+  test -f /usr/lib/goreecloud-care/goreecloud_care/glaze_v22_global.py
+  grep -F 'GLAZE_UI_TARGET_VERSION = "2.2.0"' /usr/lib/goreecloud-care/goreecloud_care/glaze_v22.py >/dev/null
+  grep -F 'GLAZE_UI_SOURCE_REVISION = "6731098b28dd0393faa878c70d989a221d714a20"' /usr/lib/goreecloud-care/goreecloud_care/glaze_v22.py >/dev/null
+  grep -F 'from .glaze_v22_global import install_glaze_v22_global_style' /usr/lib/goreecloud-care/goreecloud_care/__main__.py >/dev/null
+  ! grep -F 'from .glaze_v14_global import' /usr/lib/goreecloud-care/goreecloud_care/__main__.py >/dev/null
+fi
 
 SHADOW_ROOT=$(mktemp -d)
 cleanup() {
@@ -195,4 +204,5 @@ printf '%s\n' "Installed application/helper launchers are isolated from working-
 printf '%s\n' "Installed package-owned exact-source provenance is present and structurally valid."
 printf '%s\n' "Installed Wardveil-compatible privilege-boundary evidence is passing, current, minimized, scoped, and does not self-claim Wardveil governance."
 printf '%s\n' "Canonical GoreeCloud Care desktop/AppStream identity and icon derivative are installed."
+printf '%s\n' "Current Glaze UI 2.2 installed identity is exact when validating the dev2 candidate."
 printf '%s\n' "Continuity remains evidence-derived and cannot become ready without exact governed Everkeep promotion."

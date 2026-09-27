@@ -11,7 +11,7 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Atk, Gio, GLib, Gtk  # noqa: E402
 
 from .core import CareEngine, CategoryScan, human_bytes, read_disk_stats, read_memory_stats
-from .glaze_v13 import layout_environment
+from .glaze_v22 import layout_environment
 from .privilege import interpret_pkexec_result
 from .ui_contract import (
     COMPACT_BORDER,
@@ -56,7 +56,7 @@ class CareWindow(Gtk.ApplicationWindow):
 
         # Chrome Plane: identity plus one transient scan command. The command is
         # the deliberate capsule; ordinary controls use the standard shape role.
-        self.header_subtitle = "Local maintenance • Adaptive Resonance preview"
+        self.header_subtitle = "Local maintenance • Glaze UI 2.2"
         self.header = Gtk.HeaderBar()
         self.header.set_show_close_button(True)
         self.header.props.title = "GoreeCloud Care"

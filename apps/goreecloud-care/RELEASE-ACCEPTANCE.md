@@ -1,6 +1,14 @@
 # GoreeCloud Care Release Acceptance
 
-## Stable decision
+## Current development-line notice
+
+This document is the immutable **Stable `0.1.0` acceptance record**. It does not accept, promote, or authorize the Glaze UI V1.4 `0.2.0-dev1` development line.
+
+The current V1.4 revamp has a distinct runtime/package identity (`0.2.0-dev1` / `0.2.0~dev1`) and must obtain new exact-source qualification, representative Zorin OS acceptance, Glaze UI V1.4 human/native evidence, and applicable Privacy Shield, Wardveil, and Everkeep governance before any Stable claim can transfer.
+
+No `0.2.0` candidate may cite the `0.1.0` package SHA, representative-target handoff, Glaze V1.2 source bridge, or platform-system approvals below as proof that the new candidate itself is accepted.
+
+## Historical Stable decision — 0.1.0
 
 GoreeCloud Care `0.1.0` is promoted through a governance-only Stable reconciliation over the already-qualified immutable release artifact.
 
@@ -135,7 +143,7 @@ Exact Care `0.1.0` is `accepted-v1` under:
 
 The exact-source bridge preserves the predecessor seven-dimensional human/native acceptance only because the RC-to-0.1.0 delta did not change Care's governed Glaze implementation, canonical icon, UI/focus/accessibility contracts, Glaze contract tests, or runtime UI acceptance harness. Lifecycle copy and packaging identity changed and were exercised on the exact target. The bridge explicitly records that no new human findings were fabricated.
 
-The source may retain bounded forward-looking Adaptive Resonance implementation code, but it is not required for or substituted for the accepted V1.2 release contract.
+The V1.4 development line is governed separately in `GLAZE-UI-CONFORMANCE.md` and `GLAZE-UI-V1.4-MIGRATION.md`; no V1.4 acceptance is implied here.
 
 ## Accessibility and physical presentation
 

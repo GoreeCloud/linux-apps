@@ -1,5 +1,37 @@
 # GoreeCloud Care Changelog
 
+## 0.2.0-dev2 — Glaze UI 2.2 current-Stable migration — 2026-09-14
+
+- Advanced the active `0.2.0` development line from `0.2.0-dev1` / Debian `0.2.0~dev1` to `0.2.0-dev2` / `0.2.0~dev2` so the current Glaze UI migration has a new exact artifact identity rather than rewriting qualified V1.4 bytes.
+- Retargeted Care to the current Stable Glaze UI `2.2.0` authority at exact source revision `6731098b28dd0393faa878c70d989a221d714a20` and release tag `v2.2.0`.
+- Preserved the qualified V1.4 implementation as historical migration/regression evidence only; V1.4 can no longer satisfy current GoreeCloud Stable-policy alignment now that Glaze UI 2.2 is the current Stable baseline.
+- Added the native `glaze_v22` adapter and process-level controller while retaining V1.4 window adaptation behavior only as an internal regression foundation, not the active design-system identity.
+- Added explicit Glaze UI 2.2 System Shell mapping for Workspace, Application, System Overlay, non-authoritative application-local System Panel usage, and Critical System confirmation moments.
+- Added a bounded System Glaze budget: at most one dominant Glaze surface, at most three small floating Glaze controls, and no nested backdrop blur.
+- Enforced the current material rule that durable reading/status/findings/consequential surfaces remain solid or near-solid while bounded Glaze is reserved for transient command/navigation/feedback chrome.
+- Scoped Care truthfully as a native Desktop/Wide Desktop product. Compact and Narrow Desktop remain resizable Desktop adaptation states rather than claims of Phone, Tablet, TV, Foldable, Wearable, or Spatial support.
+- Added native 2.2 accessibility equivalents for GTK HighContrast/system palette authority, Reduced Transparency, Reduced Motion, Increased Contrast, Show Borders, effects-reduced behavior, a 48 px governed target floor, and 56 px Touch Assistance targets.
+- Moved the active application entrypoint and main layout resolver to Glaze UI 2.2 and updated visible product identity to `Local maintenance • Glaze UI 2.2`.
+- Rebound runtime, PyProject, Debian, AppStream, installed provenance, Platform Contract manifest, source validator, runtime acceptance, representative Zorin preparation/runtime harnesses, and package lifecycle qualification to the dev2 identity.
+- Expanded CI to exercise current 2.2 runtime contracts plus Dark/Deep Dark contrast, clarity profiles, Reduced Motion, Reduced Transparency, Increased Contrast, Touch Assistance, effects-reduced behavior, GTK HighContrast, AT-SPI, maintenance safety, reproducible packaging, immutable Stable `0.1.0` rollback, installed lifecycle, and Ubuntu 22.04/24.04 byte reproducibility.
+- Kept Privacy Shield, Wardveil, Everkeep, Platform Contract, Glaze consumer acceptance, representative native acceptance, release acceptance, and Stable promotion independently fail-closed for the exact dev2 candidate.
+- Stable `0.1.0` remains immutable historical release evidence with package SHA-256 `819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160` and remains the exact rollback target.
+
+## 0.2.0-dev1 — Glaze UI V1.4 revamp — 2026-09-13
+
+- Started the `0.2.0` development line so the Glaze UI V1.4 revamp has a new source/runtime/package identity and cannot silently replace the immutable Stable `0.1.0` artifact.
+- Runtime identity is `0.2.0-dev1`; Debian package identity is `0.2.0~dev1`.
+- Migrated the active Care UI provider to Glaze UI `1.4.0`, retaining the proven V1.3 expressive/material mapping only as an implementation foundation rather than as the active product identity.
+- Added DPI-aware Compact, Narrow Desktop, Desktop, and Wide Desktop form-factor composition states.
+- Restricted functional-glass treatment to command/navigation chrome and retained stable opaque or near-opaque content and consequential-action surfaces.
+- Moved the main window to the V1.4 layout resolver and replaced stale `Adaptive Resonance preview` product copy with `Glaze UI V1.4` identity.
+- Preserved HighContrast authority, explicit visible focus, 48 px target intent, Reduced Transparency, Reduced Motion, Show Borders, Light, Dark, and Deep Dark behavior.
+- Added V1.4-specific static and runtime contract coverage, including DPI-aware form-factor validation.
+- Fixed a V1.4 lifecycle defect where safety-critical appearance state could lag asynchronous window binding; appearance/accessibility state now resolves before window binding while form-factor geometry remains allocation-driven.
+- Exact-head qualification passed source/unit contracts, headless GTK runtime, safe maintenance task flows, live AT-SPI, Dark/Deep Dark contrast, clarity profiles, Reduced Motion, reproducible packaging, installed lifecycle, Wardveil prequalification, and cross-environment byte reproducibility before the artifact identity split.
+- Stable `0.1.0` remains historical and immutable. Its Glaze UI V1.2, Privacy Shield, Wardveil, Everkeep, package, representative-device, and release acceptance records do not automatically transfer to `0.2.0-dev1`.
+- `0.2.0-dev1` remains Development / Implementation Candidate until exact candidate CI, representative Zorin OS review, V1.4 human/native acceptance, and applicable platform-system governance are complete.
+
 ## Stable 0.1.0 governance promotion — 2026-09-07
 
 - Promoted GoreeCloud Care to the **Stable** lifecycle by governing the already-qualified immutable `0.1.0` release artifact rather than rebuilding or relabeling package bytes.

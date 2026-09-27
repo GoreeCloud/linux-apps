@@ -1,4 +1,4 @@
-schema_version: "0.2"
+schema_version: "0.3"
 
 component:
   type: application
@@ -6,12 +6,12 @@ component:
   product_name: GoreeCloud Care
   repository: GoreeCloud/linux-apps
 
-# Released artifact qualification predecessor: lifecycle: release-candidate
-# Stable lifecycle governs the already-qualified immutable 0.1.0 release artifact
-# from bbc4779454c2887b810aa0ddc9e8a686a4c68ebd; this governance record does
-# not create or publish a replacement Debian package.
-lifecycle: stable
-version: 0.1.0
+# The immutable Stable 0.1.0 release remains governed by RELEASE-ACCEPTANCE.md.
+# The qualified 0.2.0-dev1 / Glaze UI V1.4 candidate remains historical migration
+# and regression evidence. This manifest describes the active Glaze UI 2.2
+# development line and must not inherit acceptance from either earlier identity.
+lifecycle: development
+version: 0.2.0-dev2
 
 supported_platforms:
   - linux
@@ -40,20 +40,20 @@ platform_systems:
     result: not-applicable-justified
     version: null
     evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
-    notes: Stable 0.1.0 is local single-user maintenance with no central, remote, or delegated administration.
+    notes: The current local single-user Care scope has no central, remote, or delegated administration.
   privacy_shield:
-    result: applicable-conformant
+    result: applicable-nonconformant
     version: null
     evidence:
       - PRIVACY.md
       - contracts/privacy-shield.application.json
       - contracts/privacy-shield.adapter.json
       - goreecloud_care/platform_status.py
-      - https://github.com/GoreeCloud/privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
-      - https://github.com/GoreeCloud/privacy-shield/actions/runs/34183154605
-    notes: Privacy Shield accepts exact 0.1.0 release source/tree/package for telemetry-minimization, data-minimization, and privacy-status. Local source evidence intentionally does not self-promote the external governance decision.
+      - RELEASE-ACCEPTANCE.md
+      - https://github.com/GoreeCloud/goreecloud-privacy-shield/issues/104
+    notes: Stable 0.1.0 has historical Privacy Shield acceptance, while the 0.2.0-dev1 V1.4 candidate remains historical migration evidence. The active 0.2.0-dev2 source/package identity requires fresh runtime/production acceptance. Care-local evidence intentionally fails closed and cannot self-promote that external governance decision.
   wardveil_security:
-    result: applicable-conformant
+    result: applicable-nonconformant
     version: null
     evidence:
       - SECURITY.md
@@ -63,10 +63,11 @@ platform_systems:
       - packaging/com.goreecloud.care.policy
       - tests/test_helper.py
       - tests/test_privilege.py
-      - https://github.com/GoreeCloud/wardveil/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
-    notes: Wardveil accepts exact 0.1.0 runtime adoption after representative package and six-check real-desktop PolicyKit acceptance. Protection permission is limited to GoreeCloud Care local-maintenance-privilege-boundary only; cross-service execution authority is false.
+      - RELEASE-ACCEPTANCE.md
+      - https://github.com/GoreeCloud/goreecloud-wardveil/issues/147
+    notes: Stable 0.1.0 has historical scoped Wardveil acceptance. The active 0.2.0-dev2 package must independently prove and obtain governance for the local-maintenance-privilege-boundary before any Wardveil protection claim transfers.
   everkeep:
-    result: applicable-conformant
+    result: applicable-nonconformant
     version: null
     evidence:
       - RECOVERY.md
@@ -76,29 +77,33 @@ platform_systems:
       - goreecloud_care/platform_status.py
       - scripts/validate-package-lifecycle.sh
       - scripts/run-representative-acceptance.sh
-      - https://github.com/GoreeCloud/everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
-    notes: Everkeep accepts exact 0.1.0 restore/rollback readiness; the trusted local record is installed and Care reports ready / everkeep-promoted with no limitations.
+      - https://github.com/GoreeCloud/goreecloud-everkeep/issues/62
+    notes: Historical Stable 0.1.0 recovery readiness and the dev1 V1.4 package lifecycle are exact-build scoped. 0.2.0-dev2 requires new package lifecycle, representative-target, exact package SHA, and separate Everkeep promotion evidence.
   glaze_ui:
-    result: applicable-conformant
-    version: "1.2.0"
+    result: applicable-nonconformant
+    version: "2.2.0"
     evidence:
       - GLAZE-UI-CONFORMANCE.md
+      - GLAZE-UI-V2.2-MIGRATION.md
+      - GLAZE-UI-V1.4-MIGRATION.md
       - BRANDING.md
-      - goreecloud_care/glaze_v12.py
-      - goreecloud_care/glaze_v13.py
-      - tests/test_glaze_v12_contract.py
-      - tests/test_glaze_v13_contract.py
+      - goreecloud_care/glaze_v22.py
+      - goreecloud_care/glaze_v22_global.py
+      - goreecloud_care/glaze_v14.py
+      - tests/test_glaze_v22_contract.py
+      - tests/test_glaze_v14_contract.py
       - tests/test_ui_contract.py
       - tests/test_focus_resilience.py
       - tests/test_accessibility_identity.py
       - tests/runtime_ui_acceptance.py
-      - https://github.com/GoreeCloud/glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
-    notes: GLAZE UI V1.2 / 1.2.0 is the required Stable baseline. Exact Care 0.1.0 is accepted-v1 through the explicit source bridge at c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae; no new human findings are fabricated.
+      - https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/6731098b28dd0393faa878c70d989a221d714a20
+      - https://github.com/GoreeCloud/goreecloud-glaze-ui/issues/212
+    notes: GoreeCloud Care 0.2.0-dev2 targets the current Stable Glaze UI 2.2.0 authority at exact revision 6731098b28dd0393faa878c70d989a221d714a20. V1.4 remains historical migration/regression evidence only and cannot satisfy current Stable-policy alignment. The 2.2 design-system release and automated source evidence do not grant downstream Care conformance; exact representative rendered/native, accessibility, product, and consumer acceptance remain required.
   mesh:
     result: not-applicable-justified
     version: null
     evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
-    notes: Stable 0.1.0 has no cross-application coordination, service discovery, Mesh event transport, or Mesh policy authority.
+    notes: Current Care has no cross-application coordination, service discovery, Mesh event transport, or Mesh policy authority.
     capabilities: []
     dependencies: []
     published_events: []
@@ -107,7 +112,12 @@ platform_systems:
     result: not-applicable-justified
     version: null
     evidence: [SPECIFICATIONS.md, API.md]
-    notes: Stable 0.1.0 has no GoreeCloud account, remote management, multi-user behavior, or delegated administration.
+    notes: Current Care has no GoreeCloud account, remote management, multi-user behavior, or delegated administration.
+  sync:
+    result: not-applicable-justified
+    version: null
+    evidence: [SPECIFICATIONS.md, API.md, PRIVACY.md]
+    notes: Current Care owns no cross-device synchronized dataset or remote state. Maintenance scans, reports, and status are local-first and device-scoped.
 
 health:
   health_endpoint: local-cli://goreecloud-care/health
@@ -121,7 +131,8 @@ continuity:
   restore:
     required: true
     requirements:
-      - Exact 0.1.0 install, remove/reinstall, accepted dev17 downgrade, restore, final installed validation, provenance, and representative-target handoff passed on Zorin OS 17.3.
+      - The exact 0.2.0-dev2 / 0.2.0~dev2 candidate must pass install, remove/reinstall, downgrade, restore, final installed validation, provenance, and representative-target handoff before release promotion.
+      - Historical Stable 0.1.0 recovery evidence and dev1 qualification remain audit/rollback context and do not accept the new candidate.
       - Permanent Trash deletion is irreversible maintenance behavior and is not represented as recoverable application data.
   export:
     required: false
@@ -152,9 +163,9 @@ external_dependencies:
     version_constraint: null
 
 compatibility:
-  platform_contract: "0.2"
-  glaze_ui_required: "1.2.0"
-  requires: [goreecloud-platform-contract==0.2, glaze-ui==1.2.0]
+  platform_contract: "0.3"
+  glaze_ui_required: "2.2.0"
+  requires: [goreecloud-platform-contract==0.3, glaze-ui==2.2.0]
   provides:
     - goreecloud-care-local-maintenance
     - goreecloud-care-read-only-maintenance-report
@@ -163,6 +174,8 @@ compatibility:
 
 evidence:
   acceptance_tests:
+    # Historical Stable 0.1.0 evidence remains here for provenance only. These
+    # records do not grant acceptance to the active 0.2.0-dev2 candidate.
     - id: care-0.1.0-api
       category: api
       path: apps/goreecloud-care/API.md
@@ -171,27 +184,27 @@ evidence:
       observed_at: "2026-09-08T02:48:15Z"
     - id: care-0.1.0-accessibility
       category: accessibility
-      path: https://github.com/GoreeCloud/glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      path: https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
       revision: c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
       result: passed
       observed_at: "2026-09-08T04:07:01Z"
-      notes: Exact-source V1.2 bridge preserves the accepted seven-dimensional human/native review across unchanged governed presentation behavior.
+      notes: Historical exact-source V1.2 bridge for Stable 0.1.0 only.
     - id: care-0.1.0-supported-platform
       category: supported-platform
       path: apps/goreecloud-care/scripts/run-representative-acceptance.sh
       revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
       result: passed
       observed_at: "2026-09-08T03:58:15Z"
-      notes: Representative Zorin OS 17.3 exact package acceptance passed with 143 local tests and complete package lifecycle.
+      notes: Historical representative Zorin OS 17.3 exact 0.1.0 package acceptance.
     - id: care-0.1.0-security
       category: security
-      path: https://github.com/GoreeCloud/wardveil/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      path: https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
       revision: e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
       result: passed
       observed_at: "2026-09-08T04:07:38Z"
     - id: care-0.1.0-privacy
       category: privacy
-      path: https://github.com/GoreeCloud/privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
+      path: https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
       revision: 0af47f4817191541e1ea12928cff5c3458baf377
       result: passed
       observed_at: "2026-09-08T03:20:24Z"
@@ -204,7 +217,7 @@ evidence:
       notes: Care owns no substantial durable user dataset; package/recovery continuity is governed through Everkeep.
     - id: care-0.1.0-restore
       category: restore
-      path: https://github.com/GoreeCloud/everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
+      path: https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
       revision: 4586246aad87a4038c7f8984de809d32333f2599
       result: passed
       observed_at: "2026-09-08T03:58:15Z"
@@ -232,7 +245,7 @@ evidence:
       revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
       result: passed
       observed_at: "2026-09-08T02:48:15Z"
-      notes: Exact 0.1.0 golden artifact passed qualification and retained controlled artifact publication.
+      notes: Exact 0.1.0 golden artifact qualification retained as historical evidence only.
   release:
     - id: goreecloud-care-0.1.0-controlled-artifact
       version: 0.1.0
@@ -241,16 +254,24 @@ evidence:
       result: published
       observed_at: "2026-09-08T02:48:15Z"
       artifact_digest: 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
-      notes: Controlled published release artifact is the retained goreecloud-care_0.1.0_all.deb from artifact 10038827656. Stable governance promotes these already-qualified bytes; no replacement package is created here.
+      notes: Immutable historical Stable 0.1.0 release artifact. It is not replaced by the 0.2.0 development line.
 
 conformance:
-  status: conformant
-  validated_at: "2026-09-08T04:07:38Z"
+  status: nonconformant
+  validated_at: null
   evidence:
-    - bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-    - 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
-    - 0af47f4817191541e1ea12928cff5c3458baf377
-    - 4586246aad87a4038c7f8984de809d32333f2599
-    - e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
-    - c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
-  blockers: []
+    - apps/goreecloud-care/GLAZE-UI-CONFORMANCE.md
+    - apps/goreecloud-care/GLAZE-UI-V2.2-MIGRATION.md
+    - apps/goreecloud-care/GLAZE-UI-V1.4-MIGRATION.md
+    - apps/goreecloud-care/goreecloud_care/glaze_v22.py
+    - apps/goreecloud-care/goreecloud_care/glaze_v22_global.py
+    - apps/goreecloud-care/tests/test_glaze_v22_contract.py
+  blockers:
+    - Exact 0.2.0-dev2 automated qualification must pass for the new source/package identity.
+    - Glaze UI 2.2 representative rendered/native and accessibility acceptance is required on Zorin OS 17.3 for the exact candidate.
+    - Glaze UI authority must explicitly accept the exact 2.2 consumer candidate before current design-system conformance can be claimed.
+    - Privacy Shield must independently accept the exact 0.2.0-dev2 candidate before production privacy status can be claimed.
+    - Wardveil must independently govern the exact 0.2.0-dev2 privilege-boundary evidence before protection permission can transfer.
+    - Everkeep must independently accept exact 0.2.0-dev2 restore/rollback evidence before continuity can become ready.
+    - Platform Contract authority must explicitly determine conformant/promotable status for the exact dev2 identity.
+    - Stable promotion requires a later exact release candidate and cannot be inferred from historical 0.1.0 or dev1 acceptance.
