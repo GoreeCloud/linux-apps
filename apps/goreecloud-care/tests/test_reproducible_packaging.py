@@ -50,12 +50,12 @@ class ReproduciblePackagingContractTests(unittest.TestCase):
         self.assertIn("embedding a package's own hash is circular", BUILD)
 
     def test_artifact_package_identity_is_exact(self):
-        self.assertIn('VERSION="0.1.0"', BUILD)
-        self.assertIn('RUNTIME_VERSION="0.1.0"', BUILD)
+        self.assertIn('VERSION="0.2.0~dev2"', BUILD)
+        self.assertIn('RUNTIME_VERSION="0.2.0-dev2"', BUILD)
         self.assertIn('packaging/com.goreecloud.care.desktop', BUILD)
         self.assertIn('packaging/com.goreecloud.care.metainfo.xml', BUILD)
-        self.assertIn('PACKAGE_NAME="goreecloud-care_0.1.0_all.deb"', VERIFY)
-        self.assertNotIn('goreecloud-care_0.1.0~dev22_all.deb', VERIFY)
+        self.assertIn('PACKAGE_NAME="goreecloud-care_0.2.0~dev2_all.deb"', VERIFY)
+        self.assertNotIn('PACKAGE_NAME="goreecloud-care_0.1.0_all.deb"', VERIFY)
 
     def test_verifier_compares_independent_build_to_reference(self):
         self.assertIn('SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" sh "$ROOT/scripts/build-deb.sh"', VERIFY)
@@ -70,12 +70,13 @@ class ReproduciblePackagingContractTests(unittest.TestCase):
         self.assertIn('Umask independence: passed (0022 == 0002)', VERIFY)
 
     def test_ci_runs_same_environment_reproducibility_gate(self):
-        self.assertIn('name: GoreeCloud Care 0.1.0 Stable Artifact Qualification', WORKFLOW)
-        self.assertIn('goreecloud-care_0.1.0_all.deb', WORKFLOW)
-        self.assertIn('lifecycle=release-candidate', WORKFLOW)
-        self.assertIn('artifact_version=0.1.0', WORKFLOW)
+        self.assertIn('name: GoreeCloud Care 0.2.0-dev2 Glaze UI 2.2 Qualification', WORKFLOW)
+        self.assertIn('goreecloud-care_0.2.0~dev2_all.deb', WORKFLOW)
+        self.assertIn('lifecycle=development', WORKFLOW)
+        self.assertIn('package_version=0.2.0~dev2', WORKFLOW)
+        self.assertIn('glaze_ui_target=2.2.0', WORKFLOW)
         self.assertIn('stable_promotion_authorized=false', WORKFLOW)
-        self.assertIn('Verify reproducible GoreeCloud Care package', WORKFLOW)
+        self.assertIn('Verify reproducible GoreeCloud Care candidate', WORKFLOW)
 
     def test_ci_compares_jammy_and_noble_package_bytes(self):
         self.assertIn('ubuntu-22.04', WORKFLOW)

@@ -21,6 +21,8 @@ NOW = datetime(2026, 9, 6, 18, 30, tzinfo=timezone.utc)
 SOURCE_REVISION = "a" * 40
 SOURCE_TREE = "b" * 40
 PACKAGE_SHA256 = "c" * 64
+RUNTIME_VERSION = "0.2.0-dev2"
+PACKAGE_VERSION = "0.2.0~dev2"
 
 
 class PlatformStatusTests(unittest.TestCase):
@@ -28,6 +30,7 @@ class PlatformStatusTests(unittest.TestCase):
         payload = build_health_status(NOW)
         self.assertEqual(payload["schema_version"], API_VERSION)
         self.assertEqual(payload["product"], "GoreeCloud Care")
+        self.assertEqual(payload["version"], RUNTIME_VERSION)
         self.assertEqual(payload["state"], "ready")
         self.assertTrue(payload["local_only"])
         self.assertFalse(payload["network_used"])
@@ -178,8 +181,8 @@ class PlatformStatusTests(unittest.TestCase):
             "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
             "source_revision": SOURCE_REVISION,
             "source_tree": SOURCE_TREE,
-            "runtime_version": "0.1.0",
-            "package_version": "0.1.0",
+            "runtime_version": RUNTIME_VERSION,
+            "package_version": PACKAGE_VERSION,
             "source_date_epoch": 1_788_800_000,
             "package_sha256_embedded": False,
         }
@@ -198,8 +201,8 @@ class PlatformStatusTests(unittest.TestCase):
             "candidate": {
                 "source_revision": source_revision,
                 "source_tree": SOURCE_TREE,
-                "runtime_version": "0.1.0",
-                "package_version": "0.1.0",
+                "runtime_version": RUNTIME_VERSION,
+                "package_version": PACKAGE_VERSION,
                 "package_sha256": package_sha256,
             },
             "target": {
@@ -214,7 +217,7 @@ class PlatformStatusTests(unittest.TestCase):
                 "provenance",
             ],
             "evidence": {
-                "local_tests": 143,
+                "local_tests": 1,
                 "source_validation": "passed",
                 "package_lifecycle": "passed",
                 "references": ["representative acceptance fixture"],
@@ -224,7 +227,7 @@ class PlatformStatusTests(unittest.TestCase):
                 "exact_revision_accepted": True,
                 "everkeep_integration_promoted": promoted,
                 "everkeep_ready_promoted": promoted,
-                "freshness_rule": "Exact 0.1.0 source, source tree, package version, package SHA-256, and target only.",
+                "freshness_rule": "Exact 0.2.0-dev2 source, source tree, package version, package SHA-256, and target only.",
             },
         }
 
