@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "project": "GoreeCloud Care",
+  "repository": "GoreeCloud/goreecloud-zorin-os",
+  "role": "producer",
+  "dimensions": [
+    "restore_capability",
+    "migration",
+    "documentation",
+    "provenance"
+  ],
+  "read_only": true,
+  "fail_closed": true,
+  "status_schema": "contracts/continuity.status.schema.json",
+  "authoritative_sources": [
+    "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care/scripts/build-deb.sh",
+    "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care/CHANGELOG.md",
+    "representative-device package lifecycle evidence"
+  ],
+  "notes": "Care persists no substantial application-owned user dataset. Everkeep adoption therefore focuses on package restore/rollback, migration, documentation, and exact-source provenance. A passing source build is not equivalent to verified target-device rollback."
+}
