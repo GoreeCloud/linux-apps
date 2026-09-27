@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "application": "GoreeCloud Care",
+  "producer": "GoreeCloud/goreecloud-zorin-os/apps/goreecloud-care",
+  "status_schema": "contracts/continuity.status.schema.json",
+  "authority": {
+    "care_owned_target_record": "/var/lib/goreecloud-care/acceptance/representative-target.json",
+    "everkeep_governance_record": "/var/lib/goreecloud/everkeep/acceptance/goreecloud-care.target-runtime.json",
+    "care_may_promote_everkeep": false,
+    "ready_requires_exact_match_between_records": true,
+    "trusted_record_permissions": "Regular root-owned files whose immediate parent directories are root-owned and neither file nor parent is group/other writable."
+  },
+  "freshness": {
+    "required_for_ready": true,
+    "rule": "Ready evidence is valid only for the exact immutable Care candidate source revision, Care source tree, package version, exact package SHA-256, and representative target it names. Any source, package, recovery-script, dependency, or target-environment change invalidates prior ready evidence until lifecycle acceptance and governed promotion are repeated."
+  },
+  "failure_behavior": {
+    "producer_unavailable": "unknown",
+    "malformed_evidence": "attention",
+    "missing_required_evidence": "attention",
+    "failed_restore_validation": "attention",
+    "untrusted_permissions": "attention",
+    "source_mismatch": "attention",
+    "package_mismatch": "attention",
+    "summary_rule": "The Care continuity summary must never be more favorable than any required exact-candidate restore-capability evidence. Missing, failed, stale, mismatched, malformed, writable, or otherwise untrusted lifecycle/governance evidence blocks ready."
+  },
+  "required_ready_evidence": {
+    "restore_capability": [
+      "Exact candidate Debian package installs and passes scripts/validate-installed.sh on the representative supported target.",
+      "Candidate removal succeeds and package-owned executable, helper, policy, desktop, icon, metadata, exact-source provenance file, and package-owned provenance directory are absent afterward.",
+      "Exact candidate reinstalls and passes installed validation.",
+      "A retained previous Development package can be installed with an explicit downgrade and the previous runtime/report path remains functional.",
+      "The exact candidate can be restored after downgrade and passes installed validation again.",
+      "Final installed state matches the exact candidate package version and package-owned source revision/source tree.",
+      "Care-owned representative-target evidence records the exact candidate package SHA-256 but leaves both Everkeep promotion flags false.",
+      "A separate Everkeep-owned governance record matches the Care target record source identity and exact package SHA-256 and explicitly promotes both integration and readiness."
+    ],
+    "migration": [
+      "Upgrade and downgrade behavior is exercised for the exact candidate against a retained prior Development package.",
+      "Care continues to persist no substantial application-owned user dataset requiring a separate data migration."
+    ],
+    "documentation": [
+      "RECOVERY.md documents irreversible maintenance boundaries and package rollback behavior.",
+      "RELEASE-ACCEPTANCE.md records the exact-candidate recovery, provenance, governance, and rollback qualification gate.",
+      "contracts/continuity.status.schema.json validates the machine-readable continuity-state boundary."
+    ],
+    "provenance": [
+      "Exact source revision and Care source tree are embedded in package-owned root-controlled build provenance.",
+      "Exact Debian package SHA-256 is recorded externally by representative acceptance and matches the governed Everkeep record.",
+      "Exact CI workflow run and retained artifact identity are recorded during release qualification.",
+      "The accepted package is built from the GoreeCloud/goreecloud-zorin-os Care component authority.",
+      "Untracked package inputs are rejected so working-tree glob expansion cannot escape the committed source identity."
+    ]
+  },
+  "sensitive_evidence": {
+    "forbidden": [
+      "passwords",
+      "tokens",
+      "authentication tokens",
+      "private keys",
+      "recovery codes",
+      "secret values",
+      "PolicyKit authentication material",
+      "raw private file contents",
+      "unredacted home-directory inventory",
+      "reusable credentials"
+    ]
+  },
+  "acceptance": {
+    "everkeep_integrated": false,
+    "everkeep_ready": false,
+    "target_runtime_acceptance_required": true,
+    "exact_revision_acceptance_required": true,
+    "separate_everkeep_governance_required": true
+  }
+}

@@ -1,0 +1,16 @@
+# Generated build and package output
+build/
+dist/
+**/dist/
+**/dist-*/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local editor / OS state
+.DS_Store
+Thumbs.db
+*.swp
+*~
