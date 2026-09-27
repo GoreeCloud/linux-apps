@@ -20,14 +20,16 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk  # noqa: E402
 
 from goreecloud_care.app import CareWindow
-from goreecloud_care.glaze_v13 import (
+from goreecloud_care.glaze_v14 import (
     CSS,
+    GLAZE_UI_ADOPTION_STATE,
     GLAZE_UI_CONSUMER_ELIGIBLE,
     GLAZE_UI_LIFECYCLE,
-    GLAZE_UI_STABLE_BASELINE,
+    GLAZE_UI_PREVIOUS_BASELINE,
     GLAZE_UI_TARGET_VERSION,
+    native_form_factor_for_window_width,
 )
-from goreecloud_care.glaze_v13_global import install_glaze_v13_global_style
+from goreecloud_care.glaze_v14_global import install_glaze_v14_global_style
 from goreecloud_care.insights import CacheGroupInsight, FileInsight, InsightsSnapshot
 import goreecloud_care.insights_window as insights_window
 
@@ -117,6 +119,22 @@ def test_core_status_accessible_mutation_and_layout(app: Gtk.Application) -> Non
     window.destroy()
 
 
+def test_v14_form_factor_runtime_contract() -> None:
+    # GDK_DPI_SCALE=2 is set for this acceptance probe. Care's responsive
+    # composition remains application-owned behavior beneath V1.4.1 Optical
+    # Intelligence, and must continue to use effective rather than raw width.
+    assert native_form_factor_for_window_width(480) == "compact"
+    assert native_form_factor_for_window_width(1800) == "narrow-desktop"
+    assert native_form_factor_for_window_width(2200) == "desktop"
+    assert native_form_factor_for_window_width(2600) == "wide-desktop"
+    css = CSS.decode("utf-8")
+    assert "window.glaze-v14.form-factor-compact" in css
+    assert "window.glaze-v14.form-factor-narrow-desktop" in css
+    assert "window.glaze-v14.form-factor-desktop" in css
+    assert "window.glaze-v14.form-factor-wide-desktop" in css
+    print("Glaze UI V1.4.1 DPI-aware responsive runtime contract: passed")
+
+
 def test_dark_headerbar_runtime_contrast(app: Gtk.Application) -> None:
     appearance = os.environ.get("GOREECLOUD_CARE_APPEARANCE", "").strip().lower()
     if appearance not in {"dark", "deep-dark"}:
@@ -136,9 +154,9 @@ def test_dark_headerbar_runtime_contrast(app: Gtk.Application) -> None:
         state = context.get_state()
         foreground = context.get_color(state)
         background = context.get_background_color(state)
-        # Dev22 deliberately makes Dark/Deep Dark HeaderBar button surfaces
-        # opaque. If the cascade falls back to a transparent/light theme surface,
-        # fail instead of treating source CSS as sufficient evidence.
+        # Dark/Deep Dark HeaderBar button surfaces are deliberately opaque. If
+        # the cascade falls back to a transparent/light theme surface, fail
+        # instead of treating source CSS as sufficient evidence.
         assert background.alpha >= 0.95, (
             f"{appearance} HeaderBar button background alpha is {background.alpha:.3f}"
         )
@@ -198,15 +216,12 @@ def test_reduced_motion_runtime_contract(app: Gtk.Application) -> None:
         return
 
     # Care currently owns no timed animation or transition. Reduced Motion also
-    # suppresses the only application-owned expressive hover/elevation effect.
+    # suppresses the application-owned expressive hover/elevation effects.
     # This makes the gate deterministic instead of relying on a screenshot.
     css = CSS.decode("utf-8")
     assert "transition:" not in css
     assert "animation:" not in css
-    assert (
-        "window.care-shell.reduced-motion button:hover,\n"
-        "window.care-shell.reduced-motion .hero-surface { box-shadow: none; }"
-    ) in css
+    assert "window.glaze-v14.reduced-motion .hero-surface" in css
 
     window = CareWindow(app)
     window.show_all()
@@ -284,22 +299,24 @@ def main() -> int:
     if not ok:
         raise SystemExit("GTK could not initialize; run this probe under Xvfb or a desktop session")
 
-    glaze = install_glaze_v13_global_style()
-    assert GLAZE_UI_TARGET_VERSION == "1.3.0-candidate"
-    assert GLAZE_UI_LIFECYCLE == "proposed"
-    assert GLAZE_UI_STABLE_BASELINE == "1.2.0"
+    glaze = install_glaze_v14_global_style()
+    assert GLAZE_UI_TARGET_VERSION == "1.4.1"
+    assert GLAZE_UI_LIFECYCLE == "official-stable-adoption"
+    assert GLAZE_UI_ADOPTION_STATE == "development"
+    assert GLAZE_UI_PREVIOUS_BASELINE == "1.4.0"
     assert not GLAZE_UI_CONSUMER_ELIGIBLE
-    assert glaze.provider_attached, "Proposed GLAZE UI V1.3 provider was not attached"
+    assert glaze.provider_attached, "GLAZE UI V1.4.1 provider was not attached"
 
     app = make_app()
     test_core_status_accessible_mutation_and_layout(app)
+    test_v14_form_factor_runtime_contract()
     test_dark_headerbar_runtime_contrast(app)
     test_clarity_runtime_geometry(app)
     test_reduced_motion_runtime_contract(app)
     test_insights_focus_resize_and_rendering(app)
     print(
         "Headless GTK runtime acceptance probe: passed "
-        "(Proposed GLAZE UI V1.3 Adaptive Resonance Development mapping; V1.2 Stable baseline retained)"
+        "(GLAZE UI V1.4.1 Optical Intelligence adoption; application acceptance remains evidence-bound)"
     )
     return 0
 

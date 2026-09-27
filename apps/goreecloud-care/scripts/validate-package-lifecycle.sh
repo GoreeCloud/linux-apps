@@ -42,34 +42,29 @@ dpkg --compare-versions "$previous_version" lt "$candidate_version" || {
 candidate_runtime=$(printf '%s' "$candidate_version" | sed 's/~/-/')
 previous_runtime=$(printf '%s' "$previous_version" | sed 's/~/-/')
 
-case "$candidate_version" in
-  0.1.0) ;;
-  *) echo "This lifecycle qualification probe expects golden artifact candidate 0.1.0; got $candidate_version" >&2; exit 2 ;;
-esac
-
-# The accepted historical dev17 package predates dev19's isolated launcher.
-# Validate that historical rollback from a clean neutral directory, while the
-# 0.1.0 candidate retains the dev19+ source/working-directory isolation gate.
-PREVIOUS_PROBE_DIR=$(mktemp -d)
-cleanup() {
-  rm -rf "$PREVIOUS_PROBE_DIR"
+[ "$candidate_version" = "0.2.0~dev3" ] || {
+  echo "This lifecycle qualification probe expects 0.2.0~dev3; got $candidate_version" >&2
+  exit 2
 }
+[ "$previous_version" = "0.1.0" ] || {
+  echo "The 0.2.0 development line must roll back to immutable Stable 0.1.0; got $previous_version" >&2
+  exit 2
+}
+
+PREVIOUS_PROBE_DIR=$(mktemp -d)
+cleanup() { rm -rf "$PREVIOUS_PROBE_DIR"; }
 trap cleanup EXIT INT TERM
 
 printf '%s\n' "Package lifecycle qualification will temporarily remove and downgrade GoreeCloud Care."
-printf '%s\n' "0.1.0 golden artifact candidate: $candidate_version"
-printf '%s\n' "Rollback package: $previous_version"
+printf '%s\n' "V1.4 Optical Intelligence development candidate: $candidate_version"
+printf '%s\n' "Stable rollback package: $previous_version"
 printf '%s\n' "Representative user: $(id -un) (uid $(id -u))"
-printf '%s\n' "0.1.0 candidate checks deliberately exercise source/working-directory shadow resistance inherited from dev19 hardening."
-printf '%s\n' "The immutable historical rollback package is validated from a clean neutral directory because dev17 predates that isolation contract."
+printf '%s\n' "Both candidate and Stable rollback launchers are validated from clean/controlled runtime directories."
 printf '%s\n' "No Care-owned user data is expected to be removed; this script does not invoke Care cleanup actions."
 printf '%s\n' "Administrator authentication may be requested by apt."
 
 install_package() {
   package_path=$1
-  # Exact-candidate acceptance is package-byte scoped. --reinstall prevents APT
-  # from treating different local bytes with the same Debian version as already
-  # satisfied and leaving stale package provenance installed.
   sudo apt install -y --reinstall --allow-downgrades "$package_path"
 }
 
@@ -86,16 +81,16 @@ assert_version_from() {
   [ "$actual_runtime" = "$expected_runtime" ] || {
     echo "Installed runtime mismatch: package=$expected_package expected_runtime=$expected_runtime actual_runtime=$actual_runtime" >&2
     echo "Runtime probe directory: $runtime_dir" >&2
-    echo "For the 0.1.0 candidate this may indicate working-directory/PYTHONPATH shadowing or stale installed bytecode." >&2
+    echo "This may indicate working-directory/PYTHONPATH shadowing or stale installed bytecode." >&2
     exit 1
   }
 }
 
-printf '%s\n' "[1/6] Install/upgrade 0.1.0 candidate"
+printf '%s\n' "[1/6] Install/upgrade 0.2.0~dev3 candidate"
 install_package "$CANDIDATE"
 sh "$ROOT/scripts/validate-installed.sh" "$candidate_version" "$candidate_runtime"
 
-printf '%s\n' "[2/6] Remove 0.1.0 candidate"
+printf '%s\n' "[2/6] Remove 0.2.0~dev3 candidate"
 sudo apt remove -y goreecloud-care
 if dpkg-query -W -f='${Status}' goreecloud-care 2>/dev/null | grep -qx 'install ok installed'; then
   echo "Package still installed after removal" >&2
@@ -120,20 +115,20 @@ done
   exit 1
 }
 
-printf '%s\n' "[3/6] Reinstall 0.1.0 candidate as a fresh package state"
+printf '%s\n' "[3/6] Reinstall 0.2.0~dev3 candidate as a fresh package state"
 install_package "$CANDIDATE"
 sh "$ROOT/scripts/validate-installed.sh" "$candidate_version" "$candidate_runtime"
 
-printf '%s\n' "[4/6] Downgrade to immutable accepted Development rollback package"
+printf '%s\n' "[4/6] Downgrade to immutable Stable 0.1.0"
 install_package "$PREVIOUS"
 assert_version_from "$previous_version" "$previous_runtime" "$PREVIOUS_PROBE_DIR"
 (cd "$PREVIOUS_PROBE_DIR" && goreecloud-care --report-json >/dev/null)
 
-printf '%s\n' "[5/6] Restore 0.1.0 candidate after downgrade"
+printf '%s\n' "[5/6] Restore 0.2.0~dev3 candidate after Stable rollback"
 install_package "$CANDIDATE"
 sh "$ROOT/scripts/validate-installed.sh" "$candidate_version" "$candidate_runtime"
 
-printf '%s\n' "[6/6] Final 0.1.0 candidate package state"
+printf '%s\n' "[6/6] Final 0.2.0~dev3 candidate package state"
 assert_version_from "$candidate_version" "$candidate_runtime" "$ROOT"
-printf '%s\n' "Representative package install/remove/reinstall/downgrade/rollback acceptance: passed"
-printf '%s\n' "The 0.1.0 golden artifact candidate is installed at the end of the probe; no Care cleanup action was invoked."
+printf '%s\n' "Representative package install/remove/reinstall/stable-downgrade/restore acceptance: passed"
+printf '%s\n' "The 0.2.0~dev3 candidate is installed at the end of the probe; no Care cleanup action was invoked."

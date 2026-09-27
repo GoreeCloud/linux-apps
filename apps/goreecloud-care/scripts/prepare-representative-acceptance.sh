@@ -4,8 +4,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$ROOT/../.." && pwd)
 OUT=${1:-"$ROOT/dist/representative-acceptance"}
-EXPECTED_RUNTIME_VERSION="0.1.0"
-EXPECTED_PACKAGE_VERSION="0.1.0"
+EXPECTED_RUNTIME_VERSION="0.2.0-dev1"
+EXPECTED_PACKAGE_VERSION="0.2.0~dev1"
 EXPECTED_PACKAGE="$ROOT/dist/goreecloud-care_${EXPECTED_PACKAGE_VERSION}_all.deb"
 
 for command_name in git python3 sha256sum dpkg-deb tee awk rm mktemp grep; do
@@ -15,9 +15,9 @@ for command_name in git python3 sha256sum dpkg-deb tee awk rm mktemp grep; do
   }
 done
 
-TRACKED_CHANGES=$(git -C "$REPO_ROOT" status --porcelain --untracked-files=no)
+TRACKED_CHANGES=$(git -C "$REPO_ROOT" status --porcelain --untracked-files=no -- apps/goreecloud-care .github/workflows/care-ci.yml)
 [ -z "$TRACKED_CHANGES" ] || {
-  echo "Tracked working-tree changes are present. Commit/stash them before preparing exact-source acceptance evidence." >&2
+  echo "Tracked Care/CI changes are present. Commit/stash them before preparing exact-source V1.4 acceptance evidence." >&2
   printf '%s\n' "$TRACKED_CHANGES" >&2
   exit 2
 }
@@ -26,15 +26,19 @@ SOURCE_REVISION=$(git -C "$REPO_ROOT" rev-parse HEAD)
 SOURCE_BRANCH=$(git -C "$REPO_ROOT" symbolic-ref --quiet --short HEAD 2>/dev/null || printf '%s' detached)
 RUNTIME_VERSION=$(PYTHONPATH="$ROOT" python3 -c 'from goreecloud_care import __version__; print(__version__)')
 [ "$RUNTIME_VERSION" = "$EXPECTED_RUNTIME_VERSION" ] || {
-  echo "Representative 0.1.0 artifact qualification harness expects runtime $EXPECTED_RUNTIME_VERSION; got $RUNTIME_VERSION" >&2
+  echo "Representative V1.4 harness expects runtime $EXPECTED_RUNTIME_VERSION; got $RUNTIME_VERSION" >&2
   exit 2
 }
-grep -F 'lifecycle: release-candidate' "$ROOT/goreecloud.platform.yaml" >/dev/null || {
-  echo "Representative 0.1.0 artifact preparation requires lifecycle: release-candidate." >&2
+grep -Fx 'lifecycle: development' "$ROOT/goreecloud.platform.yaml" >/dev/null || {
+  echo "Representative 0.2.0-dev1 preparation requires lifecycle: development." >&2
   exit 2
 }
 grep -F 'status: nonconformant' "$ROOT/goreecloud.platform.yaml" >/dev/null || {
-  echo "0.1.0 artifact qualification must remain fail-closed until governed Stable promotion." >&2
+  echo "0.2.0-dev1 must remain nonconformant until exact V1.4 and platform acceptance is promoted." >&2
+  exit 2
+}
+grep -F 'glaze_ui_required: "1.4.0"' "$ROOT/goreecloud.platform.yaml" >/dev/null || {
+  echo "Representative acceptance requires the Glaze UI 1.4.0 compatibility contract." >&2
   exit 2
 }
 
@@ -46,7 +50,7 @@ trap cleanup EXIT INT TERM
 
 mkdir -p "$OUT"
 
-printf '%s\n' "Preparing read-only/non-destructive 0.1.0 golden artifact representative acceptance evidence."
+printf '%s\n' "Preparing read-only/non-destructive 0.2.0-dev1 Glaze UI V1.4 representative acceptance evidence."
 printf '%s\n' "Source revision: $SOURCE_REVISION"
 printf '%s\n' "Source branch:   $SOURCE_BRANCH"
 printf '%s\n' "Runtime version: $RUNTIME_VERSION"
@@ -72,7 +76,7 @@ PACKAGE=$EXPECTED_PACKAGE
 }
 PACKAGE_VERSION=$(dpkg-deb -f "$PACKAGE" Version)
 [ "$PACKAGE_VERSION" = "$EXPECTED_PACKAGE_VERSION" ] || {
-  echo "Representative 0.1.0 artifact harness expects package $EXPECTED_PACKAGE_VERSION; got $PACKAGE_VERSION" >&2
+  echo "Representative V1.4 harness expects package $EXPECTED_PACKAGE_VERSION; got $PACKAGE_VERSION" >&2
   exit 2
 }
 sha256sum "$PACKAGE" > "$OUT/package.sha256"
@@ -81,12 +85,13 @@ PACKAGE_SHA256=$(awk '{print $1}' "$OUT/package.sha256")
 cat > "$OUT/SOURCE_REVISION" <<EOF
 source_revision=$SOURCE_REVISION
 source_branch=$SOURCE_BRANCH
-lifecycle=release-candidate
-artifact_version=0.1.0
-stable_promotion_authorized=false
+lifecycle=development
 runtime_version=$RUNTIME_VERSION
 package_version=$PACKAGE_VERSION
 package_sha256=$PACKAGE_SHA256
+glaze_ui_target=1.4.0
+glaze_ui_source_revision=01c86323f8b747373d308026adc8b0881855cdc5
+stable_promotion_authorized=false
 EOF
 
 rm -f \
@@ -117,7 +122,7 @@ if command -v goreecloud-care >/dev/null 2>&1; then
       printf 'api_version=not-probed-runtime-mismatch\n'
     } > "$OUT/installed-version.txt"
     printf '%s\n' \
-      "Installed Care runtime differs from the exact 0.1.0 artifact candidate; candidate-only status snapshots were skipped." \
+      "Installed Care runtime differs from the exact 0.2.0-dev1 candidate; candidate-only status snapshots were skipped." \
       > "$OUT/installed-status-snapshots-skipped.txt"
   fi
 else
@@ -126,48 +131,62 @@ else
 fi
 
 cat > "$OUT/MANUAL-CHECKLIST.txt" <<'EOF'
-GoreeCloud Care 0.1.0 golden artifact — representative-device checklist
-=====================================================================
+GoreeCloud Care 0.2.0-dev1 — Glaze UI V1.4 representative-device checklist
+============================================================================
 
 Record PASS or FAIL plus notes for every exercised item. A blank item is NOT accepted evidence.
 Do not use unrelated personal files for destructive-flow testing; use disposable fixtures/test data.
 This checklist does not authorize Stable promotion by itself.
 
-Lifecycle note: the artifact version is 0.1.0, but the governed source lifecycle remains Release Candidate / nonconformant until exact-source package, physical-target, platform-system, Glaze, and governance evidence are complete. GLAZE UI V1.2 / 1.2.0 remains the Stable compatibility baseline; V1.3 Adaptive Resonance remains Proposed / consumer-ineligible.
+Lifecycle note: 0.2.0-dev1 / 0.2.0~dev1 is a Development / nonconformant candidate. Stable 0.1.0 remains immutable historical release evidence and does not transfer Glaze, Privacy Shield, Wardveil, Everkeep, or representative-device acceptance to this candidate.
 
-A. 0.1.0 identity delta
-[ ] PASS [ ] FAIL  Main window title is GoreeCloud Care without Development/Release Candidate branding.
-[ ] PASS [ ] FAIL  Main header subtitle reads Local maintenance • Adaptive Resonance preview and does not imply V1.3 conformance.
+A. V1.4 product identity and composition
+[ ] PASS [ ] FAIL  Main window title is GoreeCloud Care and subtitle reads Local maintenance • Glaze UI V1.4.
 [ ] PASS [ ] FAIL  Maintenance Insights subtitle reads Read-only local review.
-[ ] PASS [ ] FAIL  Launcher/AppStream surfaces show GoreeCloud Care and the canonical Care icon without clipping or stale RC labels.
+[ ] PASS [ ] FAIL  Compact window preserves all maintenance tasks without clipping or hidden consequential actions.
+[ ] PASS [ ] FAIL  Narrow Desktop uses a readable single-column composition with stable task order.
+[ ] PASS [ ] FAIL  Desktop uses the intended canonical Care composition.
+[ ] PASS [ ] FAIL  Wide Desktop adds breathing room/hierarchy without giant targets, stretched copy, or gratuitous empty panes.
+[ ] PASS [ ] FAIL  Launcher/AppStream surfaces show GoreeCloud Care and the canonical Care icon without stale V1.2/V1.3/RC labels.
 Notes:
 
-B. Regression bridge from the accepted RC
-[ ] PASS [ ] FAIL  Large-text and continuous resize remain usable.
-[ ] PASS [ ] FAIL  Forward/reverse keyboard traversal and visible focus remain correct.
-[ ] PASS [ ] FAIL  Orca completion/cancellation/failure and Maintenance Insights status announcements remain understandable and truthful.
-[ ] PASS [ ] FAIL  System Light, Dark, HighContrast, Reduced Transparency, Reduced Motion, Show Borders, expression, clarity, and preview Deep Dark remain optically usable.
-[ ] PASS [ ] FAIL  Scan is read-only; routine cleanup, Trash, APT, and memory-cache flows preserve their accepted confirmation/cancellation/failure/success semantics.
+B. Native, accessibility, and optical review
+[ ] PASS [ ] FAIL  Large text and continuous resize remain usable across V1.4 form-factor transitions.
+[ ] PASS [ ] FAIL  Forward/reverse keyboard traversal and visible focus remain correct before and after resizing.
+[ ] PASS [ ] FAIL  Orca scan/completion/cancellation/failure and Maintenance Insights announcements are understandable and truthful.
+[ ] PASS [ ] FAIL  Light, Dark, Deep Dark, and HighContrast remain optically usable on the physical Zorin desktop.
+[ ] PASS [ ] FAIL  Reduced Transparency, Reduced Motion, and Show Borders remove embellishment before meaning/focus/hierarchy.
+[ ] PASS [ ] FAIL  Functional-glass chrome feels intentional; reading/status/findings/consequential surfaces remain stable and legible.
+[ ] PASS [ ] FAIL  Native window controls/compositor behavior are polished and do not conflict with the Care shell.
 Notes:
 
-C. Package lifecycle / continuity
-[ ] PASS [ ] FAIL  Exact 0.1.0 package checksum/provenance matches the qualified source.
-[ ] PASS [ ] FAIL  Installed application/helper cannot be shadowed by the source working directory and leaves no private bytecode cache.
-[ ] PASS [ ] FAIL  install/remove/reinstall/dev17-downgrade/0.1.0-restore/final-state probe passed.
+C. Maintenance safety regression
+[ ] PASS [ ] FAIL  Scan is read-only and previews current maintenance state.
+[ ] PASS [ ] FAIL  Routine cleanup preserves selection, confirmation, cancellation, failure, and success semantics.
+[ ] PASS [ ] FAIL  Empty Trash remains explicitly permanent and confirmation-first.
+[ ] PASS [ ] FAIL  APT and file-cache privileged flows preserve confirmation, PolicyKit cancellation, failure, and success truthfulness.
+Notes:
+
+D. 0.2 package lifecycle / continuity
+[ ] PASS [ ] FAIL  Exact 0.2.0~dev1 package checksum/provenance matches the candidate source.
+[ ] PASS [ ] FAIL  Candidate application/helper cannot be shadowed by the source working directory and leaves no private bytecode cache.
+[ ] PASS [ ] FAIL  install/remove/reinstall/Stable-0.1.0-downgrade/0.2.0~dev1-restore/final-state probe passed.
+[ ] PASS [ ] FAIL  Stable rollback package SHA-256 is exactly 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160.
 Candidate package:
-Previous package:
+Stable rollback package:
 Lifecycle log/evidence:
 
-D. Platform-system acceptance
-[ ] PASS [ ] FAIL  Privacy Shield exact-0.1.0 runtime/application review complete; production approval is governed externally.
-[ ] PASS [ ] FAIL  Wardveil exact-0.1.0 scoped adoption/runtime review complete; no broad protection claim is inferred.
-[ ] PASS [ ] FAIL  Everkeep exact-0.1.0 continuity evidence is complete and package provenance matches.
-[ ] PASS [ ] FAIL  Glaze V1.2 exact-0.1.0 consumer acceptance/bridge is governed; V1.3 remains Proposed / consumer-ineligible.
+E. Platform-system acceptance boundaries
+[ ] PASS [ ] FAIL  Glaze UI V1.4 exact-candidate human/native consumer review is complete for this exact source/package identity.
+[ ] PASS [ ] FAIL  Privacy Shield exact-0.2 candidate runtime/application review is complete; production approval remains externally governed.
+[ ] PASS [ ] FAIL  Wardveil exact-0.2 scoped adoption/runtime review is complete; no broad protection claim is inferred.
+[ ] PASS [ ] FAIL  Everkeep exact-0.2 continuity evidence is complete and exact package provenance matches.
 Notes:
 EOF
 
 cat > "$OUT/MANUAL-COMMANDS.txt" <<'EOF'
 goreecloud-care
+GDK_DPI_SCALE=2 goreecloud-care
 GDK_DPI_SCALE=2 goreecloud-care --insights-ui
 GTK_THEME=HighContrast goreecloud-care
 GOREECLOUD_CARE_APPEARANCE=dark goreecloud-care
@@ -190,11 +209,11 @@ goreecloud-care --privacy-status-json
 goreecloud-care --security-status-json
 goreecloud-care --continuity-status-json
 
-sh ./scripts/build-dev17-rollback-package.sh
-sh ./scripts/validate-package-lifecycle.sh ./dist/goreecloud-care_0.1.0_all.deb ./dist/rollback/goreecloud-care_0.1.0~dev17_all.deb
+sh ./scripts/build-stable-0.1.0-rollback-package.sh
+sh ./scripts/validate-package-lifecycle.sh './dist/goreecloud-care_0.2.0~dev1_all.deb' './dist/rollback/goreecloud-care_0.1.0_all.deb'
 EOF
 
-printf '%s\n' "0.1.0 golden artifact representative acceptance preparation: passed"
+printf '%s\n' "0.2.0-dev1 Glaze UI V1.4 representative acceptance preparation: passed"
 printf '%s\n' "Package: $PACKAGE_VERSION"
 printf '%s\n' "SHA-256: $PACKAGE_SHA256"
 printf '%s\n' "Manual checklist: $OUT/MANUAL-CHECKLIST.txt"
