@@ -11,19 +11,85 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Atk, Gio, GLib, Gtk  # noqa: E402
 
 from .core import CareEngine, CategoryScan, human_bytes, read_disk_stats, read_memory_stats
-from .glaze_v13 import layout_environment
 from .privilege import interpret_pkexec_result
 from .ui_contract import (
     COMPACT_BORDER,
     MIN_WINDOW_HEIGHT,
     MIN_WINDOW_WIDTH,
     REGULAR_BORDER,
-    effective_layout_width,
     is_compact_width,
+    is_high_contrast_theme,
 )
 
-APP_ID = "com.goreecloud.care"
+APP_ID = "com.goreecloud.care.dev"
 HELPER = "/usr/lib/goreecloud-care/goreecloud-care-helper"
+
+# Development GTK mapping of current Glaze UI V1.1 light roles. This is not a
+# conformance claim; representative rendered/accessibility acceptance remains open.
+CSS = b"""
+window {
+  background: #f5f7fa;
+  color: #151a23;
+}
+headerbar {
+  background: #ffffff;
+  color: #151a23;
+  border-bottom: 1px solid rgba(25, 35, 50, 0.14);
+}
+headerbar button { color: #151a23; }
+.card {
+  background: #ffffff;
+  border: 1px solid rgba(25, 35, 50, 0.11);
+  border-radius: 14px;
+  padding: 14px;
+}
+.status-banner {
+  background: #eef4ff;
+  border: 1px solid rgba(52, 120, 246, 0.36);
+  border-left-width: 4px;
+  border-radius: 12px;
+  padding: 11px 13px;
+}
+.status-banner.status-attention {
+  background: #e9f6f6;
+  border-color: #1c8a8d;
+  box-shadow: 0 6px 18px rgba(15, 107, 111, 0.14);
+}
+.status-banner.status-success {
+  background: #edf8f1;
+  border-color: #2f9e63;
+}
+.status-banner.status-error {
+  background: #fff0ef;
+  border-color: #c63b32;
+  box-shadow: 0 6px 18px rgba(198, 59, 50, 0.12);
+}
+.status-title {
+  color: #151a23;
+  font-weight: 700;
+}
+.status-icon { color: #3478f6; }
+.status-attention .status-icon,
+.status-attention .status-title { color: #0f6b6f; }
+.status-success .status-icon,
+.status-success .status-title { color: #2f7f53; }
+.status-error .status-icon,
+.status-error .status-title { color: #a92f28; }
+.title { font-weight: 700; font-size: 18px; }
+.muted { color: #5d6675; }
+.warning { color: #b56a00; }
+button.suggested-action {
+  background: #1c8a8d;
+  color: #ffffff;
+}
+button:focus, checkbutton:focus {
+  outline-color: #0f6b6f;
+  outline-style: solid;
+  outline-width: 3px;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px rgba(28, 138, 141, 0.24);
+}
+"""
 
 STATUS_STYLES = ("status-info", "status-attention", "status-success", "status-error")
 STATUS_ICONS = {
@@ -41,84 +107,69 @@ STATUS_TITLES = {
 
 
 class CareWindow(Gtk.ApplicationWindow):
-    """Content-first GoreeCloud Care maintenance surface."""
-
     def __init__(self, app: Gtk.Application) -> None:
-        super().__init__(application=app, title="GoreeCloud Care")
-        self.set_default_size(1060, 720)
+        super().__init__(application=app, title="GoreeCloud Care — Development")
+        self.set_default_size(900, 680)
         self.set_size_request(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         self.set_border_width(0)
         self.engine = CareEngine()
         self.scans: dict[str, CategoryScan] = {}
         self.rows: dict[str, tuple[Gtk.CheckButton | None, Gtk.Label]] = {}
         self.category_layouts: dict[str, tuple[Gtk.Box, Gtk.Label]] = {}
-        self._layout_environment: str | None = None
+        self._compact_layout: bool | None = None
 
-        # Chrome Plane: identity plus one transient scan command. The command is
-        # the deliberate capsule; ordinary controls use the standard shape role.
-        self.header_subtitle = "Local maintenance • Adaptive Resonance preview"
+        # GoreeCloud Care intentionally opens in a light appearance by default.
+        # High-contrast system themes take priority over this Development mapping.
+        self.settings = Gtk.Settings.get_default()
+        if self.settings is not None:
+            theme_name = self.settings.get_property("gtk-theme-name")
+            if not is_high_contrast_theme(theme_name):
+                self.settings.set_property("gtk-application-prefer-dark-theme", False)
+
+        self.css_provider = Gtk.CssProvider()
+        self.css_provider.load_from_data(CSS)
+        self.css_provider_attached = False
+        self._sync_css_for_theme()
+        if self.settings is not None:
+            self.settings.connect("notify::gtk-theme-name", self._on_theme_name_changed)
+
+        self.header_subtitle = "Development • local maintenance"
         self.header = Gtk.HeaderBar()
         self.header.set_show_close_button(True)
         self.header.props.title = "GoreeCloud Care"
         self.header.props.subtitle = self.header_subtitle
-        self.header.get_style_context().add_class("chrome-plane")
         self.set_titlebar(self.header)
 
-        self.scan_btn = Gtk.Button(label="Scan")
-        self.scan_btn.get_style_context().add_class("command-capsule")
-        self.scan_btn.set_can_focus(True)
-        self.scan_btn.set_tooltip_text("Scan safe maintenance categories without deleting anything")
-        self.scan_btn.get_accessible().set_description(
+        scan_btn = Gtk.Button(label="Scan")
+        scan_btn.set_can_focus(True)
+        scan_btn.set_tooltip_text("Scan safe maintenance categories without deleting anything")
+        scan_btn.get_accessible().set_description(
             "Preview maintenance categories. Scanning does not delete files."
         )
-        self.scan_btn.connect("clicked", self.on_scan)
-        self.header.pack_end(self.scan_btn)
+        scan_btn.connect("clicked", self.on_scan)
+        self.header.pack_end(scan_btn)
 
-        self.page_scroll = Gtk.ScrolledWindow()
-        self.page_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.page_scroll.set_hexpand(True)
-        self.page_scroll.set_vexpand(True)
-        self.add(self.page_scroll)
-
-        self.root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+        self.root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=14)
         self.root.set_border_width(REGULAR_BORDER)
-        self.page_scroll.add(self.root)
+        scroll = Gtk.ScrolledWindow()
+        scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroll.add(self.root)
+        self.add(scroll)
 
-        # A single signature surface establishes hierarchy without turning every
-        # section into a floating card. It remains neutral and informational.
-        self.hero = Gtk.Frame()
-        self.hero.set_shadow_type(Gtk.ShadowType.NONE)
-        self.hero.get_style_context().add_class("hero-surface")
-        hero_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
-        self.hero.add(hero_box)
-
-        eyebrow = Gtk.Label(xalign=0)
-        eyebrow.set_text("LOCAL MAINTENANCE • PREVIEW FIRST")
-        eyebrow.get_style_context().add_class("eyebrow")
-        hero_box.pack_start(eyebrow, False, False, 0)
-
-        hero_title = Gtk.Label(xalign=0)
-        hero_title.set_line_wrap(True)
-        hero_title.set_markup(
-            "<span size='x-large' weight='bold'>Keep your system clear, safely.</span>"
-        )
-        hero_title.get_style_context().add_class("hero-mark")
-        hero_box.pack_start(hero_title, False, False, 0)
-
-        intro = Gtk.Label(xalign=0)
+        intro = Gtk.Label()
+        intro.set_xalign(0)
         intro.set_line_wrap(True)
-        intro.set_text(
-            "Care scans local files only and shows a preview before routine cleanup. "
-            "No telemetry is sent, and routine cache or temporary-file cleanup runs as your user account."
+        intro.set_markup(
+            "<span size='large' weight='bold'>Safe cleanup with a preview first</span>\n"
+            "GoreeCloud Care scans local files only. It does not send telemetry. "
+            "Routine cache and temporary-file cleanup runs as your user account."
         )
-        intro.get_style_context().add_class("muted")
-        hero_box.pack_start(intro, False, False, 0)
+        self.root.pack_start(intro, False, False, 0)
 
         self.system_label = Gtk.Label(xalign=0)
         self.system_label.set_line_wrap(True)
-        self.system_label.get_style_context().add_class("metric-line")
-        hero_box.pack_start(self.system_label, False, False, 0)
-        self.root.pack_start(self.hero, False, False, 0)
+        self.system_label.get_style_context().add_class("muted")
+        self.root.pack_start(self.system_label, False, False, 0)
 
         self.status_frame = Gtk.Frame()
         self.status_frame.set_shadow_type(Gtk.ShadowType.NONE)
@@ -150,169 +201,101 @@ class CareWindow(Gtk.ApplicationWindow):
         status_box.pack_start(status_text, True, True, 0)
         self.root.pack_start(self.status_frame, False, False, 0)
 
-        # Workspace composition: routine selectable cleanup is the primary
-        # content plane; consequential/system actions occupy a secondary plane.
-        self.workspace = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=16)
-        self.root.pack_start(self.workspace, True, True, 0)
+        for key, title, desc, selectable in (
+            ("cache", "Application cache", "Cache files older than 7 days in ~/.cache, excluding thumbnails.", True),
+            ("thumbnails", "Thumbnail cache", "Recreatable image/video thumbnails stored for your account.", True),
+            ("temp", "Temporary files", "Your own files in /tmp older than 7 days; symlinks are never followed.", True),
+            ("trash", "Trash", "Items currently in your desktop Trash. Emptying is permanent and separately confirmed.", False),
+            ("apt", "APT package cache", "Downloaded .deb package archives. Cleaning requires administrator authentication.", False),
+        ):
+            self.root.pack_start(self._category_card(key, title, desc, selectable), False, False, 0)
 
-        self.primary_column = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=9)
-        self.primary_column.set_hexpand(True)
-        self.workspace.pack_start(self.primary_column, True, True, 0)
-
-        plan_title = Gtk.Label(xalign=0)
-        plan_title.set_text("Maintenance plan")
-        plan_title.get_style_context().add_class("section-title")
-        self.primary_column.pack_start(plan_title, False, False, 0)
-        plan_desc = Gtk.Label(xalign=0)
-        plan_desc.set_line_wrap(True)
-        plan_desc.set_text(
-            "Choose recreatable, user-owned categories. Care always confirms before changing them."
+        memory = self._card()
+        memory_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        memory.add(memory_box)
+        label = Gtk.Label(xalign=0)
+        label.set_markup("<span weight='bold' size='large'>Memory Refresh</span>")
+        memory_box.pack_start(label, False, False, 0)
+        explain = Gtk.Label(xalign=0)
+        explain.set_line_wrap(True)
+        explain.set_text(
+            "Linux intentionally uses spare RAM for file caches. Reclaiming those caches can make the "
+            "available-memory number rise temporarily, but it is not a lasting speed boost and may slow "
+            "the next file/app loads while caches rebuild."
         )
-        plan_desc.get_style_context().add_class("muted")
-        self.primary_column.pack_start(plan_desc, False, False, 0)
-
-        self.maintenance_collection = Gtk.Frame()
-        self.maintenance_collection.set_shadow_type(Gtk.ShadowType.NONE)
-        self.maintenance_collection.get_style_context().add_class("maintenance-collection")
-        plan_rows = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.maintenance_collection.add(plan_rows)
-        routine_categories = (
-            (
-                "cache",
-                "Application cache",
-                "Cache files older than 7 days in ~/.cache, excluding thumbnails.",
-            ),
-            (
-                "thumbnails",
-                "Thumbnail cache",
-                "Recreatable image/video thumbnails stored for your account.",
-            ),
-            (
-                "temp",
-                "Temporary files",
-                "Your own files in /tmp older than 7 days; symlinks are never followed.",
-            ),
-        )
-        for index, (key, title, desc) in enumerate(routine_categories):
-            row = self._maintenance_row(
-                key, title, desc, last=index == len(routine_categories) - 1
-            )
-            plan_rows.pack_start(row, False, False, 0)
-        self.primary_column.pack_start(self.maintenance_collection, False, False, 0)
-
-        self.primary_controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        self.clean = Gtk.Button(label="Clean selected")
-        self.clean.set_can_focus(True)
-        self.clean.get_style_context().add_class("resonant-action")
-        self.clean.get_accessible().set_description(
-            "Clean only the selected application-cache, thumbnail-cache, and temporary-file categories."
-        )
-        self.clean.connect("clicked", self.on_clean_selected)
-        self.primary_controls.pack_start(self.clean, False, False, 0)
-        self.primary_column.pack_start(self.primary_controls, False, False, 0)
-
-        self.secondary_column = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=9)
-        self.secondary_column.set_hexpand(True)
-        self.workspace.pack_start(self.secondary_column, True, True, 0)
-
-        system_title = Gtk.Label(xalign=0)
-        system_title.set_text("System actions")
-        system_title.get_style_context().add_class("section-title")
-        self.secondary_column.pack_start(system_title, False, False, 0)
-        system_desc = Gtk.Label(xalign=0)
-        system_desc.set_line_wrap(True)
-        system_desc.set_text(
-            "Higher-impact or privileged actions stay separate from routine cleanup."
-        )
-        system_desc.get_style_context().add_class("muted")
-        self.secondary_column.pack_start(system_desc, False, False, 0)
-
-        self.system_panel = Gtk.Frame()
-        self.system_panel.set_shadow_type(Gtk.ShadowType.NONE)
-        self.system_panel.get_style_context().add_class("system-panel")
-        system_rows = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.system_panel.add(system_rows)
-
-        self.trash = self._system_action_row(
-            system_rows,
-            "trash",
-            "Trash",
-            "Permanently empty desktop Trash after a separate irreversible-action confirmation.",
-            "Empty Trash…",
-            self.on_empty_trash,
-            danger=True,
-        )
-        self.apt = self._system_action_row(
-            system_rows,
-            "apt",
-            "APT package cache",
-            "Remove downloaded .deb archives after administrator authentication.",
-            "Clean APT cache…",
-            self.on_apt_clean,
-        )
-
-        memory_row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
-        memory_row.get_style_context().add_class("system-action-row")
-        memory_row.get_style_context().add_class("system-action-row-last")
-        memory_heading = Gtk.Label(xalign=0)
-        memory_heading.set_text("Memory Refresh")
-        memory_heading.get_style_context().add_class("row-title")
-        memory_row.pack_start(memory_heading, False, False, 0)
-        memory_explain = Gtk.Label(xalign=0)
-        memory_explain.set_line_wrap(True)
-        memory_explain.set_text(
-            "Linux uses spare RAM for file caches. Reclaiming them can raise available memory temporarily, "
-            "but it is not a lasting speed boost and may slow later file/app loads while caches rebuild."
-        )
-        memory_explain.get_style_context().add_class("muted")
-        memory_row.pack_start(memory_explain, False, False, 0)
-        self.memory_btn = Gtk.Button(label="Reclaim file cache…")
-        self.memory_btn.get_style_context().add_class("secondary-action")
-        self.memory_btn.set_can_focus(True)
-        self.memory_btn.get_accessible().set_description(
+        explain.get_style_context().add_class("muted")
+        memory_box.pack_start(explain, False, False, 0)
+        memory_btn = Gtk.Button(label="Reclaim file cache…")
+        memory_btn.set_can_focus(True)
+        memory_btn.get_accessible().set_description(
             "Temporarily reclaim Linux file caches. Administrator authentication is required."
         )
-        self.memory_btn.connect("clicked", self.on_reclaim_memory)
-        memory_row.pack_start(self.memory_btn, False, False, 0)
-        system_rows.pack_start(memory_row, False, False, 0)
-        self.secondary_column.pack_start(self.system_panel, False, False, 0)
+        memory_btn.connect("clicked", self.on_reclaim_memory)
+        memory_box.pack_start(memory_btn, False, False, 0)
+        self.root.pack_start(memory, False, False, 0)
 
-        self.action_buttons = (self.clean, self.trash, self.apt, self.memory_btn)
+        self.controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        clean = Gtk.Button(label="Clean selected")
+        clean.set_can_focus(True)
+        clean.get_style_context().add_class("suggested-action")
+        clean.get_accessible().set_description(
+            "Clean only the selected application-cache, thumbnail-cache, and temporary-file categories."
+        )
+        clean.connect("clicked", self.on_clean_selected)
+        self.controls.pack_start(clean, False, False, 0)
+
+        trash = Gtk.Button(label="Empty Trash…")
+        trash.set_can_focus(True)
+        trash.get_accessible().set_description(
+            "Permanently empty the desktop Trash after a separate confirmation."
+        )
+        trash.connect("clicked", self.on_empty_trash)
+        self.controls.pack_start(trash, False, False, 0)
+
+        apt = Gtk.Button(label="Clean APT cache…")
+        apt.set_can_focus(True)
+        apt.get_accessible().set_description(
+            "Remove downloaded APT package archives after administrator authentication."
+        )
+        apt.connect("clicked", self.on_apt_clean)
+        self.controls.pack_start(apt, False, False, 0)
+        self.root.pack_start(self.controls, False, False, 0)
+
+        self.action_buttons = (clean, trash, apt)
         self.connect("size-allocate", self._on_size_allocate)
-        self._apply_layout(1060)
+        self._apply_layout(900)
 
         self.refresh_system_status()
         GLib.idle_add(lambda: (self.on_scan(None), False)[1])
 
-    def _maintenance_row(
-        self,
-        key: str,
-        title: str,
-        desc: str,
-        *,
-        last: bool,
-    ) -> Gtk.Widget:
+    def _card(self) -> Gtk.Frame:
+        frame = Gtk.Frame()
+        frame.set_shadow_type(Gtk.ShadowType.NONE)
+        frame.get_style_context().add_class("card")
+        return frame
+
+    def _category_card(self, key: str, title: str, desc: str, selectable: bool) -> Gtk.Widget:
+        frame = self._card()
         outer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
-        outer.get_style_context().add_class("maintenance-row")
-        if last:
-            outer.get_style_context().add_class("maintenance-row-last")
+        frame.add(outer)
 
         body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=12)
         outer.pack_start(body, True, True, 0)
 
-        selector = Gtk.CheckButton()
-        selector.set_can_focus(True)
-        selector.set_active(True)
-        selector.set_tooltip_text(f"Include {title.lower()} in Clean selected")
-        selector.get_accessible().set_name(f"Include {title} in Clean selected")
-        selector.get_accessible().set_description(desc)
-        body.pack_start(selector, False, False, 0)
+        selector: Gtk.CheckButton | None = None
+        if selectable:
+            selector = Gtk.CheckButton()
+            selector.set_can_focus(True)
+            selector.set_active(True)
+            selector.set_tooltip_text(f"Include {title.lower()} in Clean selected")
+            selector.get_accessible().set_name(f"Include {title} in Clean selected")
+            selector.get_accessible().set_description(desc)
+            body.pack_start(selector, False, False, 0)
 
-        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         heading = Gtk.Label(xalign=0)
         heading.set_line_wrap(True)
-        heading.set_text(title)
-        heading.get_style_context().add_class("row-title")
+        heading.set_markup(f"<span weight='bold' size='large'>{GLib.markup_escape_text(title)}</span>")
         text.pack_start(heading, False, False, 0)
         description = Gtk.Label(label=desc, xalign=0)
         description.set_line_wrap(True)
@@ -321,91 +304,24 @@ class CareWindow(Gtk.ApplicationWindow):
         body.pack_start(text, True, True, 0)
 
         amount = Gtk.Label(label="Not scanned", xalign=1)
-        amount.get_style_context().add_class("row-amount")
         amount.get_accessible().set_name(f"{title}: not scanned")
         outer.pack_end(amount, False, False, 0)
 
         self.rows[key] = (selector, amount)
         self.category_layouts[key] = (outer, amount)
-        return outer
-
-    def _system_action_row(
-        self,
-        parent: Gtk.Box,
-        key: str,
-        title: str,
-        desc: str,
-        button_label: str,
-        handler,
-        *,
-        danger: bool = False,
-    ) -> Gtk.Button:
-        row = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=7)
-        row.get_style_context().add_class("system-action-row")
-        top = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        row.pack_start(top, False, False, 0)
-
-        text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-        heading = Gtk.Label(xalign=0)
-        heading.set_line_wrap(True)
-        heading.set_text(title)
-        heading.get_style_context().add_class("row-title")
-        text.pack_start(heading, False, False, 0)
-        description = Gtk.Label(xalign=0)
-        description.set_line_wrap(True)
-        description.set_text(desc)
-        description.get_style_context().add_class("muted")
-        text.pack_start(description, False, False, 0)
-        top.pack_start(text, True, True, 0)
-
-        amount = Gtk.Label(label="Not scanned", xalign=1)
-        amount.get_style_context().add_class("row-amount")
-        amount.get_accessible().set_name(f"{title}: not scanned")
-        top.pack_end(amount, False, False, 0)
-
-        button = Gtk.Button(label=button_label)
-        button.set_can_focus(True)
-        button.get_style_context().add_class("danger-action" if danger else "secondary-action")
-        if key == "trash":
-            button.get_accessible().set_description(
-                "Permanently empty the desktop Trash after a separate confirmation."
-            )
-        else:
-            button.get_accessible().set_description(
-                "Remove downloaded APT package archives after administrator authentication."
-            )
-        button.connect("clicked", handler)
-        row.pack_start(button, False, False, 0)
-        parent.pack_start(row, False, False, 0)
-
-        self.rows[key] = (None, amount)
-        self.category_layouts[key] = (top, amount)
-        return button
+        return frame
 
     def _on_size_allocate(self, _widget, allocation) -> None:
         self._apply_layout(allocation.width)
 
     def _apply_layout(self, width: int) -> None:
         compact = is_compact_width(width)
-        environment = layout_environment(
-            int(effective_layout_width(width)), compact=compact
-        )
-        if environment == self._layout_environment:
+        if compact == self._compact_layout:
             return
-        self._layout_environment = environment
-
+        self._compact_layout = compact
         self.root.set_border_width(COMPACT_BORDER if compact else REGULAR_BORDER)
-        self.root.set_spacing(12 if compact else 16)
-        # Keep the compact HeaderBar identity intentionally short so Scan and
-        # native window controls cannot force an ellipsized product title.
-        self.header.set_title("Care" if compact else "GoreeCloud Care")
         self.header.set_subtitle(None if compact else self.header_subtitle)
-        self.workspace.set_orientation(
-            Gtk.Orientation.HORIZONTAL
-            if environment == "expanded"
-            else Gtk.Orientation.VERTICAL
-        )
-        self.primary_controls.set_orientation(
+        self.controls.set_orientation(
             Gtk.Orientation.VERTICAL if compact else Gtk.Orientation.HORIZONTAL
         )
         for button in self.action_buttons:
@@ -418,13 +334,37 @@ class CareWindow(Gtk.ApplicationWindow):
             amount.set_xalign(0 if compact else 1)
             amount.set_halign(Gtk.Align.START if compact else Gtk.Align.END)
 
+    def _on_theme_name_changed(self, *_args) -> None:
+        self._sync_css_for_theme()
+
+    def _sync_css_for_theme(self) -> None:
+        screen = self.get_screen()
+        if screen is None:
+            return
+        theme_name = (
+            self.settings.get_property("gtk-theme-name")
+            if self.settings is not None
+            else None
+        )
+        high_contrast = is_high_contrast_theme(theme_name)
+        if high_contrast and self.css_provider_attached:
+            Gtk.StyleContext.remove_provider_for_screen(screen, self.css_provider)
+            self.css_provider_attached = False
+        elif not high_contrast and not self.css_provider_attached:
+            Gtk.StyleContext.add_provider_for_screen(
+                screen, self.css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+            )
+            self.css_provider_attached = True
+        if self.settings is not None and not high_contrast:
+            self.settings.set_property("gtk-application-prefer-dark-theme", False)
+
     def refresh_system_status(self) -> None:
         mem = read_memory_stats()
         disk = read_disk_stats()
         self.system_label.set_text(
-            f"Disk {human_bytes(disk.free)} free of {human_bytes(disk.total)}  •  "
-            f"Memory {human_bytes(mem.available)} available of {human_bytes(mem.total)}  •  "
-            f"File cache about {human_bytes(mem.cached)}"
+            f"Disk: {human_bytes(disk.free)} free of {human_bytes(disk.total)}  •  "
+            f"Memory: {human_bytes(mem.available)} available of {human_bytes(mem.total)}  •  "
+            f"File cache: about {human_bytes(mem.cached)}"
         )
 
     def set_status(self, text: str, state: str = "info", title: str | None = None) -> None:

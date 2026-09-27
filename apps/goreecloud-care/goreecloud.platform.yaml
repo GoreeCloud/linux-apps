@@ -4,101 +4,88 @@ component:
   type: application
   id: goreecloud-care
   product_name: GoreeCloud Care
-  repository: GoreeCloud/linux-apps
+  repository: GoreeCloud/goreecloud-zorin-os
 
-# Released artifact qualification predecessor: lifecycle: release-candidate
-# Stable lifecycle governs the already-qualified immutable 0.1.0 release artifact
-# from bbc4779454c2887b810aa0ddc9e8a686a4c68ebd; this governance record does
-# not create or publish a replacement Debian package.
-lifecycle: stable
-version: 0.1.0
+lifecycle: development
+version: 0.1.0-dev17
 
 supported_platforms:
   - linux
 
 api:
-  versions: ["1"]
-  endpoints:
-    - name: maintenance-report
-      url: local-cli://goreecloud-care/report
-      purpose: Privacy-safe schema-versioned local maintenance snapshot for authorized local consumers.
-    - name: health
-      url: local-cli://goreecloud-care/health
-      purpose: Minimized local readiness and product-version status without telemetry or privileged execution.
-    - name: privacy-status
-      url: local-cli://goreecloud-care/privacy-status
-      purpose: Privacy Shield-shaped local privacy status for the declared Care application adapter.
-    - name: security-status
-      url: local-cli://goreecloud-care/security-status
-      purpose: Wardveil-compatible scoped status for the installed Care privilege boundary.
-    - name: continuity-status
-      url: local-cli://goreecloud-care/continuity-status
-      purpose: Everkeep continuity status for Care package restore and rollback evidence.
+  versions: []
+  endpoints: []
 
 platform_systems:
   manager:
-    result: not-applicable-justified
+    result: applicable-blocked
     version: null
-    evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
-    notes: Stable 0.1.0 is local single-user maintenance with no central, remote, or delegated administration.
+    evidence:
+      - CAPABILITIES.md
+      - goreecloud_care/reporting.py
+      - goreecloud_care/insights.py
+    notes: Dev13 provides a local schema-versioned read-only maintenance report and Maintenance Insights remains a local review surface, but no Manager discovery, transport, authorization, or acceptance is implemented.
   privacy_shield:
-    result: applicable-conformant
+    result: applicable-blocked
     version: null
     evidence:
       - PRIVACY.md
-      - contracts/privacy-shield.application.json
-      - contracts/privacy-shield.adapter.json
-      - goreecloud_care/platform_status.py
-      - https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
-      - https://github.com/GoreeCloud/goreecloud-privacy-shield/actions/runs/34183154605
-    notes: Privacy Shield accepts exact 0.1.0 release source/tree/package for telemetry-minimization, data-minimization, and privacy-status. Local source evidence intentionally does not self-promote the external governance decision.
+      - tests/test_reporting.py
+      - tests/test_insights.py
+      - goreecloud_care/reporting.py
+      - goreecloud_care/insights.py
+    notes: Default reports omit candidate paths, filenames, and raw scan-error strings. Maintenance Insights may show home-relative paths only inside the explicitly opened local review surface. No network or telemetry path is present; formal Privacy Shield acceptance is not claimed.
   wardveil_security:
-    result: applicable-conformant
+    result: applicable-blocked
     version: null
     evidence:
       - SECURITY.md
-      - WARDVEIL-INTEGRATION.md
-      - goreecloud_care/platform_status.py
-      - packaging/goreecloud-care-helper
-      - packaging/com.goreecloud.care.policy
-      - tests/test_helper.py
-      - tests/test_privilege.py
-      - https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
-    notes: Wardveil accepts exact 0.1.0 runtime adoption after representative package and six-check real-desktop PolicyKit acceptance. Protection permission is limited to GoreeCloud Care local-maintenance-privilege-boundary only; cross-service execution authority is false.
+      - tests/test_reporting.py
+      - tests/test_insights.py
+      - tests/test_insights_window_contract.py
+    notes: Least-privilege controls and read-only reporting/Insights boundaries are present. Source guards prohibit deletion, PolicyKit, privileged-helper, subprocess, and network execution in the Insights engine/window; formal Wardveil Security acceptance is not claimed.
   everkeep:
-    result: applicable-conformant
+    result: applicable-blocked
     version: null
     evidence:
       - RECOVERY.md
-      - RELEASE-ACCEPTANCE.md
-      - contracts/everkeep.adoption.json
-      - contracts/everkeep.acceptance.json
-      - goreecloud_care/platform_status.py
-      - scripts/validate-package-lifecycle.sh
-      - scripts/run-representative-acceptance.sh
-      - https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
-    notes: Everkeep accepts exact 0.1.0 restore/rollback readiness; the trusted local record is installed and Care reports ready / everkeep-promoted with no limitations.
+    notes: Recovery behavior is documented; Everkeep recovery and package rollback acceptance have not been completed.
   glaze_ui:
-    result: applicable-conformant
-    version: "1.2.0"
+    result: applicable-blocked
+    version: "1.1.0"
     evidence:
-      - GLAZE-UI-CONFORMANCE.md
-      - BRANDING.md
-      - goreecloud_care/glaze_v12.py
-      - goreecloud_care/glaze_v13.py
-      - tests/test_glaze_v12_contract.py
-      - tests/test_glaze_v13_contract.py
       - tests/test_ui_contract.py
       - tests/test_focus_resilience.py
       - tests/test_accessibility_identity.py
-      - tests/runtime_ui_acceptance.py
-      - https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
-    notes: GLAZE UI V1.2 / 1.2.0 is the required Stable baseline. Exact Care 0.1.0 is accepted-v1 through the explicit source bridge at c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae; no new human findings are fabricated.
+      - tests/test_insights_window_contract.py
+      - https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      - https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5552837967
+      - https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5555569354
+      - https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5560572070
+      - https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5560656873
+    notes: >-
+      The manifest's currently declared Stable consumer target is 1.1.0. Dev8
+      accepted the combined 200%-text plus compact/minimum-width adaptive-layout
+      slice for the core Care window. Dev10 accepted HighContrast palette authority,
+      visible focus, constrained-width rendering, and complete requested
+      forward/reverse keyboard traversal. Dev12 accepted the GoreeCloud Care AT-SPI
+      application identity and static semantic-tree
+      roles/names/descriptions/checked/focused-state slice. Dynamic accessible
+      status mutation/event delivery and screen-reader announcement quality remain
+      open. Dev14 added the read-only Maintenance Insights GTK surface. Dev15
+      representative-device build/install passed but its compact HeaderBar title
+      still truncated. Dev16 representative screenshots verify the compact Insights
+      title, visible Refresh focus, and true-bottom findings reachability; resize
+      responsiveness was not reported. Dev17 replaces synthetic-hyphen-prone CHAR
+      wrapping with selectable Pango WORD_CHAR wrapping and insert_hyphens=false;
+      exact-head and representative-device validation remain required.
   mesh:
-    result: not-applicable-justified
+    result: applicable-blocked
     version: null
-    evidence: [API.md, CAPABILITIES.md, goreecloud_care/platform_status.py]
-    notes: Stable 0.1.0 has no cross-application coordination, service discovery, Mesh event transport, or Mesh policy authority.
+    evidence:
+      - CAPABILITIES.md
+      - goreecloud_care/reporting.py
+    notes: Dev13's local JSON report creates a potential future capability payload, but Mesh registration, capability discovery, transport, runtime integration, and acceptance are not implemented. Maintenance Insights remains local-only.
     capabilities: []
     dependencies: []
     published_events: []
@@ -106,151 +93,148 @@ platform_systems:
   identity:
     result: not-applicable-justified
     version: null
-    evidence: [SPECIFICATIONS.md, API.md]
-    notes: Stable 0.1.0 has no GoreeCloud account, remote management, multi-user behavior, or delegated administration.
+    evidence:
+      - SPECIFICATIONS.md
+    notes: The Development specification excludes an account requirement and remote management; re-evaluate Identity applicability if remote, managed, or multi-user capabilities are introduced.
 
 health:
-  health_endpoint: local-cli://goreecloud-care/health
-  readiness_endpoint: local-cli://goreecloud-care/health
+  health_endpoint: null
+  readiness_endpoint: null
 
 continuity:
   backup:
     required: false
     requirements:
-      - Care persists no substantial durable user application data requiring an application-owned backup workflow; continuity is exact package/source recovery evidence.
+      - The Development utility currently persists no durable user application data requiring backup.
   restore:
     required: true
     requirements:
-      - Exact 0.1.0 install, remove/reinstall, accepted dev17 downgrade, restore, final installed validation, provenance, and representative-target handoff passed on Zorin OS 17.3.
-      - Permanent Trash deletion is irreversible maintenance behavior and is not represented as recoverable application data.
+      - Document irreversible Trash deletion and validate package rollback before Release Candidate consideration.
   export:
     required: false
     requirements:
-      - Care has no durable user application dataset requiring application-data export/import; read-only reports/status are available.
+      - Dev13 can export a read-only maintenance snapshot as text or JSON, but Care persists no durable user application dataset requiring an application-data export workflow.
   portability:
     required: true
     requirements:
-      - Report and local API schemas/versioning remain explicit and machine-readable.
-      - Package policy, recovery, migration, rollback, and exact provenance remain documented without proprietary durable data formats.
+      - Keep maintenance policy and package state documented, keep report schemas versioned, keep Insights scope explicit, and avoid proprietary durable data formats.
 
 external_dependencies:
   - name: python3
-    purpose: Native application runtime, reports, local platform status, and Maintenance Insights.
+    purpose: Native application runtime, read-only report generation, and bounded local Maintenance Insights.
     required: true
     version_constraint: ">=3.10"
   - name: PyGObject GTK 3
-    purpose: Native Zorin OS desktop interface and Maintenance Insights.
+    purpose: Native Zorin OS desktop interface and Maintenance Insights review window.
     required: true
     version_constraint: null
   - name: ATK introspection
-    purpose: Assistive-technology roles, names, descriptions, and status semantics.
+    purpose: Native assistive-technology roles, names, descriptions, and status change semantics.
     required: true
     version_constraint: null
   - name: PolicyKit
-    purpose: Explicit authorization for APT cleanup and Linux file-cache reclaim.
+    purpose: Explicit authorization for APT cache cleanup and Linux file-cache reclaim; not used by report or Maintenance Insights modes.
     required: true
     version_constraint: null
 
 compatibility:
   platform_contract: "0.2"
-  glaze_ui_required: "1.2.0"
-  requires: [goreecloud-platform-contract==0.2, glaze-ui==1.2.0]
+  glaze_ui_required: "1.1.0"
+  requires:
+    - goreecloud-platform-contract==0.2
+    - glaze-ui==1.1.0
   provides:
     - goreecloud-care-local-maintenance
     - goreecloud-care-read-only-maintenance-report
     - goreecloud-care-read-only-maintenance-insights
-    - goreecloud-care-local-status-api-v1
 
 evidence:
   acceptance_tests:
-    - id: care-0.1.0-api
-      category: api
-      path: apps/goreecloud-care/API.md
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-      result: passed
-      observed_at: "2026-09-08T02:48:15Z"
-    - id: care-0.1.0-accessibility
+    - id: care-dev8-large-text-compact-target
       category: accessibility
-      path: https://github.com/GoreeCloud/goreecloud-glaze-ui/commit/c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
-      revision: c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5552837967
+      revision: 45b5f11a49f363ebcaf753c892245a31109bc9bb
       result: passed
-      observed_at: "2026-09-08T04:07:01Z"
-      notes: Exact-source V1.2 bridge preserves the accepted seven-dimensional human/native review across unchanged governed presentation behavior.
-    - id: care-0.1.0-supported-platform
+      observed_at: "2026-09-05T16:19:00Z"
+      notes: Representative Zorin OS laptop accepted the combined GDK_DPI_SCALE=2 large-text and compact/minimum-width adaptive-layout slice; broader accessibility acceptance remains open.
+    - id: care-dev9-highcontrast-keyboard-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: 7db8710b113cda314903475cd7c220d57bea94d8
+      result: failed
+      observed_at: "2026-09-05T20:41:00Z"
+      notes: Representative-device screenshot verified system HighContrast palette takeover, but Tab had no visibly perceivable focus response; dev10 remediated this defect.
+    - id: care-dev10-highcontrast-focus-sampled-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5555569354
+      revision: 3524a4a82da87ea51dcde08992a402190b54c130
+      result: passed
+      observed_at: "2026-09-05T23:38:00Z"
+      notes: Representative-device dev10 build/install succeeded; HighContrast palette authority, focus, constrained-width rendering, and complete requested forward/reverse keyboard traversal are accepted for this slice.
+    - id: care-dev10-atspi-application-identity-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: 3524a4a82da87ea51dcde08992a402190b54c130
+      result: failed
+      observed_at: "2026-09-06T13:04:00Z"
+      notes: AT-SPI enumerated Care as __main__.py rather than GoreeCloud Care, preventing product-name discovery.
+    - id: care-dev11-atspi-application-identity-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: c5582ab650ab41f76fed396e84851f3507a0e1b9
+      result: failed
+      observed_at: "2026-09-06T13:26:00Z"
+      notes: Dev11 validation/build/install succeeded, but AT-SPI still exposed __main__.py; dev12 additionally set the GLib program name.
+    - id: care-dev12-atspi-application-identity-static-semantics-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: 09c3a6bcbec094dd3cb0c828de88d084fcbd5a22
+      result: passed
+      observed_at: "2026-09-06T14:14:00Z"
+      notes: Representative-device AT-SPI inspection exposes GoreeCloud Care as the application root and verifies expected status-bar, selector/action roles, useful names/descriptions, and live checked/focused states.
+    - id: care-dev12-atspi-dynamic-listener-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: 09c3a6bcbec094dd3cb0c828de88d084fcbd5a22
+      result: blocked
+      observed_at: "2026-09-06T14:40:00Z"
+      notes: A property-change accessible-name listener produced no Care status events while the session reported a stale/unavailable AT-SPI socket. Static reads remain successful; dynamic delivery remains open.
+    - id: care-dev13-read-only-report-target
       category: supported-platform
-      path: apps/goreecloud-care/scripts/run-representative-acceptance.sh
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2
+      revision: 48049b6f634a05300e01bb0e85d718284b79d7ee
       result: passed
-      observed_at: "2026-09-08T03:58:15Z"
-      notes: Representative Zorin OS 17.3 exact package acceptance passed with 143 local tests and complete package lifecycle.
-    - id: care-0.1.0-security
-      category: security
-      path: https://github.com/GoreeCloud/goreecloud-wardveil-security/commit/e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
-      revision: e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
+      observed_at: "2026-09-06T15:15:49Z"
+      notes: Representative Zorin OS laptop passed 38 tests plus XML/source validation, built and installed 0.1.0~dev13, returned 0.1.0-dev13 from --version, and successfully produced both human and JSON read-only reports. The observed report showed 74.7 GB free of 233.2 GB, 135.0 MB visible across 984 items, and zero scan errors; default report output remained path/raw-error redacted.
+    - id: care-dev15-large-text-insights-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5560572070
+      revision: e36707264a62b4b66083c909b62b55041b909d12
+      result: failed
+      observed_at: "2026-09-06T16:22:00Z"
+      notes: Representative-device dev15 validation passed 48 tests plus XML/source validation and the package built/installed successfully, but the constrained GDK_DPI_SCALE=2 compact HeaderBar still ellipsized the title. Complete true-bottom and resize-responsiveness evidence was not supplied, so those behaviors remain open.
+    - id: care-dev16-large-text-insights-visual-target
+      category: accessibility
+      path: https://github.com/GoreeCloud/goreecloud-zorin-os/pull/2#issuecomment-5560656873
+      revision: 02b7df9eb7543e7147dd7e81212d465daa15086e
       result: passed
-      observed_at: "2026-09-08T04:07:38Z"
-    - id: care-0.1.0-privacy
-      category: privacy
-      path: https://github.com/GoreeCloud/goreecloud-privacy-shield/commit/0af47f4817191541e1ea12928cff5c3458baf377
-      revision: 0af47f4817191541e1ea12928cff5c3458baf377
-      result: passed
-      observed_at: "2026-09-08T03:20:24Z"
-    - id: care-0.1.0-backup-applicability
-      category: backup
-      path: apps/goreecloud-care/RECOVERY.md
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-      result: passed
-      observed_at: "2026-09-08T03:58:15Z"
-      notes: Care owns no substantial durable user dataset; package/recovery continuity is governed through Everkeep.
-    - id: care-0.1.0-restore
-      category: restore
-      path: https://github.com/GoreeCloud/goreecloud-everkeep/commit/4586246aad87a4038c7f8984de809d32333f2599
-      revision: 4586246aad87a4038c7f8984de809d32333f2599
-      result: passed
-      observed_at: "2026-09-08T03:58:15Z"
-    - id: care-0.1.0-export-portability
-      category: export-portability
-      path: apps/goreecloud-care/API.md
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-      result: passed
-      observed_at: "2026-09-08T02:48:15Z"
-    - id: care-0.1.0-documentation
-      category: documentation
-      path: apps/goreecloud-care/RELEASE-ACCEPTANCE.md
-      revision: goreecloud-care-0.1.0-stable-governance
-      result: passed
-      observed_at: "2026-09-08T04:07:38Z"
-    - id: care-0.1.0-integration
-      category: integration
-      path: apps/goreecloud-care/goreecloud.platform.yaml
-      revision: goreecloud-care-0.1.0-stable-governance
-      result: passed
-      observed_at: "2026-09-08T04:07:38Z"
-    - id: care-0.1.0-release-qualification
-      category: release
-      path: https://github.com/GoreeCloud/goreecloud-zorin-os/actions/runs/34180765807
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-      result: passed
-      observed_at: "2026-09-08T02:48:15Z"
-      notes: Exact 0.1.0 golden artifact passed qualification and retained controlled artifact publication.
-  release:
-    - id: goreecloud-care-0.1.0-controlled-artifact
-      version: 0.1.0
-      revision: bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-      path: https://github.com/GoreeCloud/goreecloud-zorin-os/actions/runs/34180765807
-      result: published
-      observed_at: "2026-09-08T02:48:15Z"
-      artifact_digest: 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
-      notes: Controlled published release artifact is the retained goreecloud-care_0.1.0_all.deb from artifact 10038827656. Stable governance promotes these already-qualified bytes; no replacement package is created here.
+      observed_at: "2026-09-06T16:42:00Z"
+      notes: Representative-device GDK_DPI_SCALE=2 screenshots verify a fully readable compact Insights title, visible keyboard focus on the symbolic Refresh control, and true-bottom findings reachability. Continuous-resize responsiveness was not reported and remains a separate open checkpoint; screenshots also exposed synthetic mid-word hyphenation in CHAR-wrapped findings, addressed by the dev17 source candidate.
+  release: []
 
 conformance:
-  status: conformant
-  validated_at: "2026-09-08T04:07:38Z"
-  evidence:
-    - bbc4779454c2887b810aa0ddc9e8a686a4c68ebd
-    - 819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160
-    - 0af47f4817191541e1ea12928cff5c3458baf377
-    - 4586246aad87a4038c7f8984de809d32333f2599
-    - e5c078a346a844c3a2a13e8eaa7fb98ba5fffa0f
-    - c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae
-  blockers: []
+  status: nonconformant
+  validated_at: null
+  evidence: []
+  blockers:
+    - GoreeCloud Care is a component manifest under apps/goreecloud-care; repository-wide monorepo inventory/conformance integration remains incomplete.
+    - GoreeCloud Manager integration and acceptance remain incomplete.
+    - Privacy Shield formal acceptance remains incomplete.
+    - Wardveil Security formal acceptance remains incomplete.
+    - Everkeep recovery/rollback acceptance remains incomplete.
+    - Final Glaze UI current-Stable native acceptance remains incomplete; dynamic status-value/event delivery and screen-reader announcement quality remain open, Maintenance Insights continuous-resize responsiveness is still unreported, and dev17 hyphen-free large-text rendering plus keyboard/AT-SPI/Orca evidence remain unaccepted.
+    - GoreeCloud Mesh registration/runtime acceptance remains incomplete.
+    - Dev17 Maintenance Insights exact-head repository and representative-device acceptance remain incomplete.
+    - Package rollback remains unverified.
+    - Official GoreeCloud Care application icon/branding remains incomplete.
+    - Release Candidate and release evidence are intentionally absent for this Development build.

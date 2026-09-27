@@ -1,87 +1,84 @@
 # GoreeCloud Care User Manual
 
 ## Scan
-
-Open GoreeCloud Care and choose **Scan**. Scanning is read-only and shows estimated size/item counts for Application cache, Thumbnail cache, Temporary files, Trash, and the APT package cache.
+Open GoreeCloud Care and choose **Scan**. Scanning is read-only and shows the estimated size and item count for Application cache, Thumbnail cache, Temporary files, Trash, and the APT package cache.
 
 ## Clean selected
-
-Check any of Application cache, Thumbnail cache, and Temporary files, then choose **Clean selected**. A confirmation summarizes the estimated amount before deletion. Application-cache and temporary-file candidates use the seven-day age policy; temporary files must be owned by the current user. Symlinks are not followed.
+Check any of Application cache, Thumbnail cache, and Temporary files, then choose **Clean selected**. A confirmation summarizes the estimated amount before deletion. Application cache and temporary files are limited to files older than seven days; temporary files must be owned by your current user.
 
 ## Empty Trash
-
-Choose **Empty Trash…**. Care shows a separate warning because Trash deletion is permanent. Nothing is deleted if you cancel.
+Choose **Empty Trash…**. GoreeCloud Care shows a separate warning because Trash deletion is permanent. Nothing is deleted if you cancel.
 
 ## Clean APT cache
-
-Choose **Clean APT cache…** and confirm. PolicyKit asks for administrator authentication. The helper can run only the fixed `apt-get clean` action; it accepts no arbitrary command or path.
+Choose **Clean APT cache…** and confirm. PolicyKit asks for administrator authentication. The privileged helper can run only the fixed `apt-get clean` action; it does not accept arbitrary commands or paths.
 
 ## Memory Refresh
-
 Choose **Reclaim file cache…** only when you deliberately want Linux to release page/dentry/inode caches. Linux normally manages these caches automatically. Available memory may rise temporarily, but this is not a lasting performance boost and later file/app loads may be slower while caches rebuild.
 
-## Read-only maintenance reports
+## Read-only maintenance reports — dev13
+
+From a terminal, GoreeCloud Care can generate local diagnostic summaries without opening the maintenance window or performing cleanup:
 
 ```sh
 goreecloud-care --report
+```
+
+This prints a human-readable report containing disk headroom, memory/file-cache information, visible maintenance totals, per-category byte/item counts, and scan-error counts.
+
+For machine-readable output:
+
+```sh
 goreecloud-care --report-json
+```
+
+The JSON report is intended for local scripts and future governed GoreeCloud integrations. It is schema-versioned and includes an explicit privacy/mode section.
+
+To check the installed Development version:
+
+```sh
 goreecloud-care --version
 ```
 
-The human report includes disk headroom, memory/file-cache information, visible maintenance totals, per-category byte/item counts, and scan-error counts. The JSON form is schema-versioned for local scripts and governed GoreeCloud consumers. Both are read-only: they do not delete files, request administrator authentication, invoke PolicyKit, run the helper, use telemetry, or access the network. Candidate paths, filenames, and raw scan-error strings are omitted by default.
+Report modes are read-only. They do not delete files, request administrator authentication, invoke PolicyKit, run the privileged helper, or access the network. Candidate file paths, filenames, and raw scan-error strings are omitted by default.
 
 Disk-headroom labels such as `comfortable`, `watch`, `low`, and `critical` are informational capacity signals. They are not filesystem-health certification and do not trigger cleanup automatically.
 
-## Local status and platform integration — dev18
+Representative-device dev13 build/install/report execution is accepted at exact runtime/source head `48049b6f634a05300e01bb0e85d718284b79d7ee`.
 
-Dev18 exposes a local read-only command API. It does not open a network listener.
+## Maintenance Insights — dev14 Development
 
-```sh
-goreecloud-care --api-version
-goreecloud-care --health-json
-goreecloud-care --privacy-status-json
-goreecloud-care --security-status-json
-goreecloud-care --continuity-status-json
-```
-
-`--api-version` currently prints `1`. Health output is minimized and local-only. Privacy status is intentionally marked Development and not production-approved until Privacy Shield runtime acceptance is completed. Security status checks the fixed installed Care helper/PolicyKit boundary and does not make a broad **Protected by Wardveil** claim. Continuity status remains `attention` until package removal/downgrade/reinstall/rollback has been accepted on the target device.
-
-These status commands are intended for local verification and future governed Manager/Mesh-style consumption. They do not grant another process maintenance authority and do not perform a maintenance action.
-
-## Maintenance Insights
-
-Open the read-only review surface with:
+Open the dedicated read-only review surface from a terminal with:
 
 ```sh
 goreecloud-care --insights-ui
 ```
 
-The installed desktop entry also provides **Maintenance Insights (Read-only)**.
+The installed desktop entry also provides the **Maintenance Insights (Read-only)** action.
 
-Maintenance Insights reviews stale application cache older than seven days grouped by top-level namespace, files at least 250 MB in `Downloads`, `Desktop`, `Documents`, `Pictures`, `Videos`, and `Music`, and files in `Downloads` that are at least 30 days old. Choose the symbolic **Refresh** control to repeat the read-only scan.
+Maintenance Insights currently reviews three things without performing maintenance:
 
-The window may display home-relative paths such as `~/Downloads/example.iso` because you explicitly opened a local file-review view. Normal report/status output remains minimized. Insights does **not** select, move, quarantine, or delete a finding; does not request administrator authentication; does not invoke PolicyKit or the helper; does not launch subprocess maintenance commands; and does not access the network. Symlinks are not followed. Standard-folder discovery is capped at 50,000 visited entries per refresh and states when results are partial.
+- stale application cache older than seven days, grouped by top-level application/cache namespace;
+- files at least 250 MB in `Downloads`, `Desktop`, `Documents`, `Pictures`, `Videos`, and `Music`;
+- files in `Downloads` that are at least 30 days old.
 
-Review findings manually before changing them outside Care. A large file or old Download is not automatically junk and is not a recommendation to delete it.
+Choose **Refresh** inside Maintenance Insights to repeat the read-only scan. The window displays home-relative paths such as `~/Downloads/example.iso` because you explicitly opened a local file-review view. The normal `--report` and `--report-json` modes continue to omit paths.
 
-Dev17 target validation accepted the targeted compact/wide rendering and reachability remediation: the `Insights` title remained visible, Refresh focus was perceivable, synthetic mid-word hyphens were removed, selectable findings rendered correctly, and the true bottom remained reachable. Complete Tab/Shift+Tab traversal through and beyond the selectable findings surface and continuous drag-resize responsiveness remain open acceptance checks.
+Maintenance Insights does **not** select, move, quarantine, or delete any finding. It does not request administrator authentication, invoke PolicyKit or the Care privileged helper, launch subprocess maintenance commands, or access the network. Symlinks are not followed. Standard-folder discovery is capped at 50,000 visited entries per refresh; when that limit is reached the window states that its results are partial.
+
+Review a finding manually before changing it outside Care. A large file or old Download is not automatically “junk,” and its presence is not a recommendation to delete it.
+
+The dev14 Insights window remains Development validation work until its package build/install, displayed findings, keyboard/focus behavior, HighContrast behavior, large-text/constrained-window behavior, and AT-SPI semantics are accepted on the representative Zorin OS laptop.
 
 ## Keyboard and accessibility
+Use **Tab** and **Shift+Tab** to move through interactive controls. GoreeCloud Care requires keyboard focus to be visibly perceivable as it moves; an interface where focus changes cannot be seen is not considered accepted keyboard behavior.
 
-Use **Tab** and **Shift+Tab** to move through controls. Care requires keyboard focus to be visibly perceivable. When a HighContrast system presentation suppresses Care's ordinary palette provider, a separate focus-only fallback uses the active GTK theme foreground color without redefining the application palette.
+The ordinary Care presentation uses its established application focus styling. When a system HighContrast presentation suppresses Care's normal palette provider, a separate focus-only fallback remains underneath the ordinary Care CSS. The fallback uses the active GTK theme foreground color and does not define Care backgrounds, surfaces, or palette colors, so HighContrast remains authoritative while keyboard focus retains a visible outline.
 
-Accepted revision-scoped target evidence includes dev10 HighContrast palette/focus and requested core forward/reverse keyboard traversal, dev12 AT-SPI product identity plus static semantic roles/names/descriptions/checked/focused states, and dev17 targeted Insights rendering. Dynamic status-event delivery, Orca announcement quality, and full Insights keyboard/assistive-technology acceptance remain Development work.
+Representative-device dev10 evidence verifies HighContrast palette authority, visible focus, constrained-width rendering, and the complete requested forward/reverse keyboard path. Representative-device dev12 evidence verifies that AT-SPI discovers the application as **GoreeCloud Care** and exposes the current static status/control roles, names, descriptions, checked state, and focused state. Dynamic status-event delivery and Orca announcement quality remain Development validation work.
 
-Care remains vertically scrollable when text is enlarged or the window becomes shorter. Compact layouts place category values below their description and stack the bottom actions vertically. The Development 200%-text path includes GTK `GDK_DPI_SCALE` in the effective-width decision. Maintenance Insights has both whole-page scrolling and an independent findings scroller.
+GoreeCloud Care remains vertically scrollable when text is enlarged or the window becomes shorter. In compact windows, category amounts move below their category description and the bottom action buttons stack vertically so the primary workflow does not depend on horizontal scrolling. For the Development 200%-text acceptance path, the compact decision accounts for GTK `GDK_DPI_SCALE`. The compact HeaderBar may omit the Development subtitle when space is constrained; the GoreeCloud Care title and **Scan** action remain available.
 
-## Appearance
-
-Care currently prefers a light application appearance. This application-local choice does not change the desktop-wide appearance setting. System HighContrast remains authoritative. The final supported appearance matrix is still part of the Release Candidate acceptance process.
+The application opens in a light appearance by default. Effective HighContrast detection honors both the desktop GTK theme state and an explicit process-local `GTK_THEME` override.
 
 ## If an action fails
-
-Care reports failure instead of treating it as success. Authorization cancellation is reported as cancellation rather than completion. A post-action refresh updates values without replacing the final outcome. No automatic retry performs a destructive action without another user invocation.
-
-## Release status
-
-`0.1.0-dev18` remains Development. Passing source tests or local status output does not make the application Release Candidate or Stable. See `RELEASE-ACCEPTANCE.md` in the source tree for the remaining governed acceptance requirements.
+GoreeCloud Care reports failure instead of treating it as success. Re-scan to see current state. No automatic retry performs a destructive action without another user invocation.

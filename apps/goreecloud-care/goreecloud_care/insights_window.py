@@ -19,32 +19,33 @@ from .ui_contract import (
     is_compact_width,
 )
 
-APP_ID = "com.goreecloud.care.insights"
+APP_ID = "com.goreecloud.care.dev.insights"
 RESULTS_MIN_HEIGHT = 320
 REGULAR_SPACING = 12
 COMPACT_SPACING = 8
-RESULTS_MARGIN = 12
+RESULTS_MARGIN = 10
 
 
 class InsightsWindow(Gtk.ApplicationWindow):
-    """Read-only GoreeCloud Care maintenance review surface."""
+    """Read-only local maintenance-intelligence review surface."""
 
     def __init__(self, app: Gtk.Application) -> None:
         super().__init__(application=app, title="GoreeCloud Care — Maintenance Insights")
-        self.set_default_size(860, 660)
+        self.set_default_size(780, 620)
         self.set_size_request(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         self._compact_layout: bool | None = None
 
-        self.header_subtitle = "Read-only local review"
+        self.header_subtitle = "Development • read-only local review"
         self.header = Gtk.HeaderBar()
         self.header.set_show_close_button(True)
         self.header.props.title = "Maintenance Insights"
         self.header.props.subtitle = self.header_subtitle
-        self.header.get_style_context().add_class("chrome-plane")
         self.set_titlebar(self.header)
 
+        # Keep Refresh visually compact at large text. The symbolic control keeps
+        # its explicit accessible name/description and tooltip, so reducing width
+        # pressure does not remove the action's meaning for keyboard/AT users.
         self.refresh = Gtk.Button()
-        self.refresh.get_style_context().add_class("command-capsule")
         self.refresh_icon = Gtk.Image.new_from_icon_name(
             "view-refresh-symbolic", Gtk.IconSize.BUTTON
         )
@@ -58,7 +59,8 @@ class InsightsWindow(Gtk.ApplicationWindow):
         self.refresh.connect("clicked", self.on_refresh)
         self.header.pack_end(self.refresh)
 
-        # The entire page remains vertically reachable at enlarged text.
+        # Keep the whole page vertically reachable when enlarged text makes the
+        # fixed explanatory/status content taller than the physical window.
         self.page_scroll = Gtk.ScrolledWindow()
         self.page_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.page_scroll.set_hexpand(True)
@@ -71,23 +73,10 @@ class InsightsWindow(Gtk.ApplicationWindow):
         self.root.set_border_width(REGULAR_BORDER)
         self.page_scroll.add(self.root)
 
-        # One quiet signature summary introduces the review task. Findings remain
-        # on an opaque content plane because users read and judge file paths here.
-        self.summary = Gtk.Frame()
-        self.summary.set_shadow_type(Gtk.ShadowType.NONE)
-        self.summary.get_style_context().add_class("hero-surface")
-        summary_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.summary.add(summary_box)
-
-        eyebrow = Gtk.Label(xalign=0)
-        eyebrow.set_text("READ-ONLY REVIEW • LOCAL ONLY")
-        eyebrow.get_style_context().add_class("eyebrow")
-        summary_box.pack_start(eyebrow, False, False, 0)
-
         self.intro_regular_markup = (
-            "<span size='x-large' weight='bold'>See storage pressure before deciding what to do.</span>\n"
-            "Maintenance Insights highlights stale application-cache groups, large files in standard user folders, "
-            "and older Downloads. Nothing is selected or deleted automatically."
+            "<span size='large' weight='bold'>Review storage pressure before deciding what to do</span>\n"
+            "This Development view is read-only. It highlights stale application-cache groups, "
+            "large files in standard user folders, and older Downloads. Nothing is selected or deleted automatically."
         )
         self.intro_compact_markup = (
             "<span weight='bold'>Review storage safely</span>\n"
@@ -96,26 +85,23 @@ class InsightsWindow(Gtk.ApplicationWindow):
         self.intro = Gtk.Label(xalign=0)
         self.intro.set_line_wrap(True)
         self.intro.set_markup(self.intro_regular_markup)
-        summary_box.pack_start(self.intro, False, False, 0)
+        self.root.pack_start(self.intro, False, False, 0)
 
         self.privacy_regular_text = (
-            "No telemetry • no network • no administrator authentication. "
+            "Local only • no telemetry • no network • no administrator authentication. "
             "Paths are shown only inside this local review view; default Care reports remain path-redacted."
         )
         self.privacy_compact_text = (
-            "No network or telemetry • no administrator authentication • paths shown only here."
+            "Local only • no network or telemetry • no administrator authentication. "
+            "Paths are shown only here."
         )
         self.privacy = Gtk.Label(xalign=0)
         self.privacy.set_line_wrap(True)
         self.privacy.set_text(self.privacy_regular_text)
-        self.privacy.get_style_context().add_class("muted")
-        summary_box.pack_start(self.privacy, False, False, 0)
-        self.root.pack_start(self.summary, False, False, 0)
+        self.root.pack_start(self.privacy, False, False, 0)
 
         self.status_frame = Gtk.Frame()
         self.status_frame.set_shadow_type(Gtk.ShadowType.NONE)
-        self.status_frame.get_style_context().add_class("status-banner")
-        self.status_frame.get_style_context().add_class("status-info")
         self.status_accessible = self.status_frame.get_accessible()
         self.status_accessible.set_role(Atk.Role.STATUSBAR)
         self.status_accessible.set_description(
@@ -128,38 +114,28 @@ class InsightsWindow(Gtk.ApplicationWindow):
         self.status_frame.add(self.status)
         self._set_status("Ready to analyze local maintenance insights.")
 
-        self.findings_plane = Gtk.Frame()
-        self.findings_plane.set_shadow_type(Gtk.ShadowType.NONE)
-        self.findings_plane.get_style_context().add_class("findings-plane")
-        findings_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        self.findings_plane.add(findings_box)
-        findings_title = Gtk.Label(xalign=0)
-        findings_title.set_text("Findings")
-        findings_title.set_margin_start(RESULTS_MARGIN)
-        findings_title.set_margin_end(RESULTS_MARGIN)
-        findings_title.set_margin_top(RESULTS_MARGIN)
-        findings_title.set_margin_bottom(6)
-        findings_title.get_style_context().add_class("section-title")
-        findings_box.pack_start(findings_title, False, False, 0)
-
-        # Findings keep their own scroll position and guaranteed visible viewport.
+        # The findings keep their own scroll position, but they also have a
+        # guaranteed visible viewport. The outer page scroller above prevents
+        # enlarged fixed content from making the results permanently unreachable.
         self.results_scroll = Gtk.ScrolledWindow()
         self.results_scroll.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.results_scroll.set_hexpand(True)
         self.results_scroll.set_vexpand(True)
         self.results_scroll.set_min_content_height(RESULTS_MIN_HEIGHT)
-        findings_box.pack_start(self.results_scroll, True, True, 0)
-        self.root.pack_start(self.findings_plane, True, True, 0)
+        self.root.pack_start(self.results_scroll, True, True, 0)
 
-        # Preserve dev17's accepted copy integrity: selectable Pango text uses
-        # WORD_CHAR fallback with synthetic hyphen insertion disabled.
+        # Use a selectable Pango-backed label instead of Gtk.TextView CHAR wrap.
+        # WORD_CHAR keeps long path-like strings reachable, while the Pango
+        # insert_hyphens attribute disables synthetic hyphens such as "da-\nys"
+        # that dev16 exposed at 200% text. The displayed/copied text itself remains
+        # unchanged because no zero-width break characters are inserted.
         self.results = Gtk.Label(xalign=0, yalign=0)
         self.results.set_selectable(True)
         self.results.set_line_wrap(True)
         self.results.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR)
         self.results.set_margin_start(RESULTS_MARGIN)
         self.results.set_margin_end(RESULTS_MARGIN)
-        self.results.set_margin_top(4)
+        self.results.set_margin_top(RESULTS_MARGIN)
         self.results.set_margin_bottom(RESULTS_MARGIN)
         self.results.get_accessible().set_name("Maintenance Insights results")
         self.results.get_accessible().set_description(
@@ -168,7 +144,7 @@ class InsightsWindow(Gtk.ApplicationWindow):
         self.results_scroll.add(self.results)
 
         self.connect("size-allocate", self._on_size_allocate)
-        self._apply_layout(860)
+        self._apply_layout(780)
         GLib.idle_add(lambda: (self.on_refresh(None), False)[1])
 
     def _on_size_allocate(self, _widget, allocation) -> None:

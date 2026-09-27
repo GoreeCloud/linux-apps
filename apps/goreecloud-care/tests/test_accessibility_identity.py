@@ -47,24 +47,6 @@ class AccessibilityIdentityTests(unittest.TestCase):
         gui_import = "from .app import main"
         self.assertLess(entrypoint.index(report_branch), entrypoint.index(gui_import))
 
-    def test_local_status_modes_keep_gui_import_lazy(self):
-        entrypoint = self._entrypoint()
-        status_branch = (
-            "if health_json_requested or privacy_status_requested or "
-            "security_status_requested or continuity_status_requested:"
-        )
-        gui_import = "from .app import main"
-        for flag in (
-            '"--api-version"',
-            '"--health-json"',
-            '"--privacy-status-json"',
-            '"--security-status-json"',
-            '"--continuity-status-json"',
-        ):
-            self.assertIn(flag, entrypoint)
-        self.assertIn(status_branch, entrypoint)
-        self.assertLess(entrypoint.index(status_branch), entrypoint.index(gui_import))
-
 
 if __name__ == "__main__":
     unittest.main()
