@@ -3,7 +3,7 @@ set -eu
 
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 REPO_ROOT=$(CDPATH= cd -- "$ROOT/../.." && pwd)
-PACKAGE_NAME="goreecloud-care_0.1.0_all.deb"
+PACKAGE_NAME="goreecloud-care_0.2.0~dev3_all.deb"
 REFERENCE=${1:-"$ROOT/dist/$PACKAGE_NAME"}
 
 for command_name in git cmp sha256sum awk mktemp mkdir rm sh; do
@@ -30,17 +30,11 @@ esac
 export SOURCE_DATE_EPOCH
 
 TMP=$(mktemp -d)
-cleanup() {
-  rm -rf "$TMP"
-}
+cleanup() { rm -rf "$TMP"; }
 trap cleanup EXIT INT TERM
 REBUILD_022_OUT="$TMP/rebuild-022"
 REBUILD_002_OUT="$TMP/rebuild-002"
 mkdir -p "$REBUILD_022_OUT" "$REBUILD_002_OUT"
-
-# Rebuild under two common umasks. Package identity must not depend on whether a
-# developer environment defaults newly created directories/files to 0755/0644
-# or 0775/0664 before the build script applies canonical staged modes.
 (
   umask 0022
   SOURCE_DATE_EPOCH="$SOURCE_DATE_EPOCH" sh "$ROOT/scripts/build-deb.sh" "$REBUILD_022_OUT" >/dev/null
@@ -52,10 +46,7 @@ mkdir -p "$REBUILD_022_OUT" "$REBUILD_002_OUT"
 REBUILT_022="$REBUILD_022_OUT/$PACKAGE_NAME"
 REBUILT_002="$REBUILD_002_OUT/$PACKAGE_NAME"
 for rebuilt in "$REBUILT_022" "$REBUILT_002"; do
-  [ -f "$rebuilt" ] || {
-    echo "Rebuilt package not found: $rebuilt" >&2
-    exit 1
-  }
+  [ -f "$rebuilt" ] || { echo "Rebuilt package not found: $rebuilt" >&2; exit 1; }
 done
 
 REFERENCE_SHA=$(sha256sum "$REFERENCE" | awk '{print $1}')
@@ -69,7 +60,6 @@ if ! cmp -s "$REBUILT_022" "$REBUILT_002"; then
   echo "SOURCE_DATE_EPOCH: $SOURCE_DATE_EPOCH" >&2
   exit 1
 fi
-
 for rebuilt in "$REBUILT_022" "$REBUILT_002"; do
   if ! cmp -s "$REFERENCE" "$rebuilt"; then
     echo "Reproducible package verification failed." >&2

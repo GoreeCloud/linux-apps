@@ -1,100 +1,76 @@
-# GoreeCloud Care — GLAZE UI consumer record
+# GoreeCloud Care — GLAZE UI Conformance
 
 ## Current authority
 
-GoreeCloud Care `0.1.0` is an **accepted-v1 consumer of GLAZE UI V1.2 / `1.2.0`**.
+- Care candidate: `0.2.0-dev3`
+- Care lifecycle: **Development**
+- Current required Stable Glaze target: **GLAZE UI V1.5 / `1.5.0`**
+- Retained active optical implementation: **GLAZE UI `1.4.1`**
+- Glaze Platform-System result: **applicable-migration-required**
+- Care V1.5 consumer acceptance: **not established**
+- Overall Care conformance: **nonconformant**
 
-Exact released Care identity:
+Current Glaze authority requires fresh repository-local migration and acceptance for every applicable consumer. Prior V1.4.1 evidence is retained as implementation and rollback provenance but does not establish V1.5 conformance.
 
-- release source: `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`
-- Care tree: `ebe028347c978b6d09fb1d2af011729249f63bc3`
-- package SHA-256: `819cff6e0132bf6b09df0986682995c25b14c39e74982f725efd0b5a21b71160`
-- representative target: Zorin OS 17.3
+## Verified upstream references
 
-Authoritative Glaze consumer acceptance:
+- GLAZE UI V1.5 Stable version: `1.5.0`
+- V1.5 reviewed implementation anchor: `ee1032a0822ab8e103f8afe48e5c1859fde65cc9`
+- V1.5 Stable integration provenance: `b7fa8164bfdeaa1dc0acb21b770e7601120da04e`
+- Immediate rollback/optical baseline: `1.4.1`
+- Authoritative central Platform Contract 0.2 Glaze-1.5 alignment: `398098d9391ac0369a79f228ca6b94d3c425fe39`
 
-- Glaze repository revision: `c3b077cd454825cd5a74cf21ba9e5dd4c25f94ae`
-- consumer status: `accepted-v1`
-- target version: `1.2.0`
-- exact Care reference revision: `bbc4779454c2887b810aa0ddc9e8a686a4c68ebd`
-- evidence: `acceptance/goreecloud-care-v1.2-0.1.0-exact-source-bridge.json`
+## Current Care evidence
 
-Glaze's registry field `productionEligible=false` means the design-system registry does not independently grant whole-product production eligibility. It does not negate the exact Care V1.2 consumer acceptance recorded above; overall Stable eligibility is governed by Care's complete Platform Contract and release evidence.
+### Retained V1.4.1 optical implementation
 
-## Human/native acceptance lineage
+Care has substantive GTK3 V1.4.1 optical work in:
 
-The frozen Release Candidate source `334b53102c5fe0bd5d348397ba8b13cc5608ada2` received a governed seven-dimensional human/native V1.2 acceptance covering:
+- `goreecloud_care/glaze_v14.py`
+- `goreecloud_care/glaze_v14_global.py`
+- `goreecloud_care/glaze_v14_optical.py`
+- `tests/test_glaze_v14_contract.py`
+- `GLAZE-UI-V1.4-MIGRATION.md`
 
-1. Orca scan/completion announcement quality;
-2. Orca cancellation/failure/success announcement quality;
-3. Maintenance Insights status announcement quality;
-4. native window-control/compositor optical quality;
-5. Dark and preview Deep Dark physical optical quality;
-6. canonical Care icon physical rendering quality;
-7. confirmation, empty, failure, success, and controlled-task UX.
+That work remains the inherited visual/optical baseline and historical evidence. It is not current V1.5 acceptance.
 
-All seven passed.
+### Bounded V1.5 source foundation
 
-The exact `0.1.0` bridge does **not** claim those observations were rerun. Instead it proves the `334b531… -> bbc4779…` transition did not change the governed Glaze implementation, canonical icon, UI contract, focus/accessibility implementation, Glaze contract tests, or runtime UI acceptance harness. The changed surface was bounded to release/package identity and lifecycle-neutral title/subtitle copy.
+The current migration line now also contains:
 
-The bridge is therefore an explicit governance transfer across unchanged Glaze behavior, not fabricated human evidence.
+- `goreecloud_care/glaze_v15.py`
+- `tests/test_glaze_v15_contract.py`
+- `GLAZE-UI-V1.5-MIGRATION.md`
 
-## Exact 0.1.0 automated and representative evidence
+The resolver is presentation-only. It consumes explicit capability/context facts, preserves provider/provenance information, fails closed on conflicting capability facts, exposes unavailable/degraded explanations, makes accessibility-precedence presentation explicit, and forbids automatic execution or fallback. Its privileged-maintenance adapter reports only whether the local Care helper and `pkexec` execution path are present; it does not grant PolicyKit authorization.
 
-Exact `0.1.0` passed:
+## Conformance status
 
-- Care qualification run `34180765807` / #421 / 143 tests;
-- Platform Contract run `34180766156` / #416;
-- theme validation `34180765817` / #590;
-- enlarged-text GTK runtime acceptance;
-- core and Maintenance Insights AT-SPI acceptance;
-- focus and keyboard behavior guards;
-- Dark/Deep Dark HeaderBar contrast checks;
-- Clear/Balanced/Dense clarity geometry;
-- Reduced Motion application-owned behavior;
-- safe task-flow acceptance;
-- representative Zorin OS 17.3 exact package lifecycle acceptance;
-- all six prescribed real-desktop PolicyKit GUI checks and post-acceptance installed/security/continuity verification.
+Care is **not V1.5 conformant**. The active GTK entrypoint is still V1.4.1-based and the new V1.5 resolver is not yet wired across the main Care and Maintenance Insights surfaces. No application-specific rendered/native V1.5 acceptance has been completed for the current exact source identity.
 
-## Native GTK3 material boundary
+The manifest must therefore continue to report:
 
-Care implements the Stable V1.2 contract through a bounded native GTK3 mapping appropriate to Zorin OS 17.3:
+- implemented Glaze version: `1.4.1`;
+- required target: `1.5.0`;
+- result: `applicable-migration-required`;
+- overall conformance: `nonconformant`.
 
-- neutral material remains dominant;
-- content and critical-decision surfaces prefer stable opaque surfaces;
-- HeaderBar/signature chrome uses restrained neutral treatment;
-- semantic color is reserved for state/interaction meaning rather than substrate truth;
-- HighContrast remains system-authoritative;
-- Reduced Transparency resolves decorative translucency toward solid neutral surfaces;
-- Reduced Motion removes nonessential optical emphasis;
-- Show Borders strengthens boundaries without relying on saturation;
-- enlarged text reflows through the shared effective-width contract;
-- visible focus remains explicit and non-color-only;
-- minimum interactive target intent remains 48 pixels.
+## Required before Care may claim V1.5 consumer acceptance
 
-GTK3 does not claim compositor-authoritative Living Glaze backdrop sampling or physical parity with rendering capabilities it does not provide.
+Care must still provide current exact-candidate evidence for all applicable V1.5 obligations, including:
 
-## Adaptive layout and hierarchy
+1. wiring of Context + Capability Awareness to the real GTK surfaces while preserving V1.4.1 optical behavior;
+2. authoritative-provider/fail-closed capability presentation without invented authorization;
+3. explicit unavailable/degraded explanations and user-initiated recovery/fallback behavior;
+4. no automatic permission, consequential action, maintenance execution, or navigation caused by presentation state;
+5. accessibility precedence, HighContrast behavior, reduced motion/transparency, focus/keyboard, target sizing, and enlarged-text behavior;
+6. representative rendered/native Zorin OS qualification for the exact candidate;
+7. stable primary-action ordering and preserved confirmation/PolicyKit boundaries;
+8. privacy-safe diagnostics and no telemetry requirement for ordinary presentation resolution;
+9. exact-source application-specific Glaze acceptance evidence.
 
-The accepted native mapping uses:
+Even successful Glaze acceptance would not by itself establish Care production eligibility or Stable promotion. Privacy Shield, Wardveil Security, Everkeep, package lifecycle, representative-target, release, and other applicable Care gates remain independent.
 
-- Content Planes for reading, status, and consequential decisions;
-- restrained Chrome Planes for transient command controls;
-- grouped maintenance collections rather than repetitive cardification;
-- semantic shape roles rather than universal pills;
-- separate destructive and privileged actions;
-- Compact, Medium, and Expanded composition;
-- independent expression and clarity dimensions used only as bounded presentation controls;
-- accessibility and semantic authority above cosmetic expression.
+## Historical evidence rule
 
-Maintenance Insights follows the same hierarchy and preserves selectable Pango findings, `WORD_CHAR` fallback, synthetic-hyphen suppression, copy integrity, keyboard focus, and true-bottom scrolling.
-
-## V1.3 / Adaptive Resonance boundary
-
-Care source retains forward-looking Adaptive Resonance implementation code and preview terminology. That code is not the release's conformance authority.
-
-Stable Care `0.1.0` is accepted against **GLAZE UI V1.2 / `1.2.0`**. Any future migration to a later formally promoted Stable Glaze release requires fresh repository-local consumer evidence according to that release's migration/conformance rules; no future Glaze lifecycle state is pre-accepted here.
-
-## Fail-closed rule
-
-The V1.2 acceptance is exact-release scoped. A later change to Care presentation behavior, canonical icon, focus/accessibility behavior, supported platform/form factor, or required Glaze version invalidates any assumption that this acceptance transfers automatically. A new material design-system requirement must be governed explicitly before it can support a later Stable release.
+Stable Care `0.1.0`, V1.2/V1.3/V1.4/V1.4.1 evidence, and earlier dev candidate runs remain audit and rollback context only. They must not be rebound to the current V1.5 migration identity.

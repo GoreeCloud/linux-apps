@@ -1,5 +1,20 @@
 # GoreeCloud Care Changelog
 
+## 0.2.0-dev1 — Glaze UI V1.4 revamp — 2026-09-13
+
+- Started the `0.2.0` development line so the Glaze UI V1.4 revamp has a new source/runtime/package identity and cannot silently replace the immutable Stable `0.1.0` artifact.
+- Runtime identity is `0.2.0-dev1`; Debian package identity is `0.2.0~dev1`.
+- Migrated the active Care UI provider to Glaze UI `1.4.0`, retaining the proven V1.3 expressive/material mapping only as an implementation foundation rather than as the active product identity.
+- Added DPI-aware Compact, Narrow Desktop, Desktop, and Wide Desktop form-factor composition states.
+- Restricted functional-glass treatment to command/navigation chrome and retained stable opaque or near-opaque content and consequential-action surfaces.
+- Moved the main window to the V1.4 layout resolver and replaced stale `Adaptive Resonance preview` product copy with `Glaze UI V1.4` identity.
+- Preserved HighContrast authority, explicit visible focus, 48 px target intent, Reduced Transparency, Reduced Motion, Show Borders, Light, Dark, and Deep Dark behavior.
+- Added V1.4-specific static and runtime contract coverage, including DPI-aware form-factor validation.
+- Fixed a V1.4 lifecycle defect where safety-critical appearance state could lag asynchronous window binding; appearance/accessibility state now resolves before window binding while form-factor geometry remains allocation-driven.
+- Exact-head qualification passed source/unit contracts, headless GTK runtime, safe maintenance task flows, live AT-SPI, Dark/Deep Dark contrast, clarity profiles, Reduced Motion, reproducible packaging, installed lifecycle, Wardveil prequalification, and cross-environment byte reproducibility before the artifact identity split.
+- Stable `0.1.0` remains historical and immutable. Its Glaze UI V1.2, Privacy Shield, Wardveil, Everkeep, package, representative-device, and release acceptance records do not automatically transfer to `0.2.0-dev1`.
+- `0.2.0-dev1` remains Development / Implementation Candidate until exact candidate CI, representative Zorin OS review, V1.4 human/native acceptance, and applicable platform-system governance are complete.
+
 ## Stable 0.1.0 governance promotion — 2026-09-07
 
 - Promoted GoreeCloud Care to the **Stable** lifecycle by governing the already-qualified immutable `0.1.0` release artifact rather than rebuilding or relabeling package bytes.

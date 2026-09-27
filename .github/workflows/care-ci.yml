@@ -1,4 +1,4 @@
-name: GoreeCloud Care 0.1.0 Stable Artifact Qualification
+name: GoreeCloud Care 0.2.0-dev3 Glaze UI V1.4.1 Optical Intelligence Qualification
 
 on:
   pull_request:
@@ -24,10 +24,11 @@ jobs:
         working-directory: apps/goreecloud-care
     steps:
       - name: Check out exact source revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify exact source revision
         run: |
@@ -112,47 +113,53 @@ jobs:
       - name: Run Reduced Motion runtime acceptance
         run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_REDUCE_MOTION=1 python3 tests/runtime_ui_acceptance.py
 
-      - name: Build 0.1.0 golden artifact candidate
+      - name: Run Reduced Transparency optical fallback acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_REDUCE_TRANSPARENCY=1 python3 tests/runtime_ui_acceptance.py
+
+      - name: Run Increased Contrast optical fallback acceptance
+        run: xvfb-run -a env GDK_DPI_SCALE=2 GOREECLOUD_CARE_INCREASED_CONTRAST=1 python3 tests/runtime_ui_acceptance.py
+
+      - name: Build 0.2.0-dev3 V1.4.1 Optical Intelligence candidate
         run: sh ./scripts/build-deb.sh dist
 
-      - name: Verify reproducible GoreeCloud Care package
-        run: sh ./scripts/verify-reproducible-package.sh ./dist/goreecloud-care_0.1.0_all.deb
+      - name: Verify reproducible GoreeCloud Care candidate
+        run: sh ./scripts/verify-reproducible-package.sh './dist/goreecloud-care_0.2.0~dev3_all.deb'
 
-      - name: Inspect 0.1.0 golden artifact candidate
+      - name: Inspect 0.2.0-dev3 candidate
         run: |
-          dpkg-deb -I dist/goreecloud-care_0.1.0_all.deb
-          dpkg-deb -c dist/goreecloud-care_0.1.0_all.deb
+          dpkg-deb -I 'dist/goreecloud-care_0.2.0~dev3_all.deb'
+          dpkg-deb -c 'dist/goreecloud-care_0.2.0~dev3_all.deb'
 
-      - name: Build immutable accepted dev17 rollback package
-        run: sh ./scripts/build-dev17-rollback-package.sh dist/rollback
+      - name: Build immutable Stable 0.1.0 rollback package
+        run: sh ./scripts/build-stable-0.1.0-rollback-package.sh dist/rollback
 
       - name: Run installed package lifecycle and Wardveil prequalification
         run: |
           sh ./scripts/validate-package-lifecycle.sh \
-            ./dist/goreecloud-care_0.1.0_all.deb \
-            ./dist/rollback/goreecloud-care_0.1.0~dev17_all.deb
+            './dist/goreecloud-care_0.2.0~dev3_all.deb' \
+            './dist/rollback/goreecloud-care_0.1.0_all.deb'
 
-      - name: Record 0.1.0 golden artifact provenance
+      - name: Record 0.2.0-dev3 candidate provenance
         run: |
           cd dist
-          sha256sum goreecloud-care_0.1.0_all.deb | tee SHA256SUMS
-          printf 'source_revision=%s\nworkflow_run_id=%s\nlifecycle=release-candidate\nartifact_version=0.1.0\nstable_promotion_authorized=false\nreproducible_package_verification=passed\ninstalled_lifecycle_prequalification=passed\nwardveil_installed_boundary_prequalification=passed\n' \
+          sha256sum 'goreecloud-care_0.2.0~dev3_all.deb' | tee SHA256SUMS
+          printf 'source_revision=%s\nworkflow_run_id=%s\nlifecycle=development\nruntime_version=0.2.0-dev3\npackage_version=0.2.0~dev3\nglaze_ui_target=1.4.1\nglaze_ui_authority=4fab9da0fad2e5c974e0e66ec88632c61745751c\nglaze_ui_qualification_anchor=66478aed461b83c49b2ed027c3e4afc26520e98c\nglaze_ui_identity=optical-intelligence\nplatform_contract=0.2\nstable_promotion_authorized=false\nreproducible_package_verification=passed\ninstalled_lifecycle_prequalification=passed\nwardveil_installed_boundary_prequalification=passed\n' \
             '${{ github.event.pull_request.head.sha || github.sha }}' \
             '${{ github.run_id }}' \
             > SOURCE_REVISION
           cat SOURCE_REVISION
 
-      - name: Preserve 0.1.0 golden artifact evidence
+      - name: Preserve 0.2.0-dev3 qualification evidence
         uses: actions/upload-artifact@v4
         with:
-          name: goreecloud-care-0.1.0-golden-${{ github.event.pull_request.head.sha || github.sha }}
+          name: goreecloud-care-0.2.0-dev3-v141-optical-${{ github.event.pull_request.head.sha || github.sha }}
           path: |
-            apps/goreecloud-care/dist/goreecloud-care_0.1.0_all.deb
+            apps/goreecloud-care/dist/goreecloud-care_0.2.0~dev3_all.deb
             apps/goreecloud-care/dist/SHA256SUMS
             apps/goreecloud-care/dist/SOURCE_REVISION
-            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17_all.deb
-            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17.sha256
-            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0~dev17.SOURCE_REVISION
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0_all.deb
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0.sha256
+            apps/goreecloud-care/dist/rollback/goreecloud-care_0.1.0.SOURCE_REVISION
           if-no-files-found: error
           retention-days: 30
 
@@ -166,10 +173,11 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04]
     steps:
       - name: Check out exact source revision
-        uses: actions/checkout@v4
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Verify exact source revision
         run: |
@@ -178,19 +186,19 @@ jobs:
           printf 'Expected source revision: %s\nActual source revision:   %s\n' "$expected" "$actual"
           test "$actual" = "$expected"
 
-      - name: Build portable 0.1.0 golden artifact candidate
+      - name: Build portable 0.2.0-dev3 candidate
         working-directory: apps/goreecloud-care
         run: |
           printf 'Build OS: %s\n' '${{ matrix.os }}'
           dpkg-deb --version | head -n 1
           sh ./scripts/build-deb.sh dist-portable
-          sha256sum dist-portable/goreecloud-care_0.1.0_all.deb
+          sha256sum 'dist-portable/goreecloud-care_0.2.0~dev3_all.deb'
 
       - name: Preserve cross-environment candidate
         uses: actions/upload-artifact@v4
         with:
-          name: care-0.1.0-golden-repro-${{ matrix.os }}
-          path: apps/goreecloud-care/dist-portable/goreecloud-care_0.1.0_all.deb
+          name: care-0.2.0-dev3-v141-optical-repro-${{ matrix.os }}
+          path: apps/goreecloud-care/dist-portable/goreecloud-care_0.2.0~dev3_all.deb
           if-no-files-found: error
           retention-days: 14
 
@@ -203,20 +211,20 @@ jobs:
       - name: Download Ubuntu 22.04 package
         uses: actions/download-artifact@v4
         with:
-          name: care-0.1.0-golden-repro-ubuntu-22.04
+          name: care-0.2.0-dev3-v141-optical-repro-ubuntu-22.04
           path: cross-env/jammy
 
       - name: Download Ubuntu 24.04 package
         uses: actions/download-artifact@v4
         with:
-          name: care-0.1.0-golden-repro-ubuntu-24.04
+          name: care-0.2.0-dev3-v141-optical-repro-ubuntu-24.04
           path: cross-env/noble
 
       - name: Compare cross-environment package bytes
         run: |
           set -eu
-          JAMMY='cross-env/jammy/goreecloud-care_0.1.0_all.deb'
-          NOBLE='cross-env/noble/goreecloud-care_0.1.0_all.deb'
+          JAMMY='cross-env/jammy/goreecloud-care_0.2.0~dev3_all.deb'
+          NOBLE='cross-env/noble/goreecloud-care_0.2.0~dev3_all.deb'
           JAMMY_SHA=$(sha256sum "$JAMMY" | awk '{print $1}')
           NOBLE_SHA=$(sha256sum "$NOBLE" | awk '{print $1}')
           printf 'Ubuntu 22.04 SHA-256: %s\nUbuntu 24.04 SHA-256: %s\n' "$JAMMY_SHA" "$NOBLE_SHA"
@@ -225,8 +233,8 @@ jobs:
             exit 1
           }
           mkdir -p cross-env/evidence
-          printf '%s  goreecloud-care_0.1.0_all.deb\n' "$JAMMY_SHA" > cross-env/evidence/SHA256SUMS.cross-environment
-          printf 'source_revision=%s\nlifecycle=release-candidate\nartifact_version=0.1.0\nstable_promotion_authorized=false\ncross_environment_reproducibility=passed\nubuntu_22_04_sha256=%s\nubuntu_24_04_sha256=%s\n' \
+          printf '%s  goreecloud-care_0.2.0~dev3_all.deb\n' "$JAMMY_SHA" > cross-env/evidence/SHA256SUMS.cross-environment
+          printf 'source_revision=%s\nlifecycle=development\nruntime_version=0.2.0-dev3\npackage_version=0.2.0~dev3\nglaze_ui_target=1.4.1\nglaze_ui_authority=4fab9da0fad2e5c974e0e66ec88632c61745751c\nglaze_ui_qualification_anchor=66478aed461b83c49b2ed027c3e4afc26520e98c\nplatform_contract=0.2\nstable_promotion_authorized=false\ncross_environment_reproducibility=passed\nubuntu_22_04_sha256=%s\nubuntu_24_04_sha256=%s\n' \
             '${{ github.event.pull_request.head.sha || github.sha }}' \
             "$JAMMY_SHA" "$NOBLE_SHA" \
             > cross-env/evidence/SOURCE_REVISION.cross-environment
@@ -235,7 +243,7 @@ jobs:
       - name: Preserve cross-environment reproducibility evidence
         uses: actions/upload-artifact@v4
         with:
-          name: goreecloud-care-0.1.0-golden-cross-environment-${{ github.event.pull_request.head.sha || github.sha }}
+          name: goreecloud-care-0.2.0-dev3-v141-optical-cross-environment-${{ github.event.pull_request.head.sha || github.sha }}
           path: cross-env/evidence/
           if-no-files-found: error
           retention-days: 30

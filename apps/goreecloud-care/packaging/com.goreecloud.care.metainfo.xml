@@ -5,10 +5,12 @@
   <summary>Local-first maintenance utility for GoreeCloud Linux systems</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
-  <description><p>Preview and clean stale user cache, thumbnails, temporary files and Trash, with separately authorized package-cache and Linux file-cache maintenance, privacy-safe read-only reports, bounded local Maintenance Insights review, minimized local platform-status output, and compatibility with the Stable GLAZE UI V1.2 baseline while retaining bounded V1.3 Adaptive Resonance preview styling.</p></description>
+  <description><p>Preview and clean stale user cache, thumbnails, temporary files and Trash, with separately authorized package-cache and Linux file-cache maintenance, privacy-safe read-only reports, bounded local Maintenance Insights review, minimized local platform-status output, and a native Glaze UI V1.4.1 Optical Intelligence desktop adaptation with responsive composition, fail-safe optical behavior, and accessibility-first degradation.</p></description>
   <launchable type="desktop-id">com.goreecloud.care.desktop</launchable>
   <icon type="stock">com.goreecloud.care</icon>
   <releases>
+    <release version="0.2.0-dev3" date="2026-09-15" type="development"/>
+    <release version="0.2.0-dev1" date="2026-09-13" type="development"/>
     <release version="0.1.0" date="2026-09-07" type="stable"/>
     <release version="0.1.0-dev22" date="2026-09-07" type="development"/>
     <release version="0.1.0-dev21" date="2026-09-06" type="development"/>

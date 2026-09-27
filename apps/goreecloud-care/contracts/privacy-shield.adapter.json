@@ -3,7 +3,7 @@
   "adapter": {
     "id": "goreecloud-care",
     "product": "GoreeCloud Care",
-    "runtime_authority": "GoreeCloud/linux-apps",
+    "runtime_authority": "GoreeCloud/goreecloud-zorin-os",
     "contract_version": 1
   },
   "capabilities": [
