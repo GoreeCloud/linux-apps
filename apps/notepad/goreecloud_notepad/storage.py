@@ -55,7 +55,8 @@ class Note:
     def open(cls, path: Path) -> "Note":
         path = Path(path).expanduser()
         # UTF-8 only: report decode errors rather than silently corrupting files.
-        text = path.read_text(encoding="utf-8")
+        with path.open("r", encoding="utf-8", newline="") as stream:
+            text = stream.read()
         return cls(text=text, path=path, saved_text=text)
 
     def save(self, target: Path | None = None) -> Path:

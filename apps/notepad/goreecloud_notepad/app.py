@@ -95,6 +95,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.pages: list[NotePage] = []
         self._close_confirmed = False
         self._closing_in_progress = False
+        self._desktop_interface = None
+        source = Gio.SettingsSchemaSource.get_default()
+        if source and source.lookup("org.gnome.desktop.interface", True):
+            self._desktop_interface = Gio.Settings.new("org.gnome.desktop.interface")
+            self._desktop_interface.connect("changed::color-scheme", lambda *_: self.apply_appearance())
         self.set_default_size(1080, 720)
         self.set_size_request(560, 420)
         self.add_css_class("notepad-window")
@@ -240,19 +245,19 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.apply_appearance()
 
     def _system_is_dark(self):
-        source = Gio.SettingsSchemaSource.get_default()
-        if source is None or source.lookup("org.gnome.desktop.interface", True) is None:
+        if self._desktop_interface is None:
             return False
         try:
-            return Gio.Settings.new("org.gnome.desktop.interface").get_string(
-                "color-scheme"
-            ) == "prefer-dark"
+            return self._desktop_interface.get_string("color-scheme") == "prefer-dark"
         except GLib.Error:
             return False
 
     def apply_appearance(self):
         mode = self.prefs.get("appearance")
         dark = mode == "dark" or (mode == "system" and self._system_is_dark())
+        gtk_settings = Gtk.Settings.get_default()
+        if gtk_settings:
+            gtk_settings.set_property("gtk-application-prefer-dark-theme", dark)
         if dark:
             self.add_css_class("dark")
         else:
@@ -309,7 +314,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
 
     def current(self) -> NotePage | None:
         index = self.notebook.get_current_page()
-        return self.pages[index] if 0 <= index < len(self.pages) else None
+        widget = self.notebook.get_nth_page(index) if index >= 0 else None
+        return next((page for page in self.pages if page.container == widget), None)
 
     def new_tab(self, note: Note | None = None):
         page = NotePage(note or Note(), self)
@@ -366,7 +372,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         if page:
             self._save_page(page, save_as=True)
 
-    def _save_page(self, page, save_as=False, on_saved=None):
+    def _save_page(self, page, save_as=False, on_saved=None, on_cancel=None):
         if page.note.path is not None and not save_as:
             try:
                 page.note.save()
@@ -376,6 +382,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
                     on_saved()
             except OSError as exc:
                 self._error("Could not save note", str(exc))
+                if on_cancel:
+                    on_cancel()
             return
         chooser = Gtk.FileDialog()
         chooser.set_title("Save note as")
@@ -385,10 +393,14 @@ class NotepadWindow(Gtk.ApplicationWindow):
             try:
                 file = dialog.save_finish(result)
                 if file is None:
+                    if on_cancel:
+                        on_cancel()
                     return
                 path = file.get_path()
                 if path is None:
                     self._error("Choose a local file", "Remote locations are not supported.")
+                    if on_cancel:
+                        on_cancel()
                     return
                 page.note.save(Path(path))
                 page.refresh_label()
@@ -398,8 +410,12 @@ class NotepadWindow(Gtk.ApplicationWindow):
             except GLib.Error as exc:
                 if not exc.matches(Gtk.DialogError.quark(), Gtk.DialogError.DISMISSED):
                     self._error("Could not save note", str(exc))
+                if on_cancel:
+                    on_cancel()
             except OSError as exc:
                 self._error("Could not save note", str(exc))
+                if on_cancel:
+                    on_cancel()
 
         chooser.save(self, None, finished)
 
@@ -431,7 +447,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             self.pages.remove(page)
         self.update_status()
 
-    def _confirm_page(self, page, proceed):
+    def _confirm_page(self, page, proceed, on_cancel=None):
         if not page.note.dirty:
             proceed()
             return
@@ -446,11 +462,15 @@ class NotepadWindow(Gtk.ApplicationWindow):
             try:
                 decision = dialog.choose_finish(result)
             except GLib.Error:
+                if on_cancel:
+                    on_cancel()
                 return
             if decision == 1:
                 proceed()
             elif decision == 2:
-                self._save_page(page, on_saved=proceed)
+                self._save_page(page, on_saved=proceed, on_cancel=on_cancel)
+            elif on_cancel:
+                on_cancel()
 
         alert.choose(self, None, answered)
 
@@ -469,11 +489,13 @@ class NotepadWindow(Gtk.ApplicationWindow):
                 self._close_confirmed = True
                 self.close()
                 return
-            self._confirm_page(dirty_pages[index], lambda: next_page(index + 1))
+            self._confirm_page(
+                dirty_pages[index],
+                lambda: next_page(index + 1),
+                on_cancel=lambda: setattr(self, "_closing_in_progress", False),
+            )
 
         next_page()
-        # An interrupted dialog permits the user to retry closing.
-        self._closing_in_progress = False
         return True
 
     def update_status(self):
@@ -528,9 +550,8 @@ class NotepadApplication(Gtk.Application):
             self.set_accels_for_action(action, keys)
 
     def do_activate(self):
-        if self.window is None:
+        if self.window is None or not self.window.get_visible():
             self.window = NotepadWindow(self)
-            self.window.connect("destroy", lambda *_: setattr(self, "window", None))
         self.window.present()
 
     def do_open(self, files, _n_files, _hint):

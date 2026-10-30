@@ -1,7 +1,12 @@
 """Run with xvfb-run, after GTK4 and PyGObject have been installed."""
 
+import os
+import sys
 import tempfile
 from pathlib import Path
+
+# Make the app importable when executed directly by CI.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import gi
 
@@ -13,6 +18,7 @@ from goreecloud_notepad.app import NotepadApplication
 
 def main():
     with tempfile.TemporaryDirectory() as folder:
+        os.environ["XDG_CONFIG_HOME"] = folder
         app = NotepadApplication()
         app.register()
         app.activate()
