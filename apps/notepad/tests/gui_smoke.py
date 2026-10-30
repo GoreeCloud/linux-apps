@@ -114,10 +114,28 @@ def main():
         window._set_wrap(True)
         assert window.wrap_status.get_text() == "Wrap: On"
         assert all(p.editor.get_wrap_mode() == Gtk.WrapMode.WORD_CHAR for p in window.pages)
+        page.buffer.set_text("# Title\n- [x] Done")
+        window.toggle_preview()
+        assert window.preview_enabled
+        assert page.view_stack.get_visible_child_name() == "preview"
+        preview_buffer = page.preview.view.get_buffer()
+        preview_text = preview_buffer.get_text(*preview_buffer.get_bounds(), True)
+        assert "Title" in preview_text and "☑ Done" in preview_text
+        assert "# Title" not in preview_text
+        assert page.note.text == "# Title\n- [x] Done"
         window._set_appearance("dark")
         assert window.has_css_class("dark")
         window._set_appearance("light")
         assert not window.has_css_class("dark")
+        window.toggle_preview()
+        assert not window.preview_enabled
+        assert page.view_stack.get_visible_child_name() == "edit"
+        assert page.note.text == "# Title\n- [x] Done"
+        window.toggle_preview()
+        third = window.new_tab()
+        assert third.view_stack.get_visible_child_name() == "preview"
+        window.toggle_preview()
+        assert third.view_stack.get_visible_child_name() == "edit"
         window._close_confirmed = True
         window.close()
         app.quit()

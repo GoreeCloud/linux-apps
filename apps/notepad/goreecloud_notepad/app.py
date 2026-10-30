@@ -13,6 +13,7 @@ from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from .storage import Note, Preferences
 from .find import FindBar
+from .preview import MarkdownPreview
 from .theme import install as install_theme
 
 
@@ -51,7 +52,12 @@ class NotePage:
         self.container.set_vexpand(True)
         self.scroller.add_css_class("editor-pane")
         self.scroller.set_child(self.editor)
-        self.container.set_child(self.scroller)
+        self.preview = MarkdownPreview()
+        self.update_font()
+        self.view_stack = Gtk.Stack()
+        self.view_stack.add_named(self.scroller, "edit")
+        self.view_stack.add_named(self.preview, "preview")
+        self.container.set_child(self.view_stack)
 
         self.tab = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=9)
         tab_icon = Gtk.Image.new_from_icon_name('text-x-generic-symbolic')
@@ -71,6 +77,13 @@ class NotePage:
         self.buffer.connect("mark-set", self._mark_set)
         self.refresh_label()
 
+    def set_preview(self, enabled: bool, dark: bool):
+        if enabled:
+            self.preview.render(self.note.text, dark)
+            self.view_stack.set_visible_child_name("preview")
+        else:
+            self.view_stack.set_visible_child_name("edit")
+
     def update_font(self):
         size = self.window.prefs.get("font_size")
         family = "monospace" if self.window.prefs.get("monospace") else "sans-serif"
@@ -80,10 +93,22 @@ class NotePage:
             f"textview.notepad-editor, textview.notepad-editor text "
             f"{{ font-family: {family}; font-size: {size}pt; }}".encode()
         )
-        self.editor.get_style_context().add_provider(
-            css, Gtk.STYLE_PROVIDER_PRIORITY_USER
-        )
+        econtext = self.editor.get_style_context()
+        if hasattr(self, "_font_provider"):
+            econtext.remove_provider(self._font_provider)
+        econtext.add_provider(css, Gtk.STYLE_PROVIDER_PRIORITY_USER)
         self._font_provider = css
+        if hasattr(self, "preview"):
+            pcss = Gtk.CssProvider()
+            pcss.load_from_data(
+                f"textview.notepad-preview, textview.notepad-preview text "
+                f"{{ font-family: {family}; font-size: {size}pt; }}".encode()
+            )
+            pcontext = self.preview.view.get_style_context()
+            if hasattr(self, "_preview_font_provider"):
+                pcontext.remove_provider(self._preview_font_provider)
+            pcontext.add_provider(pcss, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+            self._preview_font_provider = pcss
 
     def refresh_label(self):
         self.tab_label.set_text(("• " if self.note.dirty else "") + self.note.name)
@@ -94,6 +119,8 @@ class NotePage:
         self.note.text = buffer.get_text(start, end, True)
         self.refresh_label()
         self.window.update_status()
+        if self.window.preview_enabled:
+            self.set_preview(True, self.window.has_css_class("dark"))
         if hasattr(self.window, "find_bar"):
             self.window.find_bar.refresh()
 
@@ -107,6 +134,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         super().__init__(application=app, title="GoreeCloud Notepad")
         self.prefs = app.prefs
         self.pages: list[NotePage] = []
+        self.preview_enabled = False
         self._close_confirmed = False
         self._closing_in_progress = False
         self._desktop_interface = None
@@ -154,6 +182,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
 
         preferences = self._glyph("preferences-desktop-font-symbolic", "Preferences", self.show_preferences)
         actions.append(preferences)
+        self.preview_button = self._glyph(
+            "document-print-preview-symbolic", "Preview Markdown (Ctrl+Shift+M)",
+            self.toggle_preview,
+        )
+        actions.append(self.preview_button)
 
         self.notebook = Gtk.Notebook()
         self.notebook.set_scrollable(True)
@@ -206,6 +239,26 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.apply_appearance()
         self.new_tab()
 
+    def toggle_preview(self):
+        if not self.preview_enabled:
+            self.find_bar.hide_find()
+        self.preview_enabled = not self.preview_enabled
+        dark = self.has_css_class("dark")
+        for page in self.pages:
+            page.set_preview(self.preview_enabled, dark)
+        if self.preview_enabled:
+            self.preview_button.set_icon_name("document-edit-symbolic")
+            self.preview_button.set_tooltip_text("Edit source (Ctrl+Shift+M)")
+            self.preview_button.update_property(
+                [Gtk.AccessibleProperty.LABEL], ["Edit source"]
+            )
+        else:
+            self.preview_button.set_icon_name("document-print-preview-symbolic")
+            self.preview_button.set_tooltip_text("Preview Markdown (Ctrl+Shift+M)")
+            page = self.current()
+            if page:
+                page.editor.grab_focus()
+
     def _tab_switched(self):
         self.update_status()
         self.find_bar.refresh()
@@ -231,6 +284,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("New tab", "Ctrl+T", self.new_tab),
             ("Open…", "Ctrl+O", self.open_dialog),
             ("Find…", "Ctrl+F", lambda: self.find_bar.show_find()),
+            ("Toggle Markdown preview", "Ctrl+Shift+M", self.toggle_preview),
             ("Save", "Ctrl+S", self.save_current),
             ("Save as…", "Ctrl+Shift+S", self.save_as_current),
             ("Close tab", "Ctrl+W", self.close_current),
@@ -299,11 +353,17 @@ class NotepadWindow(Gtk.ApplicationWindow):
             self.add_css_class("dark")
         else:
             self.remove_css_class("dark")
+        if self.preview_enabled:
+            for page in self.pages:
+                page.set_preview(True, dark)
 
     def _set_wrap(self, enabled):
         self.prefs.set("word_wrap", bool(enabled))
         for page in self.pages:
             page.editor.set_wrap_mode(
+                Gtk.WrapMode.WORD_CHAR if enabled else Gtk.WrapMode.NONE
+            )
+            page.preview.view.set_wrap_mode(
                 Gtk.WrapMode.WORD_CHAR if enabled else Gtk.WrapMode.NONE
             )
         self.update_status()
@@ -358,10 +418,13 @@ class NotepadWindow(Gtk.ApplicationWindow):
     def new_tab(self, note: Note | None = None):
         page = NotePage(note or Note(), self)
         self.pages.append(page)
+        if self.preview_enabled:
+            page.set_preview(True, self.has_css_class("dark"))
         index = self.notebook.append_page(page.container, page.tab)
         self.notebook.set_tab_reorderable(page.container, True)
         self.notebook.set_current_page(index)
-        page.editor.grab_focus()
+        if not self.preview_enabled:
+            page.editor.grab_focus()
         self.update_status()
         self.find_bar.refresh()
         return page
@@ -371,7 +434,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
         for page in self.pages:
             if page.note.path is not None and page.note.path.resolve() == path.resolve():
                 self.notebook.set_current_page(self.notebook.page_num(page.container))
-                page.editor.grab_focus()
+                if not self.preview_enabled:
+                    page.editor.grab_focus()
                 return page
         try:
             note = Note.open(path)
@@ -593,6 +657,7 @@ class NotepadApplication(Gtk.Application):
             "app.previous-tab": ["<Primary>Page_Up"],
             "app.undo": ["<Primary>z"],
             "app.redo": ["<Primary><Shift>z", "<Primary>y"],
+            "app.preview": ["<Primary><Shift>m"],
         }
         handlers = {
             "new": lambda: self.window.new_tab(),
@@ -608,6 +673,7 @@ class NotepadApplication(Gtk.Application):
             "previous-tab": lambda: self.window.notebook.prev_page(),
             "undo": lambda: self.window.undo_current(),
             "redo": lambda: self.window.redo_current(),
+            "preview": lambda: self.window.toggle_preview(),
         }
         for name, callback in handlers.items():
             action = Gio.SimpleAction.new(name, None)

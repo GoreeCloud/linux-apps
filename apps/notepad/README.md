@@ -16,7 +16,9 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
 - Native Undo/Redo, plus keyboard shortcuts to switch between tabs.
-- Plain-text editing only in this preview: rich-text headings, checkboxes, sync, and a persisted saved-time history are not yet implemented.
+- Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
+- Preview is deliberately not a WYSIWYG editor: checkboxes are visual, links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters.
+- Cloud sync, interactive rich text, and persisted saved-time history are not yet implemented.
 
 ## Install & run
 
@@ -51,6 +53,7 @@ The icon references GTK's built-in `accessories-text-editor` theme icon.
 | Ctrl+Shift+S | Save as |
 | Ctrl+W | Close tab |
 | Ctrl+F | Find text in current note |
+| Ctrl+Shift+M | Toggle Markdown preview / Edit source |
 | F3 / Shift+F3 | Next / previous search match |
 | Enter / Shift+Enter | Next / previous match with search focused |
 | Escape | Close search and return to editor |
