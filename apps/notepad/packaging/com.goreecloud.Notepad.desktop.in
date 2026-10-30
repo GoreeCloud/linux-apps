@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=GoreeCloud Notepad
+Comment=Quick notes, beautifully simple
+Exec=/usr/bin/env sh @APP_DIR@/run.sh %F
+TryExec=/usr/bin/python3
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;TextEditor;GTK;
+MimeType=text/plain;text/markdown;
+StartupNotify=true

@@ -1,0 +1,28 @@
+name: GoreeCloud Notepad native checks
+
+on:
+  push:
+    paths:
+      - 'apps/notepad/**'
+      - '.github/workflows/notepad.yml'
+  pull_request:
+    paths:
+      - 'apps/notepad/**'
+      - '.github/workflows/notepad.yml'
+
+jobs:
+  native-gtk4:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native GTK4 runtime
+        run: sudo apt-get update && sudo apt-get install -y python3-gi gir1.2-gtk-4.0 xvfb
+      - name: Check storage and preferences
+        working-directory: apps/notepad
+        run: /usr/bin/python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Compile native application
+        working-directory: apps/notepad
+        run: /usr/bin/python3 -m compileall -q goreecloud_notepad
+      - name: GTK4 virtual-display smoke
+        working-directory: apps/notepad
+        run: xvfb-run -a /usr/bin/python3 tests/gui_smoke.py
