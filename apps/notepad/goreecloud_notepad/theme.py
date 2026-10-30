@@ -36,27 +36,37 @@ window.notepad-window .primary-glyph {
 }
 window.notepad-window notebook > header {
   background: #ecf0f8;
-  padding: 6px 12px 0 12px;
+  padding: 3px 12px 3px 12px;
   border-bottom: 1px solid #d7deef;
 }
 window.notepad-window notebook > header tab {
+  background: transparent;
   border: 1px solid transparent;
-  border-radius: 12px 12px 0 0;
-  padding: 8px 12px;
-  min-width: 96px;
+  border-radius: 18px;
+  padding: 2px 10px;
+  margin: 0 4px 0 0;
+  min-width: 90px;
+  min-height: 28px;
   color: #5f657b;
+}
+window.notepad-window notebook > header tab:hover:not(:checked) {
+  background: #e5ebf6;
+  color: #20243a;
 }
 window.notepad-window notebook > header tab:checked {
   background: #f9fafd;
   color: #20243a;
   border-color: #d7deef;
-  border-bottom-color: #f9fafd;
+}
+window.notepad-window notebook > header tab:focus-visible {
+  outline: 2px solid #4132b3;
+  outline-offset: -2px;
 }
 window.notepad-window .tab-close {
   min-width: 20px;
   min-height: 20px;
-  padding: 1px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 999px;
 }
 window.notepad-window .editor-pane {
   background: #f9fafd;
@@ -99,11 +109,17 @@ window.notepad-window.dark notebook > header {
   border-color: #373c50;
 }
 window.notepad-window.dark notebook > header tab { color: #b3b9cf; }
+window.notepad-window.dark notebook > header tab:hover:not(:checked) {
+  background: #292f40;
+  color: #f2f2fa;
+}
 window.notepad-window.dark notebook > header tab:checked {
   background: #1d2231;
   color: #f2f2fa;
   border-color: #373c50;
-  border-bottom-color: #1d2231;
+}
+window.notepad-window.dark notebook > header tab:focus-visible {
+  outline-color: #d8d2ff;
 }
 window.notepad-window.dark .editor-pane,
 window.notepad-window.dark textview.notepad-editor,
