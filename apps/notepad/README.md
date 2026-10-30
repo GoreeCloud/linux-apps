@@ -15,7 +15,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Live word and source-line counts, cursor position, wrap state, and honest local save status. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
-- Native Undo/Redo, plus keyboard shortcuts to switch between tabs.
+- Native Undo/Redo, keyboard shortcuts to switch tabs, and a glyph-only Markdown formatting menu. Bold, italic, inline code, and strikethrough commands wrap or unwrap selected text (or insert paired markers at the cursor) as a single undoable source edit.
 - Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
 - Markdown checklist boxes can be clicked in Preview to mark tasks done/undone, updating only the original `[ ]` / `[x]` marker. The change is undoable, marks the note as unsaved, and is never written to disk until Save. Use Ctrl+Enter to toggle the task at the source editor cursor.
 - Preview is not a WYSIWYG editor: links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters. Only checkbox glyphs are interactive.
@@ -70,6 +70,8 @@ Remove the package with `sudo apt remove goreecloud-notepad` if desired. Install
 | Ctrl+F | Find text in current note |
 | Ctrl+Shift+M | Toggle Markdown preview / Edit source |
 | Ctrl+Enter | Toggle the checklist item on the source cursor line |
+| Ctrl+B / Ctrl+I | Bold / italic Markdown |
+| Ctrl+Shift+K / Ctrl+Shift+X | Inline code / strikethrough Markdown |
 | F3 / Shift+F3 | Next / previous search match |
 | Enter / Shift+Enter | Next / previous match with search focused |
 | Escape | Close search and return to editor |
