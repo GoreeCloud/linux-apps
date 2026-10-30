@@ -12,6 +12,7 @@ gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from .storage import Note, Preferences
+from .find import FindBar
 from .theme import install as install_theme
 
 
@@ -21,6 +22,8 @@ class NotePage:
         self.window = window
         self.buffer = Gtk.TextBuffer()
         self.buffer.set_text(note.text)
+        self.buffer.set_enable_undo(True)
+        self.buffer.set_max_undo_levels(100)
         self.editor = Gtk.TextView.new_with_buffer(self.buffer)
         self.editor.add_css_class("notepad-editor")
         self.editor.set_left_margin(40)
@@ -91,6 +94,8 @@ class NotePage:
         self.note.text = buffer.get_text(start, end, True)
         self.refresh_label()
         self.window.update_status()
+        if hasattr(self.window, "find_bar"):
+            self.window.find_bar.refresh()
 
     def _mark_set(self, _buffer, _iter, mark):
         if mark.get_name() == "insert":
@@ -158,7 +163,9 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.notebook.set_action_widget(tab_add, Gtk.PackType.END)
         self.notebook.set_hexpand(True)
         self.notebook.set_vexpand(True)
-        self.notebook.connect("switch-page", lambda *_: GLib.idle_add(self.update_status))
+        self.notebook.connect("switch-page", lambda *_: GLib.idle_add(self._tab_switched))
+        self.find_bar = FindBar(self)
+        root.append(self.find_bar)
         root.append(self.notebook)
 
         footer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
@@ -199,6 +206,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.apply_appearance()
         self.new_tab()
 
+    def _tab_switched(self):
+        self.update_status()
+        self.find_bar.refresh()
+        return False
+
     def _glyph(self, icon_name, tooltip, callback):
         button = Gtk.Button.new_from_icon_name(icon_name)
         button.add_css_class("flat")
@@ -218,6 +230,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         actions = [
             ("New tab", "Ctrl+T", self.new_tab),
             ("Open…", "Ctrl+O", self.open_dialog),
+            ("Find…", "Ctrl+F", lambda: self.find_bar.show_find()),
             ("Save", "Ctrl+S", self.save_current),
             ("Save as…", "Ctrl+Shift+S", self.save_as_current),
             ("Close tab", "Ctrl+W", self.close_current),
@@ -350,6 +363,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.notebook.set_current_page(index)
         page.editor.grab_focus()
         self.update_status()
+        self.find_bar.refresh()
         return page
 
     def open_path(self, path: Path):
@@ -386,6 +400,16 @@ class NotepadWindow(Gtk.ApplicationWindow):
         except GLib.Error as exc:
             if not exc.matches(Gtk.DialogError.quark(), Gtk.DialogError.DISMISSED):
                 self._error("Could not open file", str(exc))
+
+    def undo_current(self):
+        page = self.current()
+        if page and page.buffer.get_can_undo():
+            page.buffer.undo()
+
+    def redo_current(self):
+        page = self.current()
+        if page and page.buffer.get_can_redo():
+            page.buffer.redo()
 
     def save_current(self):
         page = self.current()
@@ -471,6 +495,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         if page in self.pages:
             self.pages.remove(page)
         self.update_status()
+        self.find_bar.refresh()
 
     def _confirm_page(self, page, proceed, on_cancel=None):
         if not page.note.dirty:
@@ -561,6 +586,13 @@ class NotepadApplication(Gtk.Application):
             "app.save-as": ["<Primary><Shift>s"],
             "app.close-tab": ["<Primary>w"],
             "app.quit": ["<Primary>q"],
+            "app.find": ["<Primary>f"],
+            "app.find-next": ["F3"],
+            "app.find-previous": ["<Shift>F3"],
+            "app.next-tab": ["<Primary>Page_Down"],
+            "app.previous-tab": ["<Primary>Page_Up"],
+            "app.undo": ["<Primary>z"],
+            "app.redo": ["<Primary><Shift>z", "<Primary>y"],
         }
         handlers = {
             "new": lambda: self.window.new_tab(),
@@ -569,6 +601,13 @@ class NotepadApplication(Gtk.Application):
             "save-as": lambda: self.window.save_as_current(),
             "close-tab": lambda: self.window.close_current(),
             "quit": lambda: self.window.close(),
+            "find": lambda: self.window.find_bar.show_find(),
+            "find-next": lambda: self.window.find_bar.move(True),
+            "find-previous": lambda: self.window.find_bar.move(False),
+            "next-tab": lambda: self.window.notebook.next_page(),
+            "previous-tab": lambda: self.window.notebook.prev_page(),
+            "undo": lambda: self.window.undo_current(),
+            "redo": lambda: self.window.redo_current(),
         }
         for name, callback in handlers.items():
             action = Gio.SimpleAction.new(name, None)

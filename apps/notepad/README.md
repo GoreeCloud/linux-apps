@@ -14,6 +14,8 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Mockup-inspired native shell: left-aligned identity, blue document tabs, a rounded writing surface, and compact glyph controls.
 - Live word and line counts, cursor position, wrap state, and honest local save status.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
+- Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
+- Native Undo/Redo, plus keyboard shortcuts to switch between tabs.
 - Plain-text editing only in this preview: rich-text headings, checkboxes, sync, and a persisted saved-time history are not yet implemented.
 
 ## Install & run
@@ -48,9 +50,16 @@ The icon references GTK's built-in `accessories-text-editor` theme icon.
 | Ctrl+S | Save |
 | Ctrl+Shift+S | Save as |
 | Ctrl+W | Close tab |
+| Ctrl+F | Find text in current note |
+| F3 / Shift+F3 | Next / previous search match |
+| Enter / Shift+Enter | Next / previous match with search focused |
+| Escape | Close search and return to editor |
+| Ctrl+Z / Ctrl+Shift+Z | Undo / redo |
+| Ctrl+Y | Redo |
+| Ctrl+PageDown / Ctrl+PageUp | Next / previous tab |
 | Ctrl+Q | Quit |
 
-Settings saved at `$XDG_CONFIG_HOME/goreecloud/notepad/settings.json` (or `~/.config/goreecloud/notepad/settings.json`). Notes are stored **only where the user chooses to save them**. Revisions in the editor are not auto-saved.
+Settings saved at `$XDG_CONFIG_HOME/goreecloud/notepad/settings.json` (or `~/.config/goreecloud/notepad/settings.json`). Notes are stored **only where the user chooses to save them**. Revisions in the editor are not auto-saved. Find highlighting is temporary, does not write data to disk, and does not change the dirty status of a note.
 
 ## Tests
 

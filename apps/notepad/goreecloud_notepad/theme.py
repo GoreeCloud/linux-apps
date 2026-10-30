@@ -252,6 +252,44 @@ window.notepad-window.dark .notepad-footer separator {
 
 """
 
+STYLESHEET += """
+/* Compact, native document search. */
+window.notepad-window .notepad-findbar {
+  background: #edf2f9;
+  color: #283b56;
+  border-radius: 12px;
+  padding: 5px 8px;
+}
+window.notepad-window .notepad-findbar entry {
+  background: #ffffff;
+  color: #20243a;
+  border-radius: 11px;
+  min-height: 34px;
+  border: 1px solid #cbd9ec;
+}
+window.notepad-window .find-glyph {
+  border-radius: 10px;
+  min-height: 30px;
+  min-width: 30px;
+  padding: 3px;
+}
+window.notepad-window .find-glyph:hover {
+  background: #dceaff;
+}
+window.notepad-window.dark .notepad-findbar {
+  background: #202a3a;
+  color: #edf2fa;
+}
+window.notepad-window.dark .notepad-findbar entry {
+  background: #1d2636;
+  color: #f2f2fa;
+  border-color: #53627e;
+}
+window.notepad-window.dark .find-glyph:hover {
+  background: #334c79;
+}
+"""
+
 _provider = None
 
 
