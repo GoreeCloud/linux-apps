@@ -44,6 +44,20 @@ sed "s|@APP_DIR@|$(pwd)|g" packaging/com.goreecloud.Notepad.desktop.in > ~/.loca
 
 The icon references GTK's built-in `accessories-text-editor` theme icon.
 
+## Build an installable Debian package
+
+On Ubuntu/Debian, create a local `.deb` without root permissions or downloads:
+
+```sh
+sudo apt install dpkg-dev desktop-file-utils
+cd apps/notepad
+python3 packaging/build_deb.py
+```
+
+This produces `dist/goreecloud-notepad_0.1.0_all.deb`. Inspect the archive with `dpkg-deb --contents dist/*.deb`; install deliberately with `sudo apt install ./dist/goreecloud-notepad_0.1.0_all.deb`. The installed command is `goreecloud-notepad`, and the desktop menu entry supports opening local text and Markdown files. System GTK4/PyGObject packages are declared as dependencies.
+
+Remove the package with `sudo apt remove goreecloud-notepad` if desired. Installation and removal do **not** delete saved notes or preferences. This is a locally buildable **preview** package, not a signed public release. No network services, build-time package downloads, or post-installation scripts are included.
+
 ## Shortcuts
 
 | Shortcut | Action |
