@@ -8,6 +8,7 @@ from pathlib import Path
 import gi
 
 gi.require_version("Gtk", "4.0")
+gi.require_version("Gdk", "4.0")
 from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 
 from .storage import Note, Preferences
@@ -120,21 +121,23 @@ class NotepadWindow(Gtk.ApplicationWindow):
         header.set_title_widget(Gtk.Box())
         identity = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         identity.add_css_class("brand-identity")
-        identity.append(Gtk.Image.new_from_icon_name("accessories-text-editor-symbolic"))
+        identity.append(Gtk.Image.new_from_icon_name("text-x-generic-symbolic"))
         identity.append(Gtk.Label(label="GoreeCloud Notepad"))
         header.pack_start(identity)
         self.set_titlebar(header)
+        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
+        header.pack_end(actions)
 
         file_button = Gtk.MenuButton()
         file_button.set_icon_name("folder-open-symbolic")
         file_button.set_tooltip_text("File")
         file_button.update_property([Gtk.AccessibleProperty.LABEL], ["File"])
         file_button.add_css_class("header-glyph")
-        header.pack_end(file_button)
+        actions.append(file_button)
         file_button.set_popover(self._file_popover())
 
         new_button = self._glyph("list-add-symbolic", "New tab", self.new_tab)
-        header.pack_end(new_button)
+        actions.append(new_button)
 
         settings = Gtk.MenuButton()
         settings.set_icon_name("emblem-system-symbolic")
@@ -142,10 +145,10 @@ class NotepadWindow(Gtk.ApplicationWindow):
         settings.update_property([Gtk.AccessibleProperty.LABEL], ["Settings"])
         settings.add_css_class("header-glyph")
         settings.set_popover(self._settings_popover())
-        header.pack_end(settings)
+        actions.append(settings)
 
         preferences = self._glyph("preferences-desktop-font-symbolic", "Preferences", self.show_preferences)
-        header.pack_end(preferences)
+        actions.append(preferences)
 
         self.notebook = Gtk.Notebook()
         self.notebook.set_scrollable(True)
@@ -167,12 +170,15 @@ class NotepadWindow(Gtk.ApplicationWindow):
         bullet.add_css_class("brand-dot")
         left.append(bullet)
         self.words_status = Gtk.Label(label="0 words")
+        self.words_status.add_css_class("footer-label")
         left.append(self.words_status)
         left.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         self.lines_status = Gtk.Label(label="1 line")
+        self.lines_status.add_css_class("footer-label")
         left.append(self.lines_status)
         self.file_status = Gtk.Label(label="Local note")
         self.file_status.add_css_class("footer-label")
+        self.file_status.set_ellipsize(Pango.EllipsizeMode.END)
         # Save-state belongs at the trailing end of the status bar.
         footer.append(left)
         spacer = Gtk.Box()
@@ -182,7 +188,10 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.position_status.add_css_class("footer-label")
         footer.append(self.position_status)
         self.wrap_status = Gtk.Label(label='Wrap: On')
+        self.wrap_status.add_css_class("footer-label")
+        footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         footer.append(self.wrap_status)
+        footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         footer.append(self.file_status)
         root.append(footer)
 
@@ -528,7 +537,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             f"Ln {cursor.get_line() + 1}, Col {cursor.get_line_offset() + 1}"
         )
         self.wrap_status.set_text("Wrap: On" if self.prefs.get("word_wrap") else "Wrap: Off")
-        status = "Unsaved changes" if page.note.dirty else ("Saved on this device" if page.note.path else "Local note")
+        status = "Unsaved changes" if page.note.dirty else ("Saved on this device" if page.note.path else "Not saved yet")
         self.file_status.set_text(status)
         return False
 

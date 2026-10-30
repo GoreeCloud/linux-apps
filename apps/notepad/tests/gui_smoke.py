@@ -45,19 +45,30 @@ def main():
         tab_height = header.get_height()
         assert 0 < tab_height <= 48, f"Tab strip is too tall: {tab_height}px"
         print(f"Native tab strip: {tab_height}px")
-        page.buffer.set_text("GoreeCloud test note")
+        assert page.container.has_css_class("paper-pane")
+        assert window.words_status.get_text() == "0 words"
+        assert window.lines_status.get_text() == "1 line"
+        assert window.wrap_status.get_text() == "Wrap: On"
+        page.buffer.set_text("GoreeCloud test note\nSecond line")
         assert page.note.dirty
+        assert window.words_status.get_text() == "5 words"
+        assert window.lines_status.get_text() == "2 lines"
+        assert window.file_status.get_text() == "Unsaved changes"
         path = Path(folder) / "note.txt"
         page.note.save(path)
         page.refresh_label()
-        assert path.read_text() == "GoreeCloud test note"
+        window.update_status()
+        assert window.file_status.get_text() == "Saved on this device"
+        assert path.read_text() == "GoreeCloud test note\nSecond line"
         window.new_tab()
         assert len(window.pages) == 2
         window.open_path(path)
         assert len(window.pages) == 2, "Existing file should not open twice"
         window._set_wrap(False)
+        assert window.wrap_status.get_text() == "Wrap: Off"
         assert all(p.editor.get_wrap_mode() == Gtk.WrapMode.NONE for p in window.pages)
         window._set_wrap(True)
+        assert window.wrap_status.get_text() == "Wrap: On"
         assert all(p.editor.get_wrap_mode() == Gtk.WrapMode.WORD_CHAR for p in window.pages)
         window._set_appearance("dark")
         assert window.has_css_class("dark")
