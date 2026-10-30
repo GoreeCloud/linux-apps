@@ -11,15 +11,18 @@ window.notepad-window {
   color: #20243a;
 }
 window.notepad-window headerbar {
-  background: #e5ebf6;
-  border-bottom: 1px solid #d5dcee;
+  background: #edf2f9;
+  border-bottom: 0;
   box-shadow: none;
-  min-height: 42px;
+  min-height: 54px;
+  padding: 0 15px;
 }
-window.notepad-window headerbar .title {
-  font-weight: 750;
-  font-size: 14px;
+window.notepad-window .brand-identity {
+  font-size: 16px;
+  font-weight: 700;
+  color: #18263c;
 }
+window.notepad-window .brand-identity image { color: #2169d5; }
 window.notepad-window .header-glyph {
   border-radius: 12px;
   min-width: 32px;
@@ -54,9 +57,9 @@ window.notepad-window notebook > header tab:hover:not(:checked) {
   color: #20243a;
 }
 window.notepad-window notebook > header tab:checked {
-  background: #f9fafd;
-  color: #20243a;
-  border-color: #d7deef;
+  background: #dceaff;
+  color: #183c7d;
+  border-color: #c7dbfa;
 }
 window.notepad-window notebook > header tab:focus-visible {
   outline: 2px solid #4132b3;
@@ -68,12 +71,14 @@ window.notepad-window .tab-close {
   padding: 0;
   border-radius: 999px;
 }
+window.notepad-window .paper-pane { border: 1px solid #d8e0eb; border-radius: 18px; background: #ffffff; }
 window.notepad-window .editor-pane {
-  background: #f9fafd;
+  background: #ffffff;
+  border-radius: 17px;
 }
 window.notepad-window textview.notepad-editor,
 window.notepad-window textview.notepad-editor text {
-  background: #f9fafd;
+  background: #ffffff;
   color: #20243a;
   caret-color: #5145d9;
 }
@@ -128,6 +133,123 @@ window.notepad-window.dark textview.notepad-editor text {
   color: #f2f2fa;
   caret-color: #d8d2ff;
 }
+
+/* GoreeCloud Notepad native desktop shell; GC UI semantic surfaces. */
+window.notepad-window headerbar {
+  background: #edf2f9;
+  padding: 0 15px;
+}
+window.notepad-window .header-glyph {
+  color: #273a55;
+  min-width: 34px;
+  min-height: 34px;
+  border-radius: 12px;
+}
+window.notepad-window notebook > header {
+  background: #edf2f9;
+  padding: 5px 16px 0 16px;
+  border-bottom: 0;
+}
+window.notepad-window notebook > header tab {
+  background: #f3f6fb;
+  border: 1px solid #d9e1ee;
+  border-radius: 18px 18px 0 0;
+  min-width: 188px;
+  min-height: 28px;
+  padding: 5px 11px;
+  margin: 0 4px 0 0;
+  color: #30435e;
+}
+window.notepad-window notebook > header tab:checked {
+  background: #dceaff;
+  border-color: #c7dafa;
+  color: #153e83;
+}
+window.notepad-window notebook > header tab:hover:not(:checked) {
+  background: #e8eef8;
+  color: #20243a;
+}
+window.notepad-window .tab-add {
+  background: #e5ecf7;
+  border: 1px solid #dae3ee;
+  border-radius: 999px;
+  margin: 4px 8px 4px 7px;
+  min-width: 30px;
+  min-height: 30px;
+}
+window.notepad-window .paper-pane {
+  background: #ffffff;
+  border: 1px solid #d9e1ed;
+  border-radius: 18px;
+  box-shadow: 0 3px 14px rgba(37, 53, 81, 0.10);
+}
+window.notepad-window .editor-pane {
+  background: #ffffff;
+  border-radius: 17px;
+}
+window.notepad-window textview.notepad-editor,
+window.notepad-window textview.notepad-editor text {
+  background: #ffffff;
+  color: #20243a;
+}
+window.notepad-window .notepad-footer {
+  background: #edf2f9;
+  border-top: 0;
+  min-height: 34px;
+}
+window.notepad-window .notepad-footer separator {
+  background: #c8d4e5;
+  margin: 5px 8px;
+}
+window.notepad-window.dark headerbar,
+window.notepad-window.dark notebook > header,
+window.notepad-window.dark .notepad-footer {
+  background: #202a3a;
+  border-color: #414b5f;
+}
+window.notepad-window.dark .brand-identity {
+  color: #f2f2fa;
+}
+window.notepad-window.dark .brand-identity image {
+  color: #9bbaff;
+}
+window.notepad-window.dark .header-glyph {
+  color: #e5eafa;
+}
+window.notepad-window.dark notebook > header tab {
+  background: #273247;
+  border-color: #3b4962;
+  color: #c9d3e5;
+}
+window.notepad-window.dark notebook > header tab:checked {
+  background: #334c79;
+  border-color: #5475b0;
+  color: #f4f7ff;
+}
+window.notepad-window.dark notebook > header tab:hover:not(:checked) {
+  background: #38465e;
+  color: #ffffff;
+}
+window.notepad-window.dark .tab-add {
+  background: #344259;
+  border-color: #485876;
+  color: #f0f4ff;
+}
+window.notepad-window.dark .paper-pane {
+  background: #1d2636;
+  border-color: #3e4d66;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.22);
+}
+window.notepad-window.dark .editor-pane,
+window.notepad-window.dark textview.notepad-editor,
+window.notepad-window.dark textview.notepad-editor text {
+  background: #1d2636;
+  color: #f2f2fa;
+}
+window.notepad-window.dark .notepad-footer separator {
+  background: #526075;
+}
+
 """
 
 _provider = None
