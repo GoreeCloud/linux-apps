@@ -71,8 +71,10 @@ window.notepad-window .tab-close {
   padding: 0;
   border-radius: 999px;
 }
+window.notepad-window .paper-pane { border: 1px solid #d8e0eb; border-radius: 18px; background: #ffffff; }
 window.notepad-window .editor-pane {
-  background: #f9fafd;
+  background: #ffffff;
+  border-radius: 17px;
 }
 window.notepad-window textview.notepad-editor,
 window.notepad-window textview.notepad-editor text {
