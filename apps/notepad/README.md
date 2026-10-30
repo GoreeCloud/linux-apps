@@ -9,17 +9,18 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Open, Save, and Save As using native Linux file dialogs.
 - **Word wrap enabled by default**, adjustable in Settings.
 - All requested File, New Tab, Preferences, and Settings **glyph-only controls live in the native title bar**, alongside native minimize, maximize, and close controls provided by the window manager.
-- Settings: Light (first-run default), Dark, or Follow system; wrap option. Preferences: font size and monospace text.
+- Settings: Light (first-run default), Dark, or Follow system; word wrap and **Style Markdown while editing** toggles. Preferences: font size and monospace text.
 - Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors displayed rather than silently changing content.
 - Mockup-inspired native shell: left-aligned identity, blue document tabs, a rounded writing surface, and compact glyph controls.
 - Live word and source-line counts, cursor position, wrap state, and honest local save status. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
+- **Live Markdown styling while typing:** headings, emphasis, code, links, lists, and task markers are visually distinguished directly in the native editor. Formatting cues are enabled by default and may be switched off under Settings; source Markdown punctuation stays visible and editable. For responsiveness, notes above 100,000 characters or with more than 2,500 formatting spans remain unstyled but fully editable. The decoration never changes note text, creates a save, or downloads anything.
 - Native Undo/Redo, keyboard shortcuts to switch tabs, and a glyph-only Markdown formatting menu. Bold, italic, inline code, and strikethrough commands wrap or unwrap selected text (or insert paired markers at the cursor) as a single undoable source edit.
 - Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
 - Markdown checklist boxes can be clicked in Preview to mark tasks done/undone, updating only the original `[ ]` / `[x]` marker. The change is undoable, marks the note as unsaved, and is never written to disk until Save. Use Ctrl+Enter to toggle the task at the source editor cursor.
 - Preview is not a WYSIWYG editor: links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters. Only checkbox glyphs are interactive.
-- Cloud sync, interactive rich text, and persisted saved-time history are not yet implemented.
+- Full WYSIWYG editing (hidden Markdown source markers), cloud sync, and persisted saved-time history are not yet implemented.
 
 ## Install & run
 
@@ -90,6 +91,8 @@ python3 -m unittest discover -s tests -v
 python3 -m compileall -q goreecloud_notepad
 # With GTK installed:
 xvfb-run -a python3 tests/gui_smoke.py
+xvfb-run -a python3 tests/gui_format_smoke.py
+xvfb-run -a python3 tests/gui_source_style_smoke.py
 ```
 
 GTK4 and PyGObject are provided by the Linux system package manager, not downloaded executable packages. This app uses GC UI semantic design guidance, not a claimed stable GC UI native SDK. License decision for the broader monorepo remains pending; no third-party assets are copied here.

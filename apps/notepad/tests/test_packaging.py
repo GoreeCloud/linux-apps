@@ -42,7 +42,7 @@ class DebianPackageTests(unittest.TestCase):
             package = stage / "share/goreecloud/notepad/goreecloud_notepad"
             expected = {
                 "__init__.py", "__main__.py", "app.py", "checklists.py",
-                "find.py", "formatting.py", "markdown.py", "preview.py", "storage.py", "theme.py",
+                "find.py", "formatting.py", "markdown.py", "preview.py", "source_spans.py", "source_styling.py", "storage.py", "theme.py",
             }
             self.assertEqual({p.name for p in package.iterdir()}, expected)
             self.assertTrue(all(not p.is_symlink() for p in package.iterdir()))

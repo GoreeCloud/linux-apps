@@ -16,6 +16,7 @@ from .find import FindBar
 from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
 from .formatting import inline_format
+from .source_styling import SourceStyling
 from .theme import install as install_theme
 
 
@@ -82,6 +83,10 @@ class NotePage:
         self.tab_add.add_css_class("tab-add")
         self.tab_add.set_visible(False)
         self.tab.append(self.tab_add)
+        self.styling = SourceStyling(
+            self.buffer, dark=window.has_css_class("dark"),
+            enabled=window.prefs.get("live_markdown"),
+        )
         self.buffer.connect("changed", self._changed)
         self.buffer.connect("mark-set", self._mark_set)
         self.refresh_label()
@@ -150,6 +155,7 @@ class NotePage:
             self.set_preview(True, self.window.has_css_class("dark"))
         if hasattr(self.window, "find_bar"):
             self.window.find_bar.refresh()
+        self.styling.schedule()
 
     def _mark_set(self, _buffer, _iter, mark):
         if mark.get_name() == "insert":
@@ -404,8 +410,23 @@ class NotepadWindow(Gtk.ApplicationWindow):
         switch.connect("notify::active", lambda s, _p: self._set_wrap(s.get_active()))
         row.append(switch)
         box.append(row)
+        live = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=14)
+        live.append(Gtk.Label(label="Style Markdown while editing", hexpand=True, xalign=0))
+        live_switch = Gtk.Switch()
+        live_switch.set_active(self.prefs.get("live_markdown"))
+        live_switch.set_tooltip_text("Decorate Markdown text without changing the saved source")
+        live_switch.connect(
+            "notify::active", lambda s, _p: self._set_live_markdown(s.get_active())
+        )
+        live.append(live_switch)
+        box.append(live)
         pop.set_child(box)
         return pop
+
+    def _set_live_markdown(self, enabled):
+        self.prefs.set("live_markdown", bool(enabled))
+        for page in self.pages:
+            page.styling.set_enabled(enabled)
 
     def _set_appearance(self, mode):
         self.prefs.set("appearance", mode)
@@ -432,6 +453,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
         if self.preview_enabled:
             for page in self.pages:
                 page.set_preview(True, dark)
+        for page in self.pages:
+            page.styling.set_dark(dark)
 
     def _set_wrap(self, enabled):
         self.prefs.set("word_wrap", bool(enabled))

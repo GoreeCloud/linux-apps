@@ -31,3 +31,4 @@ jobs:
         run: |
           xvfb-run -a /usr/bin/python3 tests/gui_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_format_smoke.py
+          xvfb-run -a /usr/bin/python3 tests/gui_source_style_smoke.py
