@@ -568,6 +568,10 @@ class NotepadWindow(Gtk.ApplicationWindow):
         change = inline_format(page.note.text, start, end, style)
         if change is None:
             return
+        # Seal any replayed compound group only when committing a new edit.
+        # Do not do this in redo_current(): remaining redo steps must survive.
+        buffer.begin_user_action()
+        buffer.end_user_action()
         buffer.begin_user_action()
         try:
             first = buffer.get_iter_at_offset(change.start)

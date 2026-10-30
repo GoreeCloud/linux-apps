@@ -52,6 +52,39 @@ def main():
         assert all(app.lookup_action("format-" + style) for style in (
             "bold", "italic", "code", "strike"
         ))
+        # Keep multiple Redo steps available until the next actual edit.
+        page.buffer.set_text("one two")
+        page.buffer.select_range(
+            page.buffer.get_iter_at_offset(0), page.buffer.get_iter_at_offset(3)
+        )
+        window.format_current("bold")
+        assert page.note.text == "**one** two"
+        page.buffer.select_range(
+            page.buffer.get_iter_at_offset(8), page.buffer.get_iter_at_offset(11)
+        )
+        window.format_current("bold")
+        assert page.note.text == "**one** **two**"
+        window.undo_current()
+        assert page.note.text == "**one** two"
+        window.undo_current()
+        assert page.note.text == "one two"
+        window.redo_current()
+        assert page.note.text == "**one** two"
+        assert page.buffer.get_can_redo(), "Redo must retain the next step"
+        window.redo_current()
+        assert page.note.text == "**one** **two**"
+        window.undo_current()
+        window.undo_current()
+        window.redo_current()
+        assert page.buffer.get_can_redo()
+        page.buffer.place_cursor(page.buffer.get_end_iter())
+        window.format_current("italic")
+        assert page.note.text == "**one** two**"
+        assert not page.buffer.get_can_redo(), "A new edit replaces redo history"
+        window.undo_current()
+        assert page.note.text == "**one** two"
+        window.undo_current()
+        assert page.note.text == "one two"
         window._close_confirmed = True
         window.close()
         app.quit()
