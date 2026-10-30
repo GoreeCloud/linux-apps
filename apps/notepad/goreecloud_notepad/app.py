@@ -15,6 +15,7 @@ from .storage import Note, Preferences
 from .find import FindBar
 from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
+from .formatting import inline_format
 from .theme import install as install_theme
 
 
@@ -213,6 +214,15 @@ class NotepadWindow(Gtk.ApplicationWindow):
             self.toggle_preview,
         )
         actions.append(self.preview_button)
+        format_button = Gtk.MenuButton()
+        format_button.set_icon_name("format-text-bold-symbolic")
+        format_button.set_tooltip_text("Markdown writing tools")
+        format_button.update_property(
+            [Gtk.AccessibleProperty.LABEL], ["Markdown writing tools"]
+        )
+        format_button.add_css_class("header-glyph")
+        format_button.set_popover(self._format_popover())
+        actions.append(format_button)
 
         self.notebook = Gtk.Notebook()
         self.notebook.set_scrollable(True)
@@ -336,6 +346,36 @@ class NotepadWindow(Gtk.ApplicationWindow):
             row.append(detail)
             button.set_child(row)
             button.connect("clicked", lambda _b, callback=action: (pop.popdown(), callback()))
+            box.append(button)
+        pop.set_child(box)
+        return pop
+
+    def _format_popover(self):
+        pop = Gtk.Popover()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        box.set_margin_top(10)
+        box.set_margin_bottom(10)
+        box.set_margin_start(10)
+        box.set_margin_end(10)
+        items = [
+            ("Bold", "Ctrl+B", "bold"),
+            ("Italic", "Ctrl+I", "italic"),
+            ("Inline code", "Ctrl+Shift+K", "code"),
+            ("Strikethrough", "Ctrl+Shift+X", "strike"),
+        ]
+        for label, shortcut, style in items:
+            button = Gtk.Button()
+            button.add_css_class("flat")
+            row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+            row.append(Gtk.Label(label=label, xalign=0, hexpand=True))
+            key = Gtk.Label(label=shortcut)
+            key.add_css_class("dim-label")
+            row.append(key)
+            button.set_child(row)
+            button.connect(
+                "clicked",
+                lambda _b, kind=style: (pop.popdown(), self.format_current(kind)),
+            )
             box.append(button)
         pop.set_child(box)
         return pop
@@ -511,6 +551,39 @@ class NotepadWindow(Gtk.ApplicationWindow):
         page = self.current()
         if page and page.buffer.get_can_redo():
             page.buffer.redo()
+
+    def format_current(self, style: str):
+        """Apply source Markdown as a single undoable editor operation."""
+        page = self.current()
+        if page is None:
+            return
+        if self.preview_enabled:
+            self.toggle_preview()
+        buffer = page.buffer
+        bounds = buffer.get_selection_bounds()
+        if bounds:
+            start, end = (it.get_offset() for it in bounds)
+        else:
+            start = end = buffer.get_iter_at_mark(buffer.get_insert()).get_offset()
+        change = inline_format(page.note.text, start, end, style)
+        if change is None:
+            return
+        buffer.begin_user_action()
+        try:
+            first = buffer.get_iter_at_offset(change.start)
+            last = buffer.get_iter_at_offset(change.end)
+            buffer.delete(first, last)
+            buffer.insert(buffer.get_iter_at_offset(change.start), change.replacement)
+            if change.selection_start == change.selection_end:
+                buffer.place_cursor(buffer.get_iter_at_offset(change.selection_start))
+            else:
+                buffer.select_range(
+                    buffer.get_iter_at_offset(change.selection_start),
+                    buffer.get_iter_at_offset(change.selection_end),
+                )
+        finally:
+            buffer.end_user_action()
+        page.editor.grab_focus()
 
     def toggle_current_task(self):
         page = self.current()
@@ -706,6 +779,10 @@ class NotepadApplication(Gtk.Application):
             "app.redo": ["<Primary><Shift>z", "<Primary>y"],
             "app.preview": ["<Primary><Shift>m"],
             "app.toggle-task": ["<Primary>Return"],
+            "app.format-bold": ["<Primary>b"],
+            "app.format-italic": ["<Primary>i"],
+            "app.format-code": ["<Primary><Shift>k"],
+            "app.format-strike": ["<Primary><Shift>x"],
         }
         handlers = {
             "new": lambda: self.window.new_tab(),
@@ -723,6 +800,10 @@ class NotepadApplication(Gtk.Application):
             "redo": lambda: self.window.redo_current(),
             "preview": lambda: self.window.toggle_preview(),
             "toggle-task": lambda: self.window.toggle_current_task(),
+            "format-bold": lambda: self.window.format_current("bold"),
+            "format-italic": lambda: self.window.format_current("italic"),
+            "format-code": lambda: self.window.format_current("code"),
+            "format-strike": lambda: self.window.format_current("strike"),
         }
         for name, callback in handlers.items():
             action = Gio.SimpleAction.new(name, None)
