@@ -28,4 +28,6 @@ jobs:
         run: /usr/bin/python3 packaging/build_deb.py
       - name: GTK4 virtual-display smoke
         working-directory: apps/notepad
-        run: xvfb-run -a /usr/bin/python3 tests/gui_smoke.py
+        run: |
+          xvfb-run -a /usr/bin/python3 tests/gui_smoke.py
+          xvfb-run -a /usr/bin/python3 tests/gui_format_smoke.py
