@@ -123,6 +123,29 @@ def main():
         assert "Title" in preview_text and "☑ Done" in preview_text
         assert "# Title" not in preview_text
         assert page.note.text == "# Title\n- [x] Done"
+        assert page.preview._task_lines == {1: 1}
+        page.note.save(path)
+        page.refresh_label()
+        window.update_status()
+        GLib.timeout_add(180, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
+        loop.run()
+        view = page.preview.view
+        target = view.get_buffer()
+        ok, marker_iter = target.get_iter_at_line_offset(1, 0)
+        assert ok
+        rect = view.get_iter_location(marker_iter)
+        x, y = view.buffer_to_window_coords(Gtk.TextWindowType.WIDGET, rect.x + 2, rect.y + 5)
+        assert not page.preview.toggle_at(x + 80, y)
+        assert page.note.text == "# Title\n- [x] Done"
+        assert page.preview.toggle_at(x, y)
+        assert page.note.text == "# Title\n- [ ] Done"
+        assert page.note.dirty and window.file_status.get_text() == "Unsaved changes"
+        assert path.read_text() == "# Title\n- [x] Done"
+        window.undo_current()
+        assert page.note.text == "# Title\n- [x] Done"
+        assert not page.note.dirty
+        window.redo_current()
+        assert page.note.text == "# Title\n- [ ] Done"
         window._set_appearance("dark")
         assert window.has_css_class("dark")
         window._set_appearance("light")
@@ -130,7 +153,14 @@ def main():
         window.toggle_preview()
         assert not window.preview_enabled
         assert page.view_stack.get_visible_child_name() == "edit"
+        assert page.note.text == "# Title\n- [ ] Done"
+        valid, source_iter = page.buffer.get_iter_at_line_offset(1, 0)
+        assert valid
+        page.buffer.place_cursor(source_iter)
+        assert window.toggle_current_task()
         assert page.note.text == "# Title\n- [x] Done"
+        assert not page.note.dirty
+        assert path.read_text() == "# Title\n- [x] Done"
         window.toggle_preview()
         third = window.new_tab()
         assert third.view_stack.get_visible_child_name() == "preview"

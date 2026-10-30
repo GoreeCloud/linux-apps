@@ -2,7 +2,7 @@
 
 No HTML interpretation, network loading or executable content.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import re
 
 
@@ -16,6 +16,7 @@ class Run:
 class Line:
     runs: tuple[Run, ...]
     block: str = "body"
+    source_line: int = -1
 
 
 INLINE = re.compile(
@@ -53,7 +54,7 @@ def inline_runs(text: str) -> tuple[Run, ...]:
 def parse_markdown(text: str) -> list[Line]:
     result = []
     in_code = False
-    for raw in text.splitlines():
+    for source_line, raw in enumerate(text.splitlines()):
         if FENCE.match(raw):
             in_code = not in_code
             continue
@@ -76,4 +77,5 @@ def parse_markdown(text: str) -> list[Line]:
             result.append(Line((Run("│ ", "quote"),) + inline_runs(m.group(1)), "quote"))
         else:
             result.append(Line(inline_runs(raw)))
+        result[-1] = replace(result[-1], source_line=source_line)
     return result or [Line((Run(" "),), "blank")]

@@ -10,8 +10,10 @@ from .markdown import Line, Run, parse_markdown
 class MarkdownPreview(Gtk.ScrolledWindow):
     MAX_CHARS = 500_000
 
-    def __init__(self):
+    def __init__(self, on_toggle=None):
         super().__init__()
+        self._on_toggle = on_toggle
+        self._task_lines = {}
         self.add_css_class("editor-pane")
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -25,9 +27,18 @@ class MarkdownPreview(Gtk.ScrolledWindow):
         self.view.set_top_margin(34)
         self.view.set_bottom_margin(30)
         self.view.update_property(
-            [Gtk.AccessibleProperty.LABEL], ["Read-only Markdown preview"]
+            [Gtk.AccessibleProperty.LABEL, Gtk.AccessibleProperty.DESCRIPTION],
+            ["Markdown preview", "Click task boxes to toggle their state."]
         )
         self.set_child(self.view)
+        gesture = Gtk.GestureClick()
+        gesture.set_button(1)
+        gesture.connect("pressed", self._pressed)
+        self.view.add_controller(gesture)
+        motion = Gtk.EventControllerMotion()
+        motion.connect("motion", self._motion)
+        motion.connect("leave", lambda *_: self.view.set_cursor_from_name(None))
+        self.view.add_controller(motion)
 
     def render(self, text: str, dark: bool = False):
         """Build display-only text. Never change the editable note buffer."""
@@ -39,6 +50,7 @@ class MarkdownPreview(Gtk.ScrolledWindow):
                 "quote",
             ))
         buf = Gtk.TextBuffer()
+        self._task_lines = {}
         blue = "#a6c6ff" if dark else "#2566be"
         tags = {
             "h1": {"weight": Pango.Weight.BOLD, "scale": 1.85,
@@ -63,7 +75,9 @@ class MarkdownPreview(Gtk.ScrolledWindow):
         }
         for name, props in tags.items():
             buf.create_tag(name, **props)
-        for line in lines:
+        for preview_line, line in enumerate(lines):
+            if line.runs and line.runs[0].style == 'task':
+                self._task_lines[preview_line] = line.source_line
             first_offset = buf.get_char_count()
             for run in line.runs:
                 start = buf.get_char_count()
@@ -78,3 +92,32 @@ class MarkdownPreview(Gtk.ScrolledWindow):
                     line.block, buf.get_iter_at_offset(first_offset), buf.get_end_iter()
                 )
         self.view.set_buffer(buf)
+
+    def _pressed(self, _gesture, _count, x, y):
+        self.toggle_at(x, y)
+
+    def toggle_at(self, x, y):
+        """Only the checkbox glyph is interactive; other text stays read-only."""
+        bx, by = self.view.window_to_buffer_coords(
+            Gtk.TextWindowType.WIDGET, int(x), int(y)
+        )
+        valid, position = self.view.get_iter_at_location(bx, by)
+        if not valid or position.get_line_offset() > 1:
+            return False
+        source_line = self._task_lines.get(position.get_line())
+        if source_line is None or self._on_toggle is None:
+            return False
+        return bool(self._on_toggle(source_line))
+
+    def _motion(self, _controller, x, y):
+        self.view.set_cursor_from_name(
+            "pointer" if self._is_checkbox(x, y) else None
+        )
+
+    def _is_checkbox(self, x, y):
+        bx, by = self.view.window_to_buffer_coords(
+            Gtk.TextWindowType.WIDGET, int(x), int(y)
+        )
+        valid, position = self.view.get_iter_at_location(bx, by)
+        return (valid and position.get_line_offset() <= 1
+                and position.get_line() in self._task_lines)
