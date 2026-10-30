@@ -12,7 +12,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Settings: Light (first-run default), Dark, or Follow system; wrap option. Preferences: font size and monospace text.
 - Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors displayed rather than silently changing content.
 - Mockup-inspired native shell: left-aligned identity, blue document tabs, a rounded writing surface, and compact glyph controls.
-- Live word and line counts, cursor position, wrap state, and honest local save status.
+- Live word and source-line counts, cursor position, wrap state, and honest local save status. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
 - Native Undo/Redo, plus keyboard shortcuts to switch between tabs.

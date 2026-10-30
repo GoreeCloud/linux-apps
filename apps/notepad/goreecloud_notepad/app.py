@@ -237,7 +237,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.words_status.add_css_class("footer-label")
         left.append(self.words_status)
         left.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-        self.lines_status = Gtk.Label(label="1 line")
+        self.lines_status = Gtk.Label(label="1 source line")
+        self.lines_status.set_tooltip_text("Source lines, not rows created by word wrapping.")
         self.lines_status.add_css_class("footer-label")
         left.append(self.lines_status)
         self.file_status = Gtk.Label(label="Local note")
@@ -248,7 +249,10 @@ class NotepadWindow(Gtk.ApplicationWindow):
         spacer = Gtk.Box()
         spacer.set_hexpand(True)
         footer.append(spacer)
-        self.position_status = Gtk.Label(label="Ln 1, Col 1  ·  0 words")
+        self.position_status = Gtk.Label(label="Ln 1, Col 1")
+        self.position_status.set_tooltip_text(
+            "Line and column in the original text, independent of word wrapping."
+        )
         self.position_status.add_css_class("footer-label")
         footer.append(self.position_status)
         self.wrap_status = Gtk.Label(label='Wrap: On')
@@ -662,7 +666,9 @@ class NotepadWindow(Gtk.ApplicationWindow):
         words = len(re.findall(r"\S+", page.note.text))
         lines = page.note.text.count("\n") + 1
         self.words_status.set_text(f"{words} words" if words != 1 else "1 word")
-        self.lines_status.set_text(f"{lines} lines" if lines != 1 else "1 line")
+        self.lines_status.set_text(
+            f"{lines} source lines" if lines != 1 else "1 source line"
+        )
         self.position_status.set_text(
             f"Ln {cursor.get_line() + 1}, Col {cursor.get_line_offset() + 1}"
         )

@@ -47,12 +47,12 @@ def main():
         print(f"Native tab strip: {tab_height}px")
         assert page.container.has_css_class("paper-pane")
         assert window.words_status.get_text() == "0 words"
-        assert window.lines_status.get_text() == "1 line"
+        assert window.lines_status.get_text() == "1 source line"
         assert window.wrap_status.get_text() == "Wrap: On"
         page.buffer.set_text("GoreeCloud test note\nSecond line")
         assert page.note.dirty
         assert window.words_status.get_text() == "5 words"
-        assert window.lines_status.get_text() == "2 lines"
+        assert window.lines_status.get_text() == "2 source lines"
         assert window.file_status.get_text() == "Unsaved changes"
         window.find_bar.show_find()
         assert window.find_bar.get_visible()
