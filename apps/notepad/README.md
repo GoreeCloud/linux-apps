@@ -5,7 +5,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 ## Features
 
 - Edit plain-text and Markdown files as ordinary UTF-8 text.
-- New, reorderable, independently closable tabs; unsaved-change indicators.
+- New, reorderable, independently closable tabs; unsaved-change indicators. The rounded, glyph-only New Tab control follows the last document tab, including after reordering or closing tabs.
 - Open, Save, and Save As using native Linux file dialogs.
 - **Word wrap enabled by default**, adjustable in Settings.
 - All requested File, New Tab, Preferences, and Settings **glyph-only controls live in the native title bar**, alongside native minimize, maximize, and close controls provided by the window manager.
