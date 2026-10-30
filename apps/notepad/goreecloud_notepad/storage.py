@@ -14,6 +14,7 @@ DEFAULTS = {
     "word_wrap": True,
     "font_size": 15,
     "monospace": False,
+    "live_markdown": True,
 }
 APPEARANCES = ("light", "dark", "system")
 
@@ -90,7 +91,7 @@ class Preferences:
     def _validate(key: str, value):
         if key == "appearance":
             return value if value in APPEARANCES else DEFAULTS[key]
-        if key in ("word_wrap", "monospace"):
+        if key in ("word_wrap", "monospace", "live_markdown"):
             return value if isinstance(value, bool) else DEFAULTS[key]
         if key == "font_size":
             return value if type(value) is int and 11 <= value <= 26 else DEFAULTS[key]

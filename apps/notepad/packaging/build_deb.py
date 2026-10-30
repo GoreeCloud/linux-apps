@@ -10,7 +10,7 @@ from pathlib import Path
 
 VERSION = "0.1.0"
 ROOT = Path(__file__).resolve().parents[1]
-MODULES = ("__init__.py", "__main__.py", "app.py", "checklists.py", "find.py", "formatting.py", "markdown.py", "preview.py", "storage.py", "theme.py")
+MODULES = ("__init__.py", "__main__.py", "app.py", "checklists.py", "find.py", "formatting.py", "markdown.py", "preview.py", "source_spans.py", "source_styling.py", "storage.py", "theme.py")
 
 DESKTOP = """[Desktop Entry]
 Type=Application
