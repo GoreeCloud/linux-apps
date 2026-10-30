@@ -54,14 +54,58 @@ def main():
         assert window.words_status.get_text() == "5 words"
         assert window.lines_status.get_text() == "2 lines"
         assert window.file_status.get_text() == "Unsaved changes"
+        window.find_bar.show_find()
+        assert window.find_bar.get_visible()
+        window.find_bar.entry.set_text("nOtE")
+        assert len(window.find_bar.matches) == 1
+        window.find_bar.move(True)
+        selected = page.buffer.get_selection_bounds()
+        assert selected and page.buffer.get_text(*selected, True) == "note"
+        assert page.note.dirty, "Search highlighting must not mark notes as saved"
+        window.find_bar.hide_find()
+        assert not window.find_bar.get_visible()
+        assert not window.find_bar.matches
         path = Path(folder) / "note.txt"
         page.note.save(path)
         page.refresh_label()
         window.update_status()
         assert window.file_status.get_text() == "Saved on this device"
+        window.find_bar.show_find()
+        window.find_bar.entry.set_text("Second")
+        assert window.find_bar.matches
+        window.find_bar.hide_find()
+        assert not page.note.dirty, "Find must leave saved documents clean"
         assert path.read_text() == "GoreeCloud test note\nSecond line"
         window.new_tab()
         assert len(window.pages) == 2
+        second = window.current()
+        second.buffer.set_text("hello HELLO hello")
+        window.find_bar.show_find()
+        window.find_bar.entry.set_text("hello")
+        assert len(window.find_bar.matches) == 3
+        window.find_bar.move(True)
+        first_start = second.buffer.get_selection_bounds()[0].get_offset()
+        window.find_bar.move(True)
+        middle_start = second.buffer.get_selection_bounds()[0].get_offset()
+        window.find_bar.move(True)
+        last_start = second.buffer.get_selection_bounds()[0].get_offset()
+        window.find_bar.move(True)
+        wrap_start = second.buffer.get_selection_bounds()[0].get_offset()
+        assert (first_start, middle_start, last_start, wrap_start) == (0, 6, 12, 0)
+        second.buffer.insert(second.buffer.get_end_iter(), "!")
+        assert second.note.text.endswith("!")
+        window.undo_current()
+        assert second.note.text == "hello HELLO hello"
+        window.redo_current()
+        assert second.note.text == "hello HELLO hello!"
+        window.notebook.set_current_page(window.notebook.page_num(page.container))
+        window.find_bar.refresh()
+        assert not window.find_bar.matches
+        window.find_bar.hide_find()
+        # Reordering changes notebook positions, not the current document identity.
+        window.notebook.reorder_child(page.container, 1)
+        window.notebook.set_current_page(1)
+        assert window.current() is page
         window.open_path(path)
         assert len(window.pages) == 2, "Existing file should not open twice"
         window._set_wrap(False)
