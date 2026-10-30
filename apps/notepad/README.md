@@ -17,7 +17,8 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
 - Native Undo/Redo, plus keyboard shortcuts to switch between tabs.
 - Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
-- Preview is deliberately not a WYSIWYG editor: checkboxes are visual, links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters.
+- Markdown checklist boxes can be clicked in Preview to mark tasks done/undone, updating only the original `[ ]` / `[x]` marker. The change is undoable, marks the note as unsaved, and is never written to disk until Save. Use Ctrl+Enter to toggle the task at the source editor cursor.
+- Preview is not a WYSIWYG editor: links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters. Only checkbox glyphs are interactive.
 - Cloud sync, interactive rich text, and persisted saved-time history are not yet implemented.
 
 ## Install & run
@@ -54,6 +55,7 @@ The icon references GTK's built-in `accessories-text-editor` theme icon.
 | Ctrl+W | Close tab |
 | Ctrl+F | Find text in current note |
 | Ctrl+Shift+M | Toggle Markdown preview / Edit source |
+| Ctrl+Enter | Toggle the checklist item on the source cursor line |
 | F3 / Shift+F3 | Next / previous search match |
 | Enter / Shift+Enter | Next / previous match with search focused |
 | Escape | Close search and return to editor |

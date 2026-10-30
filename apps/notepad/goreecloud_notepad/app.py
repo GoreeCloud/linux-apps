@@ -14,6 +14,7 @@ from gi.repository import Gdk, Gio, GLib, Gtk, Pango
 from .storage import Note, Preferences
 from .find import FindBar
 from .preview import MarkdownPreview
+from .checklists import task_marker_at_line
 from .theme import install as install_theme
 
 
@@ -52,7 +53,7 @@ class NotePage:
         self.container.set_vexpand(True)
         self.scroller.add_css_class("editor-pane")
         self.scroller.set_child(self.editor)
-        self.preview = MarkdownPreview()
+        self.preview = MarkdownPreview(self.toggle_task)
         self.update_font()
         self.view_stack = Gtk.Stack()
         self.view_stack.add_named(self.scroller, "edit")
@@ -76,6 +77,24 @@ class NotePage:
         self.buffer.connect("changed", self._changed)
         self.buffer.connect("mark-set", self._mark_set)
         self.refresh_label()
+
+    def toggle_task(self, source_line: int):
+        marker = task_marker_at_line(self.note.text, source_line)
+        if marker is None:
+            return False
+        column, replacement = marker
+        valid, start = self.buffer.get_iter_at_line_offset(source_line, column)
+        if not valid:
+            return False
+        end = start.copy()
+        end.forward_char()
+        self.buffer.begin_user_action()
+        try:
+            self.buffer.delete(start, end)
+            self.buffer.insert(start, replacement)
+        finally:
+            self.buffer.end_user_action()
+        return True
 
     def set_preview(self, enabled: bool, dark: bool):
         if enabled:
@@ -285,6 +304,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Open…", "Ctrl+O", self.open_dialog),
             ("Find…", "Ctrl+F", lambda: self.find_bar.show_find()),
             ("Toggle Markdown preview", "Ctrl+Shift+M", self.toggle_preview),
+            ("Toggle checklist item", "Ctrl+Enter", self.toggle_current_task),
             ("Save", "Ctrl+S", self.save_current),
             ("Save as…", "Ctrl+Shift+S", self.save_as_current),
             ("Close tab", "Ctrl+W", self.close_current),
@@ -475,6 +495,13 @@ class NotepadWindow(Gtk.ApplicationWindow):
         if page and page.buffer.get_can_redo():
             page.buffer.redo()
 
+    def toggle_current_task(self):
+        page = self.current()
+        if page:
+            line = page.buffer.get_iter_at_mark(page.buffer.get_insert()).get_line()
+            return page.toggle_task(line)
+        return False
+
     def save_current(self):
         page = self.current()
         if page:
@@ -658,6 +685,7 @@ class NotepadApplication(Gtk.Application):
             "app.undo": ["<Primary>z"],
             "app.redo": ["<Primary><Shift>z", "<Primary>y"],
             "app.preview": ["<Primary><Shift>m"],
+            "app.toggle-task": ["<Primary>Return"],
         }
         handlers = {
             "new": lambda: self.window.new_tab(),
@@ -674,6 +702,7 @@ class NotepadApplication(Gtk.Application):
             "undo": lambda: self.window.undo_current(),
             "redo": lambda: self.window.redo_current(),
             "preview": lambda: self.window.toggle_preview(),
+            "toggle-task": lambda: self.window.toggle_current_task(),
         }
         for name, callback in handlers.items():
             action = Gio.SimpleAction.new(name, None)
