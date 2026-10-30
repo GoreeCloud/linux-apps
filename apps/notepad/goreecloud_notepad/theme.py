@@ -57,9 +57,9 @@ window.notepad-window notebook > header tab:hover:not(:checked) {
   color: #20243a;
 }
 window.notepad-window notebook > header tab:checked {
-  background: #f9fafd;
-  color: #20243a;
-  border-color: #d7deef;
+  background: #dceaff;
+  color: #183c7d;
+  border-color: #c7dbfa;
 }
 window.notepad-window notebook > header tab:focus-visible {
   outline: 2px solid #4132b3;
@@ -78,7 +78,7 @@ window.notepad-window .editor-pane {
 }
 window.notepad-window textview.notepad-editor,
 window.notepad-window textview.notepad-editor text {
-  background: #f9fafd;
+  background: #ffffff;
   color: #20243a;
   caret-color: #5145d9;
 }
