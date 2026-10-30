@@ -60,20 +60,27 @@ class NotePage:
         self.view_stack.add_named(self.preview, "preview")
         self.container.set_child(self.view_stack)
 
-        self.tab = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=9)
+        self.tab = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.tab_body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=9)
+        self.tab_body.add_css_class("document-tab")
+        self.tab.append(self.tab_body)
         tab_icon = Gtk.Image.new_from_icon_name('text-x-generic-symbolic')
-        self.tab.append(tab_icon)
+        self.tab_body.append(tab_icon)
         self.tab_label = Gtk.Label(xalign=0)
         self.tab_label.set_ellipsize(Pango.EllipsizeMode.END)
         self.tab_label.set_max_width_chars(24)
-        self.tab.append(self.tab_label)
+        self.tab_body.append(self.tab_label)
         close = Gtk.Button.new_from_icon_name("window-close-symbolic")
         close.add_css_class("flat")
         close.add_css_class("tab-close")
         close.set_tooltip_text("Close tab")
         close.set_accessible_role(Gtk.AccessibleRole.BUTTON)
         close.connect("clicked", lambda *_: window.close_page(self))
-        self.tab.append(close)
+        self.tab_body.append(close)
+        self.tab_add = window._glyph("list-add-symbolic", "New tab", window.new_tab)
+        self.tab_add.add_css_class("tab-add")
+        self.tab_add.set_visible(False)
+        self.tab.append(self.tab_add)
         self.buffer.connect("changed", self._changed)
         self.buffer.connect("mark-set", self._mark_set)
         self.refresh_label()
@@ -210,12 +217,10 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.notebook = Gtk.Notebook()
         self.notebook.set_scrollable(True)
         self.notebook.set_show_border(False)
-        tab_add = self._glyph("list-add-symbolic", "New tab", self.new_tab)
-        tab_add.add_css_class("tab-add")
-        self.notebook.set_action_widget(tab_add, Gtk.PackType.END)
         self.notebook.set_hexpand(True)
         self.notebook.set_vexpand(True)
         self.notebook.connect("switch-page", lambda *_: GLib.idle_add(self._tab_switched))
+        self.notebook.connect("page-reordered", lambda *_: self._sync_tab_add())
         self.find_bar = FindBar(self)
         root.append(self.find_bar)
         root.append(self.notebook)
@@ -277,6 +282,13 @@ class NotepadWindow(Gtk.ApplicationWindow):
             page = self.current()
             if page:
                 page.editor.grab_focus()
+
+    def _sync_tab_add(self):
+        """Keep the glyph immediately after the final tab in visual order."""
+        count = self.notebook.get_n_pages()
+        last = self.notebook.get_nth_page(count - 1) if count else None
+        for page in self.pages:
+            page.tab_add.set_visible(page.container is last)
 
     def _tab_switched(self):
         self.update_status()
@@ -442,6 +454,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             page.set_preview(True, self.has_css_class("dark"))
         index = self.notebook.append_page(page.container, page.tab)
         self.notebook.set_tab_reorderable(page.container, True)
+        self._sync_tab_add()
         self.notebook.set_current_page(index)
         if not self.preview_enabled:
             page.editor.grab_focus()
@@ -585,6 +598,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             self.notebook.remove_page(index)
         if page in self.pages:
             self.pages.remove(page)
+        self._sync_tab_add()
         self.update_status()
         self.find_bar.refresh()
 

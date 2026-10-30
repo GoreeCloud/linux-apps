@@ -166,6 +166,31 @@ def main():
         assert third.view_stack.get_visible_child_name() == "preview"
         window.toggle_preview()
         assert third.view_stack.get_visible_child_name() == "edit"
+        # Last-tab action is part of that tab, never a distant notebook action.
+        assert window.notebook.get_action_widget(Gtk.PackType.END) is None
+        assert sum(p.tab_add.get_visible() for p in window.pages) == 1
+        assert third.tab_add.get_visible()
+        third.tab_add.emit("clicked")
+        assert len(window.pages) == 4
+        assert window.current().tab_add.get_visible()
+        # Reordering changes the actual last tab, including its add control.
+        window.notebook.reorder_child(page.container, window.notebook.get_n_pages() - 1)
+        assert page.tab_add.get_visible()
+        assert sum(p.tab_add.get_visible() for p in window.pages) == 1
+        window._remove_page(page)
+        assert sum(p.tab_add.get_visible() for p in window.pages) == 1
+        assert window.notebook.get_nth_page(window.notebook.get_n_pages() - 1) == next(
+            p.container for p in window.pages if p.tab_add.get_visible()
+        )
+        # Overflow must not collapse the active document at narrow width.
+        window.set_default_size(560, 420)
+        for _ in range(10):
+            window.new_tab()
+        GLib.timeout_add(200, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
+        loop.run()
+        assert sum(p.tab_add.get_visible() for p in window.pages) == 1
+        assert window.current().tab_body.get_width() > 80
+        assert window.current().tab_add.get_width() >= 20
         window._close_confirmed = True
         window.close()
         app.quit()

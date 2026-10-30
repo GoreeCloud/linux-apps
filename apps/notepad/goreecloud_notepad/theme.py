@@ -318,3 +318,62 @@ def install() -> None:
     Gtk.StyleContext.add_provider_for_display(
         display, _provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
+
+STYLESHEET += """
+/* The last document carries the New Tab button as a peer of its pill.
+   Keep GTK Notebook's supported scrolling/reordering and focus behavior. */
+window.notepad-window notebook > header tab {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  min-width: 0;
+  padding: 0;
+  margin: 0 3px 0 0;
+}
+window.notepad-window notebook > header tab:hover:not(:checked) {
+  background: transparent;
+}
+window.notepad-window notebook > header tab .document-tab {
+  background: #f3f6fb;
+  border: 1px solid #d9e1ee;
+  border-radius: 18px 18px 0 0;
+  min-width: 188px;
+  min-height: 28px;
+  padding: 5px 11px;
+  color: #30435e;
+}
+window.notepad-window notebook > header tab:checked .document-tab {
+  background: #dceaff;
+  border-color: #c7dafa;
+  color: #153e83;
+}
+window.notepad-window notebook > header tab:hover:not(:checked) .document-tab {
+  background: #e8eef8;
+  color: #20243a;
+}
+window.notepad-window notebook > header tab .tab-add {
+  border-radius: 999px;
+  min-width: 30px;
+  min-height: 30px;
+  padding: 2px;
+  margin: 3px 1px 3px 4px;
+}
+window.notepad-window.dark notebook > header tab {
+  background: transparent;
+  border: none;
+}
+window.notepad-window.dark notebook > header tab .document-tab {
+  background: #273247;
+  color: #c9d3e5;
+  border-color: #3b4962;
+}
+window.notepad-window.dark notebook > header tab:checked .document-tab {
+  background: #334c79;
+  color: #f4f7ff;
+  border-color: #5475b0;
+}
+window.notepad-window.dark notebook > header tab:hover:not(:checked) .document-tab {
+  background: #38465e;
+  color: #ffffff;
+}
+"""
