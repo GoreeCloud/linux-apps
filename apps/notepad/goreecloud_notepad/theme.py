@@ -11,15 +11,18 @@ window.notepad-window {
   color: #20243a;
 }
 window.notepad-window headerbar {
-  background: #e5ebf6;
-  border-bottom: 1px solid #d5dcee;
+  background: #edf2f9;
+  border-bottom: 0;
   box-shadow: none;
-  min-height: 42px;
+  min-height: 54px;
+  padding: 0 15px;
 }
-window.notepad-window headerbar .title {
-  font-weight: 750;
-  font-size: 14px;
+window.notepad-window .brand-identity {
+  font-size: 16px;
+  font-weight: 700;
+  color: #18263c;
 }
+window.notepad-window .brand-identity image { color: #2169d5; }
 window.notepad-window .header-glyph {
   border-radius: 12px;
   min-width: 32px;
