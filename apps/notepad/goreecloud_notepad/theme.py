@@ -290,6 +290,21 @@ window.notepad-window.dark .find-glyph:hover {
 }
 """
 
+STYLESHEET += """
+/* Read-only native Markdown preview shares the editor paper surface. */
+window.notepad-window textview.notepad-preview,
+window.notepad-window textview.notepad-preview text {
+  background: #ffffff;
+  color: #20243a;
+  font-size: 15px;
+}
+window.notepad-window.dark textview.notepad-preview,
+window.notepad-window.dark textview.notepad-preview text {
+  background: #1d2636;
+  color: #f2f2fa;
+}
+"""
+
 _provider = None
 
 

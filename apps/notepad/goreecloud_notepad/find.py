@@ -73,6 +73,8 @@ class FindBar(Gtk.Box):
         return False
 
     def show_find(self):
+        if self.window.preview_enabled:
+            self.window.toggle_preview()
         self.set_visible(True)
         page = self.window.current()
         if page is not None:
