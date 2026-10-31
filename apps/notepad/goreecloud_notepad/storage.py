@@ -6,7 +6,8 @@ import json
 import os
 import stat
 import tempfile
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 
 DEFAULTS = {
@@ -19,8 +20,41 @@ DEFAULTS = {
 APPEARANCES = ("light", "dark", "system")
 
 
-def _atomic_write(path: Path, content: str, *, mode: int | None = None) -> None:
-    """Write beside the target, then replace atomically; clean up failed writes."""
+class ExternalModificationError(OSError):
+    """The note on disk changed; saving would overwrite external edits."""
+
+
+_CONFLICT_MESSAGE = (
+    "File on disk changed, disappeared, or cannot be verified. Your edits remain open. "
+    "Use Save As to keep a separate copy, or reopen the note to review its changes."
+)
+
+
+def _read_regular_snapshot(
+    path: Path, *, nofollow: bool = False,
+) -> tuple[str, tuple[int, int]]:
+    """Read a regular UTF-8 file without blocking on an externally swapped FIFO.
+
+    Validate the opened descriptor, rather than trusting a preceding path check.
+    The original newline sequences are preserved.
+    """
+    flags = os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_CLOEXEC", 0)
+    if nofollow:
+        flags |= getattr(os, "O_NOFOLLOW", 0)
+    fd = os.open(path, flags)
+    with os.fdopen(fd, "r", encoding="utf-8", newline="") as stream:
+        info = os.fstat(stream.fileno())
+        if not stat.S_ISREG(info.st_mode):
+            raise OSError(f"Not a regular note file: {path}")
+        return stream.read(), (info.st_dev, info.st_ino)
+
+
+
+def _atomic_write(
+    path: Path, content: str, *, mode: int | None = None,
+    check: Callable[[], None] | None = None,
+) -> tuple[int, int]:
+    """Stage an atomic write; verify the tracked file immediately before commit."""
     path = Path(path)
     if not path.parent.is_dir():
         raise FileNotFoundError(f"Folder not found: {path.parent}")
@@ -32,7 +66,12 @@ def _atomic_write(path: Path, content: str, *, mode: int | None = None) -> None:
             stream.write(content)
             stream.flush()
             os.fsync(stream.fileno())
+            info = os.fstat(stream.fileno())
+            identity = (info.st_dev, info.st_ino)
+        if check is not None:
+            check()
         os.replace(temporary, path)
+        return identity
     finally:
         if os.path.exists(temporary):
             os.unlink(temporary)
@@ -43,6 +82,7 @@ class Note:
     text: str = ""
     path: Path | None = None
     saved_text: str = ""
+    file_identity: tuple[int, int] | None = field(default=None, repr=False)
 
     @property
     def dirty(self) -> bool:
@@ -55,10 +95,8 @@ class Note:
     @classmethod
     def open(cls, path: Path) -> "Note":
         path = Path(path).expanduser()
-        # UTF-8 only: report decode errors rather than silently corrupting files.
-        with path.open("r", encoding="utf-8", newline="") as stream:
-            text = stream.read()
-        return cls(text=text, path=path, saved_text=text)
+        text, identity = _read_regular_snapshot(path)
+        return cls(text=text, path=path, saved_text=text, file_identity=identity)
 
     def save(self, target: Path | None = None) -> Path:
         destination = Path(target).expanduser() if target is not None else self.path
@@ -66,10 +104,36 @@ class Note:
             raise ValueError("Choose a file name first")
         if destination.is_dir():
             raise IsADirectoryError(str(destination))
+        if destination.is_symlink():
+            raise OSError(f"Refusing to replace symbolic link: {destination}")
+        if destination.exists() and not destination.is_file():
+            raise OSError(f"Refusing to replace non-file destination: {destination}")
+
+        # Save As to a different path is an explicit user-directed operation.
+        tracked = self.path is not None and (
+            os.path.abspath(destination) == os.path.abspath(self.path)
+        )
+
+        def check_external_change() -> None:
+            try:
+                on_disk, identity = _read_regular_snapshot(destination, nofollow=True)
+            except (OSError, UnicodeError) as exc:
+                raise ExternalModificationError(_CONFLICT_MESSAGE) from exc
+            if on_disk != self.saved_text or (
+                self.file_identity is not None and identity != self.file_identity
+            ):
+                raise ExternalModificationError(_CONFLICT_MESSAGE)
+
+        if tracked:
+            check_external_change()
         current_mode = stat.S_IMODE(destination.stat().st_mode) if destination.exists() else None
-        _atomic_write(destination, self.text, mode=current_mode)
+        identity = _atomic_write(
+            destination, self.text, mode=current_mode,
+            check=check_external_change if tracked else None,
+        )
         self.path = destination
         self.saved_text = self.text
+        self.file_identity = identity
         return destination
 
 
