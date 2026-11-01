@@ -34,6 +34,9 @@ class InlineDecorations:
         self._vadjustment = None
         self._hadjustment = None
         self._scroll_queued = False
+        self._rendered_text = None
+        self._last_visual_end = 0
+        self._last_visual_terminated = True
         # Tags affect paint, not text contents, offsets, or editability.
         self.marker_tag = buffer.create_tag("goreecloud-inline-marker")
         self.checked_tag = buffer.create_tag(
@@ -123,6 +126,56 @@ class InlineDecorations:
             self._queued = True
             GLib.idle_add(self.refresh, priority=GLib.PRIORITY_DEFAULT_IDLE)
 
+    def source_changed(self):
+        """Avoid repainting every overlay for unrelated edits below them.
+
+        When a document has hundreds of checkboxes, a full GTK redraw can
+        block typing. Existing overlays are safe to keep only if the entire
+        source through their last decorated line is byte-for-byte unchanged.
+        At the widget cap, remaining task lines are deliberately undecorated.
+        With fewer widgets, detect syntax changes in the rest of the source
+        before deciding a new widget is unnecessary.
+        """
+        if not self.enabled or self._queued:
+            return
+        start, end = self.buffer.get_bounds()
+        current = self.buffer.get_text(start, end, True)
+        # Large notes are intentionally undecorated. Avoid retaining an
+        # additional large string or scheduling redundant GTK work on edits.
+        if len(current) > self.MAX_CHARS and not self.widgets:
+            self._rendered_text = None
+            return
+        if self._rendered_text is None:
+            self.schedule()
+            return
+        previous = self._rendered_text
+        if current == previous:
+            return
+        if len(current) > self.MAX_CHARS:
+            if self.widgets:
+                self.schedule()
+            else:
+                self._rendered_text = current
+            return
+        if len(previous) > self.MAX_CHARS:
+            self.schedule()
+            return
+        boundary = self._last_visual_end
+        if not self._last_visual_terminated or (
+            current[:boundary] != previous[:boundary]
+        ):
+            self.schedule()
+            return
+        if len(self.widgets) < self.MAX_WIDGETS:
+            for tail in (previous[boundary:], current[boundary:]):
+                if any(
+                    FENCE.match(line) or TASK.match(line) or RULE.match(line)
+                    for line in tail.splitlines()
+                ):
+                    self.schedule()
+                    return
+        self._rendered_text = current
+
     def _clear(self):
         # GTK wraps TextView overlays in private GtkTextViewChild containers.
         # Reuse and hide overlays rather than removing their internal wrapper:
@@ -139,14 +192,19 @@ class InlineDecorations:
     def refresh(self):
         self._queued = False
         self._clear()
-        if not self.enabled:
-            return GLib.SOURCE_REMOVE
         start, end = self.buffer.get_bounds()
         text = self.buffer.get_text(start, end, True)
-        if len(text) > self.MAX_CHARS:
+        self._rendered_text = text if len(text) <= self.MAX_CHARS else None
+        self._last_visual_end = 0
+        self._last_visual_terminated = True
+        if not self.enabled or len(text) > self.MAX_CHARS:
             return GLib.SOURCE_REMOVE
         in_fence = False
+        offset = 0
+        raw_lines = text.splitlines(keepends=True)
         for line_number, source in enumerate(text.splitlines()):
+            raw_line = raw_lines[line_number]
+            offset += len(raw_line)
             if FENCE.match(source):
                 in_fence = not in_fence
                 continue
@@ -162,6 +220,10 @@ class InlineDecorations:
                 self._task(line_number, source, task)
             elif rule:
                 self._rule(line_number, source)
+            self._last_visual_end = offset
+            self._last_visual_terminated = bool(raw_line) and (
+                raw_line[-1] in "\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029"
+            )
         return GLib.SOURCE_REMOVE
 
     def _iter(self, line, column):
