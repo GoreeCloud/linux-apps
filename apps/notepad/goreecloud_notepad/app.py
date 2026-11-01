@@ -144,7 +144,8 @@ class NotePage:
             self._preview_font_provider = pcss
 
     def refresh_label(self):
-        self.tab_label.set_text(("• " if self.note.dirty else "") + self.note.name)
+        display_name = self.note.name if self.note.path else "Untitled.md"
+        self.tab_label.set_text(("• " if self.note.dirty else "") + display_name)
         self.tab_label.set_tooltip_text(str(self.note.path) if self.note.path else "Unsaved note")
         # Icon-only close controls need a descriptive accessible name. Refresh
         # after Save As so assistive technology identifies the correct tab.
@@ -187,29 +188,67 @@ class NotepadWindow(Gtk.ApplicationWindow):
 
         root = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.set_child(root)
+        # Native GTK header modeled on the founder's GoreeCloud Notepad mockup.
+        # GTK owns the window buttons; custom controls are real app actions.
         header = Gtk.HeaderBar()
         header.set_show_title_buttons(True)
         header.add_css_class("notepad-header")
         header.set_title_widget(Gtk.Box())
-        identity = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        identity.add_css_class("brand-identity")
-        identity.append(Gtk.Image.new_from_icon_name("text-x-generic-symbolic"))
-        identity.append(Gtk.Label(label="GoreeCloud Notepad"))
-        header.pack_start(identity)
-        self.set_titlebar(header)
-        actions = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
-        header.pack_end(actions)
+        toolbar = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
+        toolbar.add_css_class("notepad-toolbar")
+        self.toolbar = toolbar
+        brand = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        brand.add_css_class("brand-mark")
+        brand.set_tooltip_text("GoreeCloud Notepad")
+        brand.update_property([Gtk.AccessibleProperty.LABEL], ["GoreeCloud Notepad"])
+        brand.append(Gtk.Image.new_from_icon_name("weather-overcast-symbolic"))
+        toolbar.append(brand)
+        toolbar.append(self._toolbar_divider())
 
-        file_button = Gtk.MenuButton()
-        file_button.set_icon_name("folder-open-symbolic")
-        file_button.set_tooltip_text("File")
-        file_button.update_property([Gtk.AccessibleProperty.LABEL], ["File"])
-        file_button.add_css_class("header-glyph")
-        actions.append(file_button)
-        file_button.set_popover(self._file_popover())
+        self.new_button = self._labeled_action("list-add-symbolic", "New", "New tab (Ctrl+T)", self.new_tab)
+        self.new_button.add_css_class("new-action")
+        toolbar.append(self.new_button)
+        self.open_button = self._labeled_action(
+            "document-open-symbolic", "Open", "Open a note (Ctrl+O)", self.open_dialog
+        )
+        toolbar.append(self.open_button)
+        self.save_button = self._labeled_action(
+            "document-save-symbolic", "Save", "Save note (Ctrl+S)", self.save_current
+        )
+        toolbar.append(self.save_button)
+        toolbar.append(self._toolbar_divider())
 
-        new_button = self._glyph("list-add-symbolic", "New tab", self.new_tab)
-        actions.append(new_button)
+        self.bold_button = self._glyph(
+            "format-text-bold-symbolic", "Bold (Ctrl+B)", lambda: self.format_current("bold")
+        )
+        toolbar.append(self.bold_button)
+        self.italic_button = self._glyph(
+            "format-text-italic-symbolic", "Italic (Ctrl+I)", lambda: self.format_current("italic")
+        )
+        toolbar.append(self.italic_button)
+        self.preview_button = Gtk.Button(label="</>")
+        self.preview_button.add_css_class("header-glyph")
+        self.preview_button.add_css_class("code-action")
+        self.preview_button.set_tooltip_text("Preview Markdown (Ctrl+Shift+M)")
+        self.preview_button.update_property(
+            [Gtk.AccessibleProperty.LABEL], ["Preview Markdown (Ctrl+Shift+M)"]
+        )
+        self.preview_button.connect("clicked", lambda *_: self.toggle_preview())
+        toolbar.append(self.preview_button)
+
+        format_button = Gtk.MenuButton()
+        format_button.set_icon_name("view-list-symbolic")
+        format_button.set_tooltip_text("Markdown writing tools")
+        format_button.update_property(
+            [Gtk.AccessibleProperty.LABEL], ["Markdown writing tools"]
+        )
+        format_button.add_css_class("header-glyph")
+        format_button.set_popover(self._format_popover())
+        toolbar.append(format_button)
+
+        toolbar.append(self._toolbar_divider())
+        search = self._glyph("edit-find-symbolic", "Find in note (Ctrl+F)", self.find_in_note)
+        toolbar.append(search)
 
         settings = Gtk.MenuButton()
         settings.set_icon_name("emblem-system-symbolic")
@@ -217,24 +256,28 @@ class NotepadWindow(Gtk.ApplicationWindow):
         settings.update_property([Gtk.AccessibleProperty.LABEL], ["Settings"])
         settings.add_css_class("header-glyph")
         settings.set_popover(self._settings_popover())
-        actions.append(settings)
+        toolbar.append(settings)
 
-        preferences = self._glyph("preferences-desktop-font-symbolic", "Preferences", self.show_preferences)
-        actions.append(preferences)
-        self.preview_button = self._glyph(
-            "document-print-preview-symbolic", "Preview Markdown (Ctrl+Shift+M)",
-            self.toggle_preview,
-        )
-        actions.append(self.preview_button)
-        format_button = Gtk.MenuButton()
-        format_button.set_icon_name("format-text-bold-symbolic")
-        format_button.set_tooltip_text("Markdown writing tools")
-        format_button.update_property(
-            [Gtk.AccessibleProperty.LABEL], ["Markdown writing tools"]
-        )
-        format_button.add_css_class("header-glyph")
-        format_button.set_popover(self._format_popover())
-        actions.append(format_button)
+        more = Gtk.MenuButton()
+        more.set_icon_name("view-more-symbolic")
+        more.set_tooltip_text("More actions")
+        more.update_property([Gtk.AccessibleProperty.LABEL], ["More actions"])
+        more.add_css_class("header-glyph")
+        more.set_popover(self._file_popover())
+        self.more_button = more
+        # Keep More permanently reachable on narrow windows. The remaining
+        # actions scroll horizontally without enlarging the minimum window.
+        header.pack_end(more)
+        toolbar_scroll = Gtk.ScrolledWindow()
+        toolbar_scroll.set_policy(Gtk.PolicyType.EXTERNAL, Gtk.PolicyType.NEVER)
+        toolbar_scroll.set_min_content_width(235)
+        toolbar_scroll.set_propagate_natural_width(True)
+        toolbar_scroll.set_hexpand(True)
+        toolbar_scroll.add_css_class("toolbar-scroller")
+        toolbar_scroll.set_child(toolbar)
+        self.toolbar_scroll = toolbar_scroll
+        header.pack_start(toolbar_scroll)
+        self.set_titlebar(header)
 
         self.notebook = Gtk.Notebook()
         self.notebook.set_scrollable(True)
@@ -259,11 +302,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.words_status.add_css_class("footer-label")
         left.append(self.words_status)
         left.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-        self.lines_status = Gtk.Label(label="1 source line")
+        self.lines_status = Gtk.Label(label="1 line")
         self.lines_status.set_tooltip_text("Source lines, not rows created by word wrapping.")
         self.lines_status.add_css_class("footer-label")
         left.append(self.lines_status)
-        self.file_status = Gtk.Label(label="Local note")
+        self.file_status = Gtk.Label(label="Not saved")
         self.file_status.add_css_class("footer-label")
         self.file_status.set_ellipsize(Pango.EllipsizeMode.END)
         # Save-state belongs at the trailing end of the status bar.
@@ -282,7 +325,12 @@ class NotepadWindow(Gtk.ApplicationWindow):
         footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         footer.append(self.wrap_status)
         footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-        footer.append(self.file_status)
+        self.save_status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.save_status_box.add_css_class("save-state")
+        self.file_indicator = Gtk.Image.new_from_icon_name("document-save-symbolic")
+        self.save_status_box.append(self.file_indicator)
+        self.save_status_box.append(self.file_status)
+        footer.append(self.save_status_box)
         root.append(footer)
 
         self.connect("close-request", self._close_request)
@@ -296,15 +344,19 @@ class NotepadWindow(Gtk.ApplicationWindow):
         dark = self.has_css_class("dark")
         for page in self.pages:
             page.set_preview(self.preview_enabled, dark)
+        self.preview_button.set_tooltip_text(
+            "Edit source (Ctrl+Shift+M)" if self.preview_enabled
+            else "Preview Markdown (Ctrl+Shift+M)"
+        )
+        self.preview_button.update_property(
+            [Gtk.AccessibleProperty.LABEL],
+            ["Edit source (Ctrl+Shift+M)" if self.preview_enabled
+             else "Preview Markdown (Ctrl+Shift+M)"],
+        )
         if self.preview_enabled:
-            self.preview_button.set_icon_name("document-edit-symbolic")
-            self.preview_button.set_tooltip_text("Edit source (Ctrl+Shift+M)")
-            self.preview_button.update_property(
-                [Gtk.AccessibleProperty.LABEL], ["Edit source"]
-            )
+            self.preview_button.add_css_class("preview-active")
         else:
-            self.preview_button.set_icon_name("document-print-preview-symbolic")
-            self.preview_button.set_tooltip_text("Preview Markdown (Ctrl+Shift+M)")
+            self.preview_button.remove_css_class("preview-active")
             page = self.current()
             if page:
                 page.editor.grab_focus()
@@ -320,6 +372,27 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.update_status()
         self.find_bar.refresh()
         return False
+
+    @staticmethod
+    def _toolbar_divider():
+        separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        separator.add_css_class("toolbar-divider")
+        return separator
+
+    def _labeled_action(self, icon, label, tooltip, callback):
+        button = Gtk.Button()
+        button.add_css_class("toolbar-text-action")
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=9)
+        box.append(Gtk.Image.new_from_icon_name(icon))
+        box.append(Gtk.Label(label=label))
+        button.set_child(box)
+        button.set_tooltip_text(tooltip)
+        button.update_property([Gtk.AccessibleProperty.LABEL], [tooltip])
+        button.connect("clicked", lambda *_: callback())
+        return button
+
+    def find_in_note(self):
+        self.find_bar.show_find()
 
     def _glyph(self, icon_name, tooltip, callback):
         button = Gtk.Button.new_from_icon_name(icon_name)
@@ -342,6 +415,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Open…", "Ctrl+O", self.open_dialog),
             ("Find…", "Ctrl+F", lambda: self.find_bar.show_find()),
             ("Toggle Markdown preview", "Ctrl+Shift+M", self.toggle_preview),
+            ("Editor preferences", "", self.show_preferences),
             ("Toggle checklist item", "Ctrl+Enter", self.toggle_current_task),
             ("Save", "Ctrl+S", self.save_current),
             ("Save as…", "Ctrl+Shift+S", self.save_as_current),
@@ -374,6 +448,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Italic", "Ctrl+I", "italic"),
             ("Inline code", "Ctrl+Shift+K", "code"),
             ("Strikethrough", "Ctrl+Shift+X", "strike"),
+            ("Bullet list", "", "bullet"),
+            ("Checklist item", "", "checklist"),
         ]
         for label, shortcut, style in items:
             button = Gtk.Button()
@@ -386,7 +462,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
             button.set_child(row)
             button.connect(
                 "clicked",
-                lambda _b, kind=style: (pop.popdown(), self.format_current(kind)),
+                lambda _b, kind=style: (
+                    pop.popdown(),
+                    self.insert_list_item(kind == "checklist") if kind in ("bullet", "checklist")
+                    else self.format_current(kind),
+                ),
             )
             box.append(button)
         pop.set_child(box)
@@ -618,6 +698,24 @@ class NotepadWindow(Gtk.ApplicationWindow):
             buffer.end_user_action()
         page.editor.grab_focus()
 
+    def insert_list_item(self, checklist: bool = False):
+        """Prefix the current source line as an undoable Markdown list item."""
+        page = self.current()
+        if page is None:
+            return
+        if self.preview_enabled:
+            self.toggle_preview()
+        buffer = page.buffer
+        cursor = buffer.get_iter_at_mark(buffer.get_insert())
+        line_start = cursor.copy()
+        line_start.set_line_offset(0)
+        buffer.begin_user_action()
+        try:
+            buffer.insert(line_start, "- [ ] " if checklist else "- ")
+        finally:
+            buffer.end_user_action()
+        page.editor.grab_focus()
+
     def toggle_current_task(self):
         page = self.current()
         if page:
@@ -650,7 +748,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             return
         chooser = Gtk.FileDialog()
         chooser.set_title("Save note as")
-        chooser.set_initial_name(page.note.name if page.note.path else "Untitled.txt")
+        chooser.set_initial_name(page.note.name if page.note.path else "Untitled.md")
 
         def finished(dialog, result):
             try:
@@ -773,14 +871,28 @@ class NotepadWindow(Gtk.ApplicationWindow):
         lines = page.note.text.count("\n") + 1
         self.words_status.set_text(f"{words} words" if words != 1 else "1 word")
         self.lines_status.set_text(
-            f"{lines} source lines" if lines != 1 else "1 source line"
+            f"{lines} lines" if lines != 1 else "1 line"
         )
         self.position_status.set_text(
             f"Ln {cursor.get_line() + 1}, Col {cursor.get_line_offset() + 1}"
         )
         self.wrap_status.set_text("Wrap: On" if self.prefs.get("word_wrap") else "Wrap: Off")
-        status = "Unsaved changes" if page.note.dirty else ("Saved on this device" if page.note.path else "Not saved yet")
+        status = "Unsaved" if page.note.dirty else ("Saved" if page.note.path else "Not saved")
         self.file_status.set_text(status)
+        self.save_status_box.remove_css_class("saved")
+        self.save_status_box.remove_css_class("unsaved")
+        if page.note.dirty:
+            self.file_indicator.set_from_icon_name("document-save-symbolic")
+            self.save_status_box.add_css_class("unsaved")
+        elif page.note.path is not None:
+            self.file_indicator.set_from_icon_name("emblem-ok-symbolic")
+            self.save_status_box.add_css_class("saved")
+        else:
+            self.file_indicator.set_from_icon_name("document-save-symbolic")
+        self.save_status_box.set_tooltip_text(
+            "Unsaved changes" if page.note.dirty
+            else "Saved on this device" if page.note.path else "Not saved yet"
+        )
         return False
 
 

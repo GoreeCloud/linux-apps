@@ -85,6 +85,18 @@ def main():
         assert page.note.text == "**one** two"
         window.undo_current()
         assert page.note.text == "one two"
+        # List and checklist actions in the mockup toolbar are real
+        # undoable Markdown edits (not decorative menu entries).
+        page.buffer.set_text("task")
+        page.buffer.place_cursor(page.buffer.get_end_iter())
+        window.insert_list_item()
+        assert page.note.text == "- task"
+        window.undo_current()
+        assert page.note.text == "task"
+        window.insert_list_item(checklist=True)
+        assert page.note.text == "- [ ] task"
+        window.undo_current()
+        assert page.note.text == "task"
         window._close_confirmed = True
         window.close()
         app.quit()
