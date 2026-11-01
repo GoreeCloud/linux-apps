@@ -33,6 +33,12 @@ The 31 October 2026 founder mockup remains the UI target. On an isolated Ubuntu 
 
 The native CI now builds a Debian package, extracts it to an isolated temporary filesystem, validates the desktop entry, and launches the packaged GTK4 Python modules in a separate process with a private XDG profile. The test opens and saves a Markdown note and confirms user data remains intact after staged payload removal. **This does not install, upgrade, or uninstall the package on a real operating system**; clean system-level installation and upgrade remain separate release-acceptance gates.
 
+## Isolated Debian package lifecycle check
+
+CI performs a real `dpkg` install, a simulated upgrade from a **synthetic** version 0.0.9 package, and removal inside a disposable temporary root using unprivileged `fakeroot`. It verifies that the packaged launcher and modules appear and disappear and that an unrelated saved Markdown note survives byte-for-byte. The test does not touch the host package database, use `sudo`, or run against the user's actual desktop.
+
+The test uses `--force-depends` **only because the disposable root has an empty dependency database**. Never use this flag for a normal user installation. This isolated lifecycle check complements staged payload and GTK runtime tests; it does **not** prove real dependency resolution, desktop integration, clean system installation, or upgrades from genuine historical releases.
+
 ## Install & run
 
 Ubuntu 24.04+ / Debian-derived desktops with GTK 4.10 or later:
