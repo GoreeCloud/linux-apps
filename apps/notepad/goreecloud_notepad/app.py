@@ -43,7 +43,8 @@ class NotePage:
         self.update_font()
         self.editor.set_accessible_role(Gtk.AccessibleRole.TEXT_BOX)
         self.editor.update_property(
-            [Gtk.AccessibleProperty.LABEL], ["Note editor"]
+            [Gtk.AccessibleProperty.LABEL, Gtk.AccessibleProperty.DESCRIPTION],
+            ["Note editor", "Edit Markdown source. Ctrl+Enter toggles the checklist item at the cursor. Ctrl+Shift+M switches between source and preview."],
         )
 
         self.container = Gtk.Frame()
@@ -679,15 +680,46 @@ class NotepadWindow(Gtk.ApplicationWindow):
             if not exc.matches(Gtk.DialogError.quark(), Gtk.DialogError.DISMISSED):
                 self._error("Could not open file", str(exc))
 
-    def undo_current(self):
+    def _history_action(self, *, redo=False):
         page = self.current()
-        if page and page.buffer.get_can_undo():
+        if not page or not (page.buffer.get_can_redo() if redo else page.buffer.get_can_undo()):
+            return
+        active = self.get_focus()
+        identity = None
+        if isinstance(active, Gtk.CheckButton) and active in page.inline.widgets:
+            identity = (active._source_line, active._task_text)
+        if redo:
+            page.buffer.redo()
+        else:
             page.buffer.undo()
+        if identity is not None:
+            # Buffer history can move focus to the editor as it restores the
+            # insertion mark. Re-focus only the *same* surviving task after
+            # inline widgets finish refreshing; never pick an unrelated line.
+            GLib.idle_add(self._restore_task_focus, page, identity,
+                          priority=GLib.PRIORITY_LOW)
+
+    def _restore_task_focus(self, page, identity):
+        if self.current() is not page or self.preview_enabled:
+            return GLib.SOURCE_REMOVE
+        focused = self.get_focus()
+        if focused is not None and focused is not page.editor:
+            if not (isinstance(focused, Gtk.CheckButton)
+                    and focused in page.inline.widgets
+                    and (focused._source_line, focused._task_text) == identity):
+                return GLib.SOURCE_REMOVE
+        for checkbox in page.inline.widgets:
+            if (isinstance(checkbox, Gtk.CheckButton)
+                    and (checkbox._source_line, checkbox._task_text) == identity):
+                checkbox.grab_focus()
+                break
+        return GLib.SOURCE_REMOVE
+
+    def undo_current(self):
+        self._history_action(redo=False)
 
     def redo_current(self):
-        page = self.current()
-        if page and page.buffer.get_can_redo():
-            page.buffer.redo()
+        self._history_action(redo=True)
 
     def format_current(self, style: str):
         """Apply source Markdown as a single undoable editor operation."""
