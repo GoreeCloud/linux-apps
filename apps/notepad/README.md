@@ -29,6 +29,10 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 
 The 31 October 2026 founder mockup remains the UI target. On an isolated Ubuntu 24.04 GTK 4.14 laptop, the native GTK4 app was rendered under Xvfb at 1080×720 (light and dark) and 560×420 (light), with actual screenshot inspection. The follow-up pass corrected folder/floppy iconography and the dark-theme New/Unsaved contrast. Native GTK4 tests cover keyboard-accessible controls, responsive More menu, and accurate save state. **The editor remains a lossless Markdown source editor:** it renders native graphical checkbox and horizontal-rule overlays on top of the original Markdown source markers. PR #24 preserves editable text, real source offsets, native checkbox focus and unchanged file serialization. Disable **Style Markdown while editing** to see raw markers. Exact pixel parity, screen-reader acceptance, and additional supported-Linux display tests remain open before any Stable release.
 
+## Package-payload verification
+
+The native CI now builds a Debian package, extracts it to an isolated temporary filesystem, validates the desktop entry, and launches the packaged GTK4 Python modules in a separate process with a private XDG profile. The test opens and saves a Markdown note and confirms user data remains intact after staged payload removal. **This does not install, upgrade, or uninstall the package on a real operating system**; clean system-level installation and upgrade remain separate release-acceptance gates.
+
 ## Install & run
 
 Ubuntu 24.04+ / Debian-derived desktops with GTK 4.10 or later:
