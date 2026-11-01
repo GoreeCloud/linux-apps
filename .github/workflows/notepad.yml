@@ -41,3 +41,4 @@ jobs:
           xvfb-run -a /usr/bin/python3 tests/gui_unicode_lines_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_long_line_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_caret_status_smoke.py
+          xvfb-run -a /usr/bin/python3 tests/gui_accessibility_smoke.py
