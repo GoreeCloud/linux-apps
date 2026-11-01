@@ -10,7 +10,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - **Word wrap enabled by default**, adjustable in Settings.
 - All requested File, New Tab, Preferences, and Settings **glyph-only controls live in the native title bar**, alongside native minimize, maximize, and close controls provided by the window manager.
 - Settings: Light (first-run default), Dark, or Follow system; word wrap and **Style Markdown while editing** toggles. Preferences: font size and monospace text.
-- Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors displayed rather than silently changing content.
+- Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors and files with embedded NUL characters are rejected before editing to prevent silent truncation or data loss.
 - Mockup-inspired native shell: left-aligned identity, blue document tabs, a rounded writing surface, and compact glyph controls.
 - Live word and source-line counts, cursor position, wrap state, and honest local save status. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
