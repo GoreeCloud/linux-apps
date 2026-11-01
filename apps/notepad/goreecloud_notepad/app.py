@@ -76,10 +76,10 @@ class NotePage:
         close = Gtk.Button.new_from_icon_name("window-close-symbolic")
         close.add_css_class("flat")
         close.add_css_class("tab-close")
-        close.set_tooltip_text("Close tab")
         close.set_accessible_role(Gtk.AccessibleRole.BUTTON)
         close.connect("clicked", lambda *_: window.close_page(self))
         self.tab_body.append(close)
+        self.close_button = close
         self.tab_add = window._glyph("list-add-symbolic", "New tab", window.new_tab)
         self.tab_add.add_css_class("tab-add")
         self.tab_add.set_visible(False)
@@ -146,6 +146,11 @@ class NotePage:
     def refresh_label(self):
         self.tab_label.set_text(("• " if self.note.dirty else "") + self.note.name)
         self.tab_label.set_tooltip_text(str(self.note.path) if self.note.path else "Unsaved note")
+        # Icon-only close controls need a descriptive accessible name. Refresh
+        # after Save As so assistive technology identifies the correct tab.
+        label = f"Close {self.note.name} tab"
+        self.close_button.set_tooltip_text(label)
+        self.close_button.update_property([Gtk.AccessibleProperty.LABEL], [label])
 
     def _changed(self, buffer):
         start, end = buffer.get_bounds()

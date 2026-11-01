@@ -35,6 +35,7 @@ def main():
         assert window.get_titlebar().get_show_title_buttons()
         page = window.current()
         assert page.editor.get_wrap_mode() == Gtk.WrapMode.WORD_CHAR
+        assert page.close_button.get_tooltip_text() == "Close Untitled tab"
         loop = GLib.MainLoop()
         GLib.timeout_add(250, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
         loop.run()
@@ -69,6 +70,7 @@ def main():
         page.note.save(path)
         page.refresh_label()
         window.update_status()
+        assert page.close_button.get_tooltip_text() == "Close note.txt tab"
         assert window.file_status.get_text() == "Saved on this device"
         window.find_bar.show_find()
         window.find_bar.entry.set_text("Second")
@@ -78,6 +80,7 @@ def main():
         assert path.read_text() == "GoreeCloud test note\nSecond line"
         window.new_tab()
         assert len(window.pages) == 2
+        assert window.current().close_button.get_tooltip_text() == "Close Untitled tab"
         second = window.current()
         second.buffer.set_text("hello HELLO hello")
         window.find_bar.show_find()
