@@ -4,6 +4,7 @@ import stat
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from goreecloud_notepad.storage import Note, Preferences
 
@@ -43,6 +44,15 @@ class NoteTests(unittest.TestCase):
             with self.assertRaises(UnicodeError):
                 Note.open(path)
 
+    def test_reject_nul_with_original_file_intact(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "binary-like.txt"
+            original = b"draft before\x00important text after\n"
+            path.write_bytes(original)
+            with self.assertRaisesRegex(OSError, "NUL"):
+                Note.open(path)
+            self.assertEqual(path.read_bytes(), original)
+
 
 class PreferencesTests(unittest.TestCase):
     def test_defaults_and_persistence(self):
@@ -74,6 +84,19 @@ class PreferencesTests(unittest.TestCase):
             self.assertTrue(prefs.get("word_wrap"))
             self.assertEqual(prefs.get("font_size"), 15)
             self.assertFalse(prefs.get("monospace"))
+
+    def test_invalid_xdg_config_home_uses_home_config(self):
+        with tempfile.TemporaryDirectory() as temp:
+            home = Path(temp) / "home"
+            home.mkdir()
+            with mock.patch.object(Path, "home", return_value=home):
+                for invalid in ("", "relative/settings"):
+                    with self.subTest(xdg_config_home=invalid):
+                        with mock.patch.dict(os.environ, {"XDG_CONFIG_HOME": invalid}):
+                            prefs = Preferences()
+                            self.assertEqual(prefs.path, home / ".config/goreecloud/notepad/settings.json")
+                            prefs.set("font_size", 17)
+                            self.assertEqual(Preferences().get("font_size"), 17)
 
 
 if __name__ == "__main__":
