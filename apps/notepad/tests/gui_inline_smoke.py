@@ -126,6 +126,43 @@ def main():
         window._set_appearance("light")
         flush()
         assert not decorations.dark
+        # Scrolling is a visual-only operation: GTK's overlay allocations
+        # must follow the source lines instead of sticking to the viewport.
+        long_note = ("---\n- [ ] Scroll task\n" +
+                     "\n".join("Content line " + str(i) for i in range(100)))
+        page.buffer.set_text(long_note)
+        settle()
+        rule = next(w for w in decorations.widgets if isinstance(w, Gtk.Separator))
+        checkbox = next(w for w in decorations.widgets if isinstance(w, Gtk.CheckButton))
+        rule_y = rule.compute_bounds(page.editor)[1].origin.y
+        check_y = checkbox.compute_bounds(page.editor)[1].origin.y
+        adjustment = page.scroller.get_vadjustment()
+        adjustment.set_value(320)
+        settle()
+        assert abs((rule.compute_bounds(page.editor)[1].origin.y - rule_y) + 320) < 3
+        assert abs((checkbox.compute_bounds(page.editor)[1].origin.y - check_y) + 320) < 3
+        assert page.note.text == long_note, "Scrolling must not edit note source"
+        adjustment.set_value(0)
+        settle()
+        assert abs(rule.compute_bounds(page.editor)[1].origin.y - rule_y) < 3
+        # Unwrapped long lines produce independent horizontal scrolling.
+        # The same GTK overlays must follow the document in that direction.
+        window._set_wrap(False)
+        horizontal_note = "- [ ] Horizontal task\n" + ("long_content_" * 120)
+        page.buffer.set_text(horizontal_note)
+        page.buffer.place_cursor(page.buffer.get_start_iter())
+        settle()
+        box = next(w for w in decorations.widgets if isinstance(w, Gtk.CheckButton))
+        origin_x = box.compute_bounds(page.editor)[1].origin.x
+        hadj = page.scroller.get_hadjustment()
+        assert hadj.get_upper() > hadj.get_page_size() + 200
+        hadj.set_value(180)
+        settle()
+        assert abs((box.compute_bounds(page.editor)[1].origin.x - origin_x) + 180) < 3
+        assert page.note.text == horizontal_note
+        hadj.set_value(0)
+        window._set_wrap(True)
+        settle()
         decorations.MAX_CHARS = 80
         page.buffer.set_text("x" * 81 + "\n- [ ] Task")
         flush()
