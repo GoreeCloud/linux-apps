@@ -437,6 +437,8 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Italic", "Ctrl+I", "italic"),
             ("Inline code", "Ctrl+Shift+K", "code"),
             ("Strikethrough", "Ctrl+Shift+X", "strike"),
+            ("Bullet list", "", "bullet"),
+            ("Checklist item", "", "checklist"),
         ]
         for label, shortcut, style in items:
             button = Gtk.Button()
@@ -449,7 +451,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
             button.set_child(row)
             button.connect(
                 "clicked",
-                lambda _b, kind=style: (pop.popdown(), self.format_current(kind)),
+                lambda _b, kind=style: (
+                    pop.popdown(),
+                    self.insert_list_item(kind == "checklist") if kind in ("bullet", "checklist")
+                    else self.format_current(kind),
+                ),
             )
             box.append(button)
         pop.set_child(box)
@@ -677,6 +683,24 @@ class NotepadWindow(Gtk.ApplicationWindow):
                     buffer.get_iter_at_offset(change.selection_start),
                     buffer.get_iter_at_offset(change.selection_end),
                 )
+        finally:
+            buffer.end_user_action()
+        page.editor.grab_focus()
+
+    def insert_list_item(self, checklist: bool = False):
+        """Prefix the current source line as an undoable Markdown list item."""
+        page = self.current()
+        if page is None:
+            return
+        if self.preview_enabled:
+            self.toggle_preview()
+        buffer = page.buffer
+        cursor = buffer.get_iter_at_mark(buffer.get_insert())
+        line_start = cursor.copy()
+        line_start.set_line_offset(0)
+        buffer.begin_user_action()
+        try:
+            buffer.insert(line_start, "- [ ] " if checklist else "- ")
         finally:
             buffer.end_user_action()
         page.editor.grab_focus()
