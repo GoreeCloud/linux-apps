@@ -5,6 +5,8 @@ No HTML interpretation, network loading or executable content.
 from dataclasses import dataclass, replace
 import re
 
+from .source_lines import gtk_source_lines
+
 
 @dataclass(frozen=True)
 class Run:
@@ -54,7 +56,7 @@ def inline_runs(text: str) -> tuple[Run, ...]:
 def parse_markdown(text: str) -> list[Line]:
     result = []
     in_code = False
-    for source_line, raw in enumerate(text.splitlines()):
+    for source_line, raw in enumerate(gtk_source_lines(text)):
         if FENCE.match(raw):
             in_code = not in_code
             continue
