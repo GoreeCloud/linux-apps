@@ -4,19 +4,21 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 
 ## Features
 
+**Visual target:** the founder-supplied `GoreeCloud Notepad Interface.png` reference (31 October 2026). The UI follows its hierarchy and controls while preserving native GTK4 accessibility and save-state semantics. This source implementation has passed headless GTK smoke checks; pixel-level screenshot comparison on real desktop hardware is a separate release acceptance step.
+
 - Edit plain-text and Markdown files as ordinary UTF-8 text.
 - New, reorderable, independently closable tabs; unsaved-change indicators. The rounded, glyph-only New Tab control follows the last document tab, including after reordering or closing tabs.
 - Open, Save, and Save As using native Linux file dialogs.
 - **Word wrap enabled by default**, adjustable in Settings.
-- All requested File, New Tab, Preferences, and Settings **glyph-only controls live in the native title bar**, alongside native minimize, maximize, and close controls provided by the window manager.
+- A founder-directed **native mockup toolbar** provides a blue cloud brand mark; labeled **New / Open / Save** controls; Bold, Italic, Markdown preview, list/checklist formatting, Find, Settings, and a pinned More menu. GTK provides real minimize/maximize/close controls. At narrow widths, the action strip scrolls without hiding the More menu.
 - Settings: Light (first-run default), Dark, or Follow system; word wrap and **Style Markdown while editing** toggles. Preferences: font size and monospace text.
 - Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors and files with embedded NUL characters are rejected before editing to prevent silent truncation or data loss.
-- Mockup-inspired native shell: left-aligned identity, blue document tabs, a rounded writing surface, and compact glyph controls.
-- Live word and source-line counts, cursor position, wrap state, and honest local save status. A wrapped paragraph may span several screen rows while still being one source line.
+- Mockup-led native shell: light blue chrome, a blue-highlighted rounded `Untitled.md` tab, a softly bordered white writing canvas, a compact bottom status strip, and corresponding dark surfaces. The new tab display name does not imply a file has been saved.
+- Live word and source-line counts, cursor position, wrap state, and truthful **Saved / Unsaved / Not saved** status with a contextual icon and tooltip. The status changes to Saved only after data is persisted to a chosen local path. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
 - **Live Markdown styling while typing:** headings, emphasis, code, links, lists, and task markers are visually distinguished directly in the native editor. Formatting cues are enabled by default and may be switched off under Settings; source Markdown punctuation stays visible and editable. For responsiveness, notes above 100,000 characters or with more than 2,500 formatting spans remain unstyled but fully editable. The decoration never changes note text, creates a save, or downloads anything.
-- Native Undo/Redo, keyboard shortcuts to switch tabs, and a glyph-only Markdown formatting menu. Bold, italic, inline code, and strikethrough commands wrap or unwrap selected text (or insert paired markers at the cursor) as a single undoable source edit.
+- Native Undo/Redo, keyboard shortcuts to switch tabs, direct Bold/Italic controls, a preview toggle, and a Markdown tools menu. Bold, italic, inline code, and strikethrough actions wrap or unwrap selected text (or insert paired markers at the cursor). Bullet and checklist actions insert Markdown line prefixes. All are undoable source edits.
 - Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
 - Markdown checklist boxes can be clicked in Preview to mark tasks done/undone, updating only the original `[ ]` / `[x]` marker. The change is undoable, marks the note as unsaved, and is never written to disk until Save. Use Ctrl+Enter to toggle the task at the source editor cursor.
 - Preview is not a WYSIWYG editor: links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters. Only checkbox glyphs are interactive.
