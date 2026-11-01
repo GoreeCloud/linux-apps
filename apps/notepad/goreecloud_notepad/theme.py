@@ -537,3 +537,34 @@ window.notepad-window .toolbar-scroller {
   border: 0;
 }
 """
+
+STYLESHEET += """
+/* Lossless native checkbox and horizontal-rule decorations in source view. */
+window.notepad-window textview.notepad-editor checkbutton.inline-task-check {
+  padding: 0; margin: 0; min-width: 35px; min-height: 24px;
+  background: transparent; border: 0;
+}
+window.notepad-window textview.notepad-editor checkbutton.inline-task-check check {
+  min-width: 19px; min-height: 19px;
+  border: 2px solid #5f6c85; border-radius: 5px;
+  background-color: #ffffff;
+}
+window.notepad-window textview.notepad-editor checkbutton.inline-task-check:checked check {
+  background-color: #1265f5; border-color: #1265f5; color: #ffffff;
+}
+window.notepad-window textview.notepad-editor checkbutton.inline-task-check:focus-visible {
+  outline: 2px solid #1265f5; outline-offset: 1px;
+}
+window.notepad-window textview.notepad-editor separator.inline-rule {
+  background-color: #a8c6fc; min-height: 2px;
+}
+window.notepad-window.dark textview.notepad-editor checkbutton.inline-task-check check {
+  background-color: #19253b; border-color: #aec2e7;
+}
+window.notepad-window.dark textview.notepad-editor checkbutton.inline-task-check:checked check {
+  background-color: #4489ff; border-color: #4489ff;
+}
+window.notepad-window.dark textview.notepad-editor separator.inline-rule {
+  background-color: #5d80b7;
+}
+"""
