@@ -108,6 +108,20 @@ def main():
         assert window.current() is page
         window.open_path(path)
         assert len(window.pages) == 2, "Existing file should not open twice"
+        # GTK truncates editor text at NUL, so a binary-like file must be
+        # rejected without creating a tab or modifying the original bytes.
+        binary_path = Path(folder) / "binary-like.txt"
+        binary_path.write_bytes(b"before\x00after")
+        errors = []
+        show_error = window._error
+        window._error = lambda message, detail: errors.append((message, detail))
+        try:
+            assert window.open_path(binary_path) is None
+        finally:
+            window._error = show_error
+        assert errors and "NUL" in errors[0][1]
+        assert binary_path.read_bytes() == b"before\x00after"
+        assert len(window.pages) == 2
         window._set_wrap(False)
         assert window.wrap_status.get_text() == "Wrap: Off"
         assert all(p.editor.get_wrap_mode() == Gtk.WrapMode.NONE for p in window.pages)
