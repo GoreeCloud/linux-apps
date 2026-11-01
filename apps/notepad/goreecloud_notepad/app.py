@@ -209,11 +209,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.new_button.add_css_class("new-action")
         toolbar.append(self.new_button)
         self.open_button = self._labeled_action(
-            "document-open-symbolic", "Open", "Open a note (Ctrl+O)", self.open_dialog
+            "folder-open-symbolic", "Open", "Open a note (Ctrl+O)", self.open_dialog
         )
         toolbar.append(self.open_button)
         self.save_button = self._labeled_action(
-            "document-save-symbolic", "Save", "Save note (Ctrl+S)", self.save_current
+            "media-floppy-symbolic", "Save", "Save note (Ctrl+S)", self.save_current
         )
         toolbar.append(self.save_button)
         toolbar.append(self._toolbar_divider())
@@ -275,6 +275,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         toolbar_scroll.set_hexpand(True)
         toolbar_scroll.add_css_class("toolbar-scroller")
         toolbar_scroll.set_child(toolbar)
+        toolbar_scroll.set_tooltip_text("Scroll horizontally to reach more writing tools")
         self.toolbar_scroll = toolbar_scroll
         header.pack_start(toolbar_scroll)
         self.set_titlebar(header)
@@ -327,7 +328,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         self.save_status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         self.save_status_box.add_css_class("save-state")
-        self.file_indicator = Gtk.Image.new_from_icon_name("document-save-symbolic")
+        self.file_indicator = Gtk.Image.new_from_icon_name("media-floppy-symbolic")
         self.save_status_box.append(self.file_indicator)
         self.save_status_box.append(self.file_status)
         footer.append(self.save_status_box)
@@ -882,13 +883,13 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.save_status_box.remove_css_class("saved")
         self.save_status_box.remove_css_class("unsaved")
         if page.note.dirty:
-            self.file_indicator.set_from_icon_name("document-save-symbolic")
+            self.file_indicator.set_from_icon_name("media-floppy-symbolic")
             self.save_status_box.add_css_class("unsaved")
         elif page.note.path is not None:
             self.file_indicator.set_from_icon_name("emblem-ok-symbolic")
             self.save_status_box.add_css_class("saved")
         else:
-            self.file_indicator.set_from_icon_name("document-save-symbolic")
+            self.file_indicator.set_from_icon_name("media-floppy-symbolic")
         self.save_status_box.set_tooltip_text(
             "Unsaved changes" if page.note.dirty
             else "Saved on this device" if page.note.path else "Not saved yet"
