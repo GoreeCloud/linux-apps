@@ -37,6 +37,9 @@ def main():
         assert window.new_button.has_css_class("new-action")
         assert window.open_button.get_tooltip_text().startswith("Open a note")
         assert window.save_button.get_tooltip_text().startswith("Save note")
+        assert window.open_button.get_child().get_first_child().get_icon_name() == "folder-open-symbolic"
+        assert window.save_button.get_child().get_first_child().get_icon_name() == "media-floppy-symbolic"
+        assert window.toolbar_scroll.get_tooltip_text().startswith("Scroll horizontally")
         assert window.preview_button.get_label() == "</>"
         assert window.current().tab_label.get_text() == "Untitled.md"
         page = window.current()
@@ -62,6 +65,7 @@ def main():
         assert window.lines_status.get_text() == "2 lines"
         assert window.file_status.get_text() == "Unsaved"
         assert window.save_status_box.has_css_class("unsaved")
+        assert window.file_indicator.get_icon_name() == "media-floppy-symbolic"
         window.find_bar.show_find()
         assert window.find_bar.get_visible()
         window.find_bar.entry.set_text("nOtE")
@@ -216,6 +220,8 @@ def main():
         assert sum(p.tab_add.get_visible() for p in window.pages) == 1
         assert window.current().tab_body.get_width() > 80
         assert window.current().tab_add.get_width() >= 20
+        assert window.more_button.get_visible(), "More menu must remain reachable on narrow windows"
+        assert window.toolbar_scroll.get_hscrollbar().get_adjustment().get_upper() > 0
         window._close_confirmed = True
         window.close()
         app.quit()

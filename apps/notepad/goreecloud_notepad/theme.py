@@ -501,3 +501,39 @@ window.notepad-window.dark .save-state.saved,
 window.notepad-window.dark .save-state.saved label,
 window.notepad-window.dark .save-state.saved image { color: #7ce89e; }
 """
+
+
+STYLESHEET += """
+/* Screenshot-based contrast corrections for the founder's interface mockup. */
+window.notepad-window.dark .toolbar-text-action.new-action {
+  background-color: #115ec9;
+  color: #ffffff;
+  font-weight: 700;
+}
+window.notepad-window.dark .toolbar-text-action.new-action image,
+window.notepad-window.dark .toolbar-text-action.new-action label {
+  color: #ffffff;
+}
+window.notepad-window.dark .toolbar-text-action.new-action:hover {
+  background-color: #2275e6;
+}
+window.notepad-window.dark .save-state.unsaved,
+window.notepad-window.dark .save-state.unsaved label,
+window.notepad-window.dark .save-state.unsaved image {
+  color: #ffd38a;
+  font-weight: 700;
+}
+window.notepad-window.dark notebook > header tab:checked .tab-close,
+window.notepad-window.dark notebook > header tab .document-tab image {
+  color: #dbeaff;
+}
+window.notepad-window.dark notebook > header tab .tab-add {
+  color: #ffffff;
+  background-color: #345587;
+  border-color: #5f7eaf;
+}
+window.notepad-window .toolbar-scroller {
+  background: transparent;
+  border: 0;
+}
+"""

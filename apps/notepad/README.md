@@ -24,6 +24,10 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Preview is not a WYSIWYG editor: links are not opened, raw HTML is shown literally, and preview is limited to the first 500,000 characters. Only checkbox glyphs are interactive.
 - Full WYSIWYG editing (hidden Markdown source markers), cloud sync, and persisted saved-time history are not yet implemented.
 
+## Visual audit status
+
+The 31 October 2026 founder mockup remains the UI target. On an isolated Ubuntu 24.04 GTK 4.14 laptop, the native GTK4 app was rendered under Xvfb at 1080×720 (light and dark) and 560×420 (light), with actual screenshot inspection. The follow-up pass corrected folder/floppy iconography and the dark-theme New/Unsaved contrast. Native GTK4 tests cover keyboard-accessible controls, responsive More menu, and accurate save state. **The editor remains a Markdown source editor:** it intentionally shows raw `- [ ]` and `- [x]` text instead of the fully drawn checkboxes in the mockup; interactive checkbox glyphs exist only in the read-only preview. A truly inline editable checkbox presentation requires a separately tested, lossless source-mapping implementation. Exact pixel parity, screen-reader acceptance, and additional supported-Linux display tests remain open before any Stable release.
+
 ## Install & run
 
 Ubuntu 24.04+ / Debian-derived desktops with GTK 4.10 or later:
