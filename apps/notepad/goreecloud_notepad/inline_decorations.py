@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from gi.repository import GLib, Gtk
 
+from .accessibility import task_accessible_name
 from .markdown import FENCE, RULE, TASK
 from .source_lines import gtk_source_lines
 
@@ -254,22 +255,28 @@ class InlineDecorations:
         if is_new:
             checkbox = Gtk.CheckButton()
             checkbox.add_css_class("inline-task-check")
-            checkbox.set_tooltip_text("Toggle task completion")
+            checkbox.set_tooltip_text("Toggle completion (Space); Ctrl+Enter in editor")
+            checkbox.update_property(
+                [Gtk.AccessibleProperty.DESCRIPTION],
+                ["Press Space to toggle. In the editor, Ctrl+Enter toggles the task at the cursor."],
+            )
             checkbox.connect("toggled", self._toggle_widget)
             self._check_pool.append(checkbox)
         else:
             checkbox = self._check_pool[self._check_index]
         self._check_index += 1
         checkbox._source_line = line
+        checkbox._task_text = match.group(2)
         self._clearing = True
         try:
             checkbox.set_active(match.group(1).lower() == "x")
         finally:
             self._clearing = False
+        # Keep the accessible name stable across checked-state transitions.
+        # GTK exposes CHECKBOX state separately for assistive technologies.
         checkbox.update_property(
             [Gtk.AccessibleProperty.LABEL],
-            [f"Mark task {'incomplete' if checkbox.get_active() else 'complete'}: "
-             f"{match.group(2)[:72]}"],
+            [task_accessible_name(line, match.group(2))],
         )
         rect = self.view.get_iter_location(begin)
         xpos, ypos = max(0, rect.x - 2), max(0, rect.y - 3)

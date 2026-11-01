@@ -60,7 +60,7 @@ class DebianPackageTests(unittest.TestCase):
             self.assertIn("Exec=goreecloud-notepad %F", desktop.read_text())
             package = stage / "share/goreecloud/notepad/goreecloud_notepad"
             expected = {
-                "__init__.py", "__main__.py", "app.py", "checklists.py",
+                "__init__.py", "__main__.py", "accessibility.py", "app.py", "checklists.py",
                 "find.py", "formatting.py", "markdown.py", "inline_decorations.py", "preview.py", "source_lines.py", "source_spans.py", "source_styling.py", "storage.py", "theme.py", "wrap_policy.py",
             }
             self.assertEqual({p.name for p in package.iterdir()}, expected)
