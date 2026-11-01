@@ -9,7 +9,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Edit plain-text and Markdown files as ordinary UTF-8 text.
 - New, reorderable, independently closable tabs; unsaved-change indicators. The rounded, glyph-only New Tab control follows the last document tab, including after reordering or closing tabs.
 - Open, Save, and Save As using native Linux file dialogs.
-- **Word wrap enabled by default**, adjustable in Settings.
+- **Word wrap enabled by default**, adjustable in Settings. When a note contains an unbroken run of 4,096 or more characters, the editor temporarily switches from word-aware wrapping to faster character wrapping. The status bar shows **Wrap: Fast**; ordinary wrapping resumes after the long run is shortened. This changes display layout only, not source text or the saved note. Turning wrapping off still takes precedence.
 - A founder-directed **native mockup toolbar** provides a blue cloud brand mark; labeled **New / Open / Save** controls; Bold, Italic, Markdown preview, list/checklist formatting, Find, Settings, and a pinned More menu. GTK provides real minimize/maximize/close controls. At narrow widths, the action strip scrolls without hiding the More menu.
 - Settings: Light (first-run default), Dark, or Follow system; word wrap and **Style Markdown while editing** toggles. Preferences: font size and monospace text.
 - Unsaved-change confirmation; local-only atomic file saving; UTF-8 errors and files with embedded NUL characters are rejected before editing to prevent silent truncation or data loss.
