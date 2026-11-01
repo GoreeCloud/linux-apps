@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .markdown import FENCE, HEADING, INLINE, BULLET, ORDERED, QUOTE, TASK
+from .source_lines import gtk_source_lines
 
 
 @dataclass(frozen=True)
@@ -37,8 +38,8 @@ def source_spans(text: str) -> list[Span]:
         if end > start:
             spans.append(Span(offset + start, offset + end, kind))
 
-    for segment in text.splitlines(keepends=True):
-        raw = segment.rstrip("\r\n")
+    for segment in gtk_source_lines(text, keepends=True):
+        raw = segment.rstrip("\r\n\u2029")
         if FENCE.match(raw):
             add(0, len(raw), "marker")
             in_fence = not in_fence

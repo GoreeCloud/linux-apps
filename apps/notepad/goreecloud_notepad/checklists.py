@@ -1,6 +1,7 @@
 """Checklist marker lookup. No side effects or file writes."""
 
 from .markdown import FENCE, TASK
+from .source_lines import gtk_source_lines
 
 
 def task_marker_at_line(text: str, line_number: int):
@@ -8,7 +9,7 @@ def task_marker_at_line(text: str, line_number: int):
     if line_number < 0:
         return None
     in_fence = False
-    for index, line in enumerate(text.splitlines()):
+    for index, line in enumerate(gtk_source_lines(text)):
         if FENCE.match(line):
             in_fence = not in_fence
             if index == line_number:
