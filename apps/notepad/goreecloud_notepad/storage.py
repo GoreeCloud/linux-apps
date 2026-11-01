@@ -96,6 +96,10 @@ class Note:
     def open(cls, path: Path) -> "Note":
         path = Path(path).expanduser()
         text, identity = _read_regular_snapshot(path)
+        # Gtk.TextBuffer.set_text() truncates silently at the first NUL. Reject
+        # binary-like inputs before they reach the editor to prevent data loss.
+        if "\x00" in text:
+            raise OSError("Cannot open a file containing NUL characters; it may be binary. The file was not changed.")
         return cls(text=text, path=path, saved_text=text, file_identity=identity)
 
     def save(self, target: Path | None = None) -> Path:
@@ -139,7 +143,10 @@ class Note:
 
 class Preferences:
     def __init__(self, config_path: Path | None = None):
-        base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+        # XDG_CONFIG_HOME must be an absolute, nonempty path. A relative or
+        # empty value must not write settings into the current working folder.
+        configured = os.environ.get("XDG_CONFIG_HOME", "")
+        base = Path(configured) if configured and Path(configured).is_absolute() else Path.home() / ".config"
         self.path = config_path or base / "goreecloud" / "notepad" / "settings.json"
         self._values = dict(DEFAULTS)
         try:
