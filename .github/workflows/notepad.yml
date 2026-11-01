@@ -39,3 +39,4 @@ jobs:
           xvfb-run -a /usr/bin/python3 tests/gui_inline_performance_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_packaged_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_unicode_lines_smoke.py
+          xvfb-run -a /usr/bin/python3 tests/gui_long_line_smoke.py
