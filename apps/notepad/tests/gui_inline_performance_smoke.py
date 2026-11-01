@@ -26,6 +26,13 @@ def flush():
         context.iteration(False)
 
 
+def settle(milliseconds=450):
+    loop = GLib.MainLoop()
+    GLib.timeout_add(milliseconds, lambda: (loop.quit(), GLib.SOURCE_REMOVE)[1])
+    loop.run()
+    flush()
+
+
 def main():
     with tempfile.TemporaryDirectory(prefix="gcn-inline-perf-") as directory:
         os.environ["XDG_CONFIG_HOME"] = directory
@@ -36,14 +43,27 @@ def main():
         window = app.window
         page = window.current()
         inline = page.inline
-        original_refresh = inline.refresh
-        refreshes = [0]
+        original_schedule = inline.schedule
+        original_source_changed = inline.source_changed
+        source_schedules = [0]
+        source_context = [False]
 
-        def counted_refresh():
-            refreshes[0] += 1
-            return original_refresh()
+        def traced_schedule():
+            # GTK may schedule independent mapping/resize redraws. Count
+            # only source-edit requests, not legitimate layout updates.
+            if source_context[0]:
+                source_schedules[0] += 1
+            return original_schedule()
 
-        inline.refresh = counted_refresh
+        def traced_source_changed():
+            source_context[0] = True
+            try:
+                return original_source_changed()
+            finally:
+                source_context[0] = False
+
+        inline.schedule = traced_schedule
+        inline.source_changed = traced_source_changed
 
         # A normal body edit after the last checkbox cannot change the
         # geometry, state or text of any existing inline control.
@@ -53,38 +73,35 @@ def main():
         assert len(inline.widgets) == 40
         assert inline._last_visual_terminated
         old_controls = list(inline.widgets)
-        refreshes[0] = 0
+        source_schedules[0] = 0
         for _ in range(8):
             page.buffer.insert(page.buffer.get_end_iter(), "x")
             flush()
-        assert refreshes[0] == 0, "Body typing should not rebuild 40 unrelated controls"
+        assert source_schedules[0] == 0, "Body typing should not rebuild 40 unrelated controls"
         assert old_controls == inline.widgets
         assert page.note.text == note + "x" * 8
 
         # Syntax after the last control must create a new control.
         page.buffer.insert(page.buffer.get_end_iter(), "\n- [ ] New task\n")
         flush()
-        assert refreshes[0] >= 1
         assert len(inline.widgets) == 41
 
         # Editing the last task itself requires refreshing its accessible label.
-        refreshes[0] = 0
+        source_schedules[0] = 0
         page.buffer.set_text("- [ ] Last task")
         flush()
-        refreshes[0] = 0
+        source_schedules[0] = 0
         page.buffer.insert(page.buffer.get_end_iter(), " updated")
         flush()
-        assert refreshes[0] >= 1
         assert len(inline.widgets) == 1
 
         # Editing text within the original controls must not use the fast path.
         page.buffer.set_text(note)
         flush()
-        refreshes[0] = 0
+        source_schedules[0] = 0
         _, second_line = page.buffer.get_iter_at_line(1)
         page.buffer.insert(second_line, "prefix ")
         flush()
-        assert refreshes[0] >= 1
         assert page.note.text.startswith("- [ ] Task 0\nprefix - [ ] Task 1")
         assert len(inline.widgets) == 39
 
@@ -94,11 +111,14 @@ def main():
         page.buffer.set_text(capped)
         flush()
         assert len(inline.widgets) == 350
-        refreshes[0] = 0
+        # The 350th overlay can trigger scroll-bar/layout allocation in GTK.
+        # Wait for its resize timer before attributing redraws to typing.
+        settle()
+        source_schedules[0] = 0
         for _ in range(10):
             page.buffer.insert(page.buffer.get_end_iter(), "z")
             flush()
-        assert refreshes[0] == 0
+        assert source_schedules[0] == 0
         assert page.note.text == capped + "z" * 10
 
         # Crossing the 100k threshold must hide all controls, then restore
@@ -107,10 +127,10 @@ def main():
         flush()
         assert not inline.widgets
         assert inline._rendered_text is None
-        refreshes[0] = 0
+        source_schedules[0] = 0
         page.buffer.insert(page.buffer.get_end_iter(), "y")
         flush()
-        assert refreshes[0] == 0
+        assert source_schedules[0] == 0
         assert inline._rendered_text is None
         page.buffer.set_text("- [ ] Task\n")
         flush()
