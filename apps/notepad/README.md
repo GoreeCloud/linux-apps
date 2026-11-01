@@ -24,7 +24,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 
 ## Install & run
 
-Ubuntu 24.04+ / Debian-derived desktops:
+Ubuntu 24.04+ / Debian-derived desktops with GTK 4.10 or later:
 
 ```sh
 sudo apt update
@@ -55,7 +55,7 @@ cd apps/notepad
 python3 packaging/build_deb.py
 ```
 
-This produces `dist/goreecloud-notepad_0.1.0_all.deb`. Inspect the archive with `dpkg-deb --contents dist/*.deb`; install deliberately with `sudo apt install ./dist/goreecloud-notepad_0.1.0_all.deb`. The installed command is `goreecloud-notepad`, and the desktop menu entry supports opening local text and Markdown files. System GTK4/PyGObject packages are declared as dependencies.
+This produces `dist/goreecloud-notepad_0.1.0_all.deb`. Inspect the archive with `dpkg-deb --contents dist/*.deb`; install deliberately with `sudo apt install ./dist/goreecloud-notepad_0.1.0_all.deb`. The installed command is `goreecloud-notepad`, and the desktop menu entry supports opening local text and Markdown files. System GTK4/PyGObject packages are declared as dependencies. The package requires GTK 4.10+ because native file and alert dialogs use APIs added in that version. Debian 12 Bookworm's default GTK 4.8 does not meet this requirement; do not force-install the package there.
 
 Remove the package with `sudo apt remove goreecloud-notepad` if desired. Installation and removal do **not** delete saved notes or preferences. This is a locally buildable **preview** package, not a signed public release. No network services, build-time package downloads, or post-installation scripts are included.
 

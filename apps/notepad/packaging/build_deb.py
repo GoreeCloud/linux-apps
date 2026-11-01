@@ -30,7 +30,7 @@ Section: editors
 Priority: optional
 Architecture: all
 Maintainer: GoreeCloud <admin@goreecloud.com>
-Depends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0
+Depends: python3 (>= 3.10), python3-gi, gir1.2-gtk-4.0 (>= 4.10), libgtk-4-1 (>= 4.10)
 Description: GoreeCloud native GTK4 Notepad (preview)
  Local-first UTF-8 notes, tabs, Markdown preview, and native desktop UI.
  This package does not install a network service or collect analytics.
