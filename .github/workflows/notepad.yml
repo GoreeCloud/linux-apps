@@ -34,3 +34,4 @@ jobs:
           xvfb-run -a /usr/bin/python3 tests/gui_source_style_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_inline_smoke.py
           xvfb-run -a /usr/bin/python3 tests/gui_inline_performance_smoke.py
+          xvfb-run -a /usr/bin/python3 tests/gui_packaged_smoke.py
