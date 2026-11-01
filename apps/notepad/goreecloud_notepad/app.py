@@ -174,7 +174,7 @@ class NotePage:
         if hasattr(self.window, "find_bar"):
             self.window.find_bar.refresh()
         self.styling.schedule()
-        self.inline.schedule()
+        self.inline.source_changed()
 
     def _mark_set(self, _buffer, _iter, mark):
         if mark.get_name() == "insert":
