@@ -264,8 +264,19 @@ class NotepadWindow(Gtk.ApplicationWindow):
         more.update_property([Gtk.AccessibleProperty.LABEL], ["More actions"])
         more.add_css_class("header-glyph")
         more.set_popover(self._file_popover())
-        toolbar.append(more)
-        header.pack_start(toolbar)
+        self.more_button = more
+        # Keep More permanently reachable on narrow windows. The remaining
+        # actions scroll horizontally without enlarging the minimum window.
+        header.pack_end(more)
+        toolbar_scroll = Gtk.ScrolledWindow()
+        toolbar_scroll.set_policy(Gtk.PolicyType.EXTERNAL, Gtk.PolicyType.NEVER)
+        toolbar_scroll.set_min_content_width(235)
+        toolbar_scroll.set_propagate_natural_width(True)
+        toolbar_scroll.set_hexpand(True)
+        toolbar_scroll.add_css_class("toolbar-scroller")
+        toolbar_scroll.set_child(toolbar)
+        self.toolbar_scroll = toolbar_scroll
+        header.pack_start(toolbar_scroll)
         self.set_titlebar(header)
 
         self.notebook = Gtk.Notebook()
@@ -737,7 +748,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             return
         chooser = Gtk.FileDialog()
         chooser.set_title("Save note as")
-        chooser.set_initial_name(page.note.name if page.note.path else "Untitled.txt")
+        chooser.set_initial_name(page.note.name if page.note.path else "Untitled.md")
 
         def finished(dialog, result):
             try:
