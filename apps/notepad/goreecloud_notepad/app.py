@@ -291,11 +291,11 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.words_status.add_css_class("footer-label")
         left.append(self.words_status)
         left.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-        self.lines_status = Gtk.Label(label="1 source line")
+        self.lines_status = Gtk.Label(label="1 line")
         self.lines_status.set_tooltip_text("Source lines, not rows created by word wrapping.")
         self.lines_status.add_css_class("footer-label")
         left.append(self.lines_status)
-        self.file_status = Gtk.Label(label="Local note")
+        self.file_status = Gtk.Label(label="Not saved")
         self.file_status.add_css_class("footer-label")
         self.file_status.set_ellipsize(Pango.EllipsizeMode.END)
         # Save-state belongs at the trailing end of the status bar.
@@ -314,7 +314,12 @@ class NotepadWindow(Gtk.ApplicationWindow):
         footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
         footer.append(self.wrap_status)
         footer.append(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-        footer.append(self.file_status)
+        self.save_status_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.save_status_box.add_css_class("save-state")
+        self.file_indicator = Gtk.Image.new_from_icon_name("document-save-symbolic")
+        self.save_status_box.append(self.file_indicator)
+        self.save_status_box.append(self.file_status)
+        footer.append(self.save_status_box)
         root.append(footer)
 
         self.connect("close-request", self._close_request)
@@ -831,14 +836,28 @@ class NotepadWindow(Gtk.ApplicationWindow):
         lines = page.note.text.count("\n") + 1
         self.words_status.set_text(f"{words} words" if words != 1 else "1 word")
         self.lines_status.set_text(
-            f"{lines} source lines" if lines != 1 else "1 source line"
+            f"{lines} lines" if lines != 1 else "1 line"
         )
         self.position_status.set_text(
             f"Ln {cursor.get_line() + 1}, Col {cursor.get_line_offset() + 1}"
         )
         self.wrap_status.set_text("Wrap: On" if self.prefs.get("word_wrap") else "Wrap: Off")
-        status = "Unsaved changes" if page.note.dirty else ("Saved on this device" if page.note.path else "Not saved yet")
+        status = "Unsaved" if page.note.dirty else ("Saved" if page.note.path else "Not saved")
         self.file_status.set_text(status)
+        self.save_status_box.remove_css_class("saved")
+        self.save_status_box.remove_css_class("unsaved")
+        if page.note.dirty:
+            self.file_indicator.set_from_icon_name("document-save-symbolic")
+            self.save_status_box.add_css_class("unsaved")
+        elif page.note.path is not None:
+            self.file_indicator.set_from_icon_name("emblem-ok-symbolic")
+            self.save_status_box.add_css_class("saved")
+        else:
+            self.file_indicator.set_from_icon_name("document-save-symbolic")
+        self.save_status_box.set_tooltip_text(
+            "Unsaved changes" if page.note.dirty
+            else "Saved on this device" if page.note.path else "Not saved yet"
+        )
         return False
 
 
