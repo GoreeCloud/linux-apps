@@ -9,6 +9,7 @@ from __future__ import annotations
 from gi.repository import GLib, Gtk
 
 from .markdown import FENCE, RULE, TASK
+from .source_lines import gtk_source_lines
 
 
 class InlineDecorations:
@@ -170,7 +171,7 @@ class InlineDecorations:
             for tail in (previous[boundary:], current[boundary:]):
                 if any(
                     FENCE.match(line) or TASK.match(line) or RULE.match(line)
-                    for line in tail.splitlines()
+                    for line in gtk_source_lines(tail)
                 ):
                     self.schedule()
                     return
@@ -201,8 +202,8 @@ class InlineDecorations:
             return GLib.SOURCE_REMOVE
         in_fence = False
         offset = 0
-        raw_lines = text.splitlines(keepends=True)
-        for line_number, source in enumerate(text.splitlines()):
+        raw_lines = gtk_source_lines(text, keepends=True)
+        for line_number, source in enumerate(gtk_source_lines(text)):
             raw_line = raw_lines[line_number]
             offset += len(raw_line)
             if FENCE.match(source):
@@ -222,7 +223,7 @@ class InlineDecorations:
                 self._rule(line_number, source)
             self._last_visual_end = offset
             self._last_visual_terminated = bool(raw_line) and (
-                raw_line[-1] in "\n\r\v\f\x1c\x1d\x1e\x85\u2028\u2029"
+                raw_line[-1] in "\n\r\u2029"
             )
         return GLib.SOURCE_REMOVE
 
