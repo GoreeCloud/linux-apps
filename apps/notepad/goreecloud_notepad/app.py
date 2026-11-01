@@ -19,6 +19,7 @@ from .checklists import task_marker_at_line
 from .formatting import inline_format
 from .source_styling import SourceStyling
 from .inline_decorations import InlineDecorations
+from .wrap_policy import needs_fast_wrap
 from .theme import install as install_theme
 
 
@@ -38,9 +39,7 @@ class NotePage:
         self.editor.set_bottom_margin(30)
         self.editor.set_hexpand(True)
         self.editor.set_vexpand(True)
-        self.editor.set_wrap_mode(
-            Gtk.WrapMode.WORD_CHAR if window.prefs.get("word_wrap") else Gtk.WrapMode.NONE
-        )
+        self.apply_wrap_mode()
         self.update_font()
         self.editor.set_accessible_role(Gtk.AccessibleRole.TEXT_BOX)
         self.editor.update_property(
@@ -119,6 +118,20 @@ class NotePage:
             self.buffer.end_user_action()
         return True
 
+    def apply_wrap_mode(self):
+        """Switch extreme unbroken lines to faster GTK character wrapping."""
+        if not self.window.prefs.get("word_wrap"):
+            mode = Gtk.WrapMode.NONE
+        elif needs_fast_wrap(self.note.text):
+            mode = Gtk.WrapMode.CHAR
+        else:
+            mode = Gtk.WrapMode.WORD_CHAR
+        if self.editor.get_wrap_mode() != mode:
+            self.editor.set_wrap_mode(mode)
+            if hasattr(self, "inline"):
+                self.inline.schedule()
+        return mode
+
     def set_preview(self, enabled: bool, dark: bool):
         if enabled:
             self.preview.render(self.note.text, dark)
@@ -167,6 +180,7 @@ class NotePage:
     def _changed(self, buffer):
         start, end = buffer.get_bounds()
         self.note.text = buffer.get_text(start, end, True)
+        self.apply_wrap_mode()
         self.refresh_label()
         self.window.update_status()
         if self.window.preview_enabled:
@@ -560,9 +574,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
     def _set_wrap(self, enabled):
         self.prefs.set("word_wrap", bool(enabled))
         for page in self.pages:
-            page.editor.set_wrap_mode(
-                Gtk.WrapMode.WORD_CHAR if enabled else Gtk.WrapMode.NONE
-            )
+            page.apply_wrap_mode()
             page.preview.view.set_wrap_mode(
                 Gtk.WrapMode.WORD_CHAR if enabled else Gtk.WrapMode.NONE
             )
@@ -892,7 +904,19 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.position_status.set_text(
             f"Ln {cursor.get_line() + 1}, Col {cursor.get_line_offset() + 1}"
         )
-        self.wrap_status.set_text("Wrap: On" if self.prefs.get("word_wrap") else "Wrap: Off")
+        wrap = page.editor.get_wrap_mode()
+        if wrap == Gtk.WrapMode.NONE:
+            self.wrap_status.set_text("Wrap: Off")
+            self.wrap_status.set_tooltip_text("Word wrap disabled")
+        elif wrap == Gtk.WrapMode.CHAR:
+            self.wrap_status.set_text("Wrap: Fast")
+            self.wrap_status.set_tooltip_text(
+                "Fast character wrapping for a long unbroken string; "
+                "ordinary word wrapping resumes when it is shortened"
+            )
+        else:
+            self.wrap_status.set_text("Wrap: On")
+            self.wrap_status.set_tooltip_text("Word wrap enabled")
         status = "Unsaved" if page.note.dirty else ("Saved" if page.note.path else "Not saved")
         self.file_status.set_text(status)
         self.save_status_box.remove_css_class("saved")
