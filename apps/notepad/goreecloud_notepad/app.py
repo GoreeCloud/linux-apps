@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 import gi
@@ -853,5 +854,15 @@ class NotepadApplication(Gtk.Application):
 
 
 def main(argv=None):
+    # Gtk.FileDialog and Gtk.AlertDialog are only available from GTK 4.10.
+    # Give source installs a clear failure rather than broken file actions.
+    version = (Gtk.get_major_version(), Gtk.get_minor_version())
+    if version < (4, 10):
+        print(
+            f"GoreeCloud Notepad requires GTK 4.10 or later "
+            f"(found {version[0]}.{version[1]}).",
+            file=sys.stderr,
+        )
+        return 2
     application = NotepadApplication()
     return application.run(argv)
