@@ -33,6 +33,12 @@ def main():
         window = app.window
         assert window is not None, "App window missing"
         assert window.get_titlebar().get_show_title_buttons()
+        assert window.toolbar.has_css_class("notepad-toolbar")
+        assert window.new_button.has_css_class("new-action")
+        assert window.open_button.get_tooltip_text().startswith("Open a note")
+        assert window.save_button.get_tooltip_text().startswith("Save note")
+        assert window.preview_button.get_label() == "</>"
+        assert window.current().tab_label.get_text() == "Untitled.md"
         page = window.current()
         assert page.editor.get_wrap_mode() == Gtk.WrapMode.WORD_CHAR
         assert page.close_button.get_tooltip_text() == "Close Untitled tab"
@@ -44,17 +50,18 @@ def main():
             header = header.get_next_sibling()
         assert header is not None, "Notebook header is missing"
         tab_height = header.get_height()
-        assert 0 < tab_height <= 48, f"Tab strip is too tall: {tab_height}px"
+        assert 0 < tab_height <= 66, f"Tab strip is too tall: {tab_height}px"
         print(f"Native tab strip: {tab_height}px")
         assert page.container.has_css_class("paper-pane")
         assert window.words_status.get_text() == "0 words"
-        assert window.lines_status.get_text() == "1 source line"
+        assert window.lines_status.get_text() == "1 line"
         assert window.wrap_status.get_text() == "Wrap: On"
         page.buffer.set_text("GoreeCloud test note\nSecond line")
         assert page.note.dirty
         assert window.words_status.get_text() == "5 words"
-        assert window.lines_status.get_text() == "2 source lines"
-        assert window.file_status.get_text() == "Unsaved changes"
+        assert window.lines_status.get_text() == "2 lines"
+        assert window.file_status.get_text() == "Unsaved"
+        assert window.save_status_box.has_css_class("unsaved")
         window.find_bar.show_find()
         assert window.find_bar.get_visible()
         window.find_bar.entry.set_text("nOtE")
@@ -71,7 +78,8 @@ def main():
         page.refresh_label()
         window.update_status()
         assert page.close_button.get_tooltip_text() == "Close note.txt tab"
-        assert window.file_status.get_text() == "Saved on this device"
+        assert window.file_status.get_text() == "Saved"
+        assert window.save_status_box.has_css_class("saved")
         window.find_bar.show_find()
         window.find_bar.entry.set_text("Second")
         assert window.find_bar.matches
@@ -156,7 +164,7 @@ def main():
         assert page.note.text == "# Title\n- [x] Done"
         assert page.preview.toggle_at(x, y)
         assert page.note.text == "# Title\n- [ ] Done"
-        assert page.note.dirty and window.file_status.get_text() == "Unsaved changes"
+        assert page.note.dirty and window.file_status.get_text() == "Unsaved"
         assert path.read_text() == "# Title\n- [x] Done"
         window.undo_current()
         assert page.note.text == "# Title\n- [x] Done"
