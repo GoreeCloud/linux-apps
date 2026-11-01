@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from goreecloud_notepad.storage import Note, Preferences
+from goreecloud_notepad.storage import ExternalModificationError, Note, Preferences
 
 
 class NoteTests(unittest.TestCase):
@@ -54,6 +54,50 @@ class NoteTests(unittest.TestCase):
             self.assertEqual(path.read_bytes(), original)
 
 
+    def test_rename_failure_preserves_existing_note_and_dirty_state(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "note.txt"
+            path.write_text("original", encoding="utf-8")
+            note = Note.open(path)
+            original_identity = note.file_identity
+            note.text = "edited but not persisted"
+            with mock.patch("goreecloud_notepad.storage.os.replace",
+                            side_effect=OSError("simulated rename failure")):
+                with self.assertRaisesRegex(OSError, "simulated rename failure"):
+                    note.save()
+            self.assertEqual(path.read_text(encoding="utf-8"), "original")
+            self.assertEqual(note.saved_text, "original")
+            self.assertEqual(note.file_identity, original_identity)
+            self.assertTrue(note.dirty)
+            self.assertEqual(list(Path(temp).glob(".note.txt.*.tmp")), [])
+            note.save()
+            self.assertEqual(path.read_text(encoding="utf-8"), note.text)
+            self.assertFalse(note.dirty)
+
+    def test_external_file_change_prevents_overwriting_user_data(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "shared-note.txt"
+            path.write_text("first version", encoding="utf-8")
+            note = Note.open(path)
+            note.text = "local unsaved edit"
+            path.write_text("external edit", encoding="utf-8")
+            with self.assertRaises(ExternalModificationError):
+                note.save()
+            self.assertEqual(path.read_text(encoding="utf-8"), "external edit")
+            self.assertEqual(note.saved_text, "first version")
+            self.assertTrue(note.dirty)
+
+            # A replacement with identical bytes still breaks tracked identity.
+            path.write_text("first version", encoding="utf-8")
+            replacement = Path(temp) / "replacement.txt"
+            replacement.write_text("first version", encoding="utf-8")
+            os.replace(replacement, path)
+            with self.assertRaises(ExternalModificationError):
+                note.save()
+            self.assertEqual(path.read_text(encoding="utf-8"), "first version")
+            self.assertTrue(note.dirty)
+
+
 class PreferencesTests(unittest.TestCase):
     def test_defaults_and_persistence(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -97,6 +141,24 @@ class PreferencesTests(unittest.TestCase):
                             self.assertEqual(prefs.path, home / ".config/goreecloud/notepad/settings.json")
                             prefs.set("font_size", 17)
                             self.assertEqual(Preferences().get("font_size"), 17)
+
+
+    def test_failed_settings_write_does_not_change_live_preferences(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / "config" / "settings.json"
+            prefs = Preferences(path)
+            prefs.set("font_size", 18)
+            original_bytes = path.read_bytes()
+            with mock.patch("goreecloud_notepad.storage.os.replace",
+                            side_effect=OSError("simulated full filesystem")):
+                with self.assertRaisesRegex(OSError, "simulated full filesystem"):
+                    prefs.set("font_size", 24)
+            self.assertEqual(prefs.get("font_size"), 18)
+            self.assertEqual(Preferences(path).get("font_size"), 18)
+            self.assertEqual(path.read_bytes(), original_bytes)
+            self.assertEqual(list(path.parent.glob(".settings.json.*.tmp")), [])
+            prefs.set("font_size", 24)
+            self.assertEqual(Preferences(path).get("font_size"), 24)
 
 
 if __name__ == "__main__":

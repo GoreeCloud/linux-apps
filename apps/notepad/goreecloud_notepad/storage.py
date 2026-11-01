@@ -172,6 +172,10 @@ class Preferences:
         return self._values[key]
 
     def set(self, key: str, value) -> None:
-        self._values[key] = self._validate(key, value)
+        # Keep the active setting consistent with what reached disk. If disk
+        # space, permission, or atomic-replace checks fail, leave both the
+        # prior in-memory values and existing settings file unchanged.
+        updated = {**self._values, key: self._validate(key, value)}
         self.path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        _atomic_write(self.path, json.dumps(self._values, indent=2) + "\n", mode=0o600)
+        _atomic_write(self.path, json.dumps(updated, indent=2) + "\n", mode=0o600)
+        self._values = updated
