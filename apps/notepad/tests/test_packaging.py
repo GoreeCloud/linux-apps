@@ -1,4 +1,5 @@
 """Isolated .deb contents and dependency smoke checks."""
+import os
 import shutil
 import stat
 import subprocess
@@ -27,7 +28,8 @@ class DebianPackageTests(unittest.TestCase):
             )
             self.assertIn("goreecloud-notepad", fields)
             self.assertIn("python3-gi", fields)
-            self.assertIn("gir1.2-gtk-4.0", fields)
+            self.assertIn("gir1.2-gtk-4.0 (>= 4.10)", fields)
+            self.assertIn("libgtk-4-1 (>= 4.10)", fields)
             subprocess.run(
                 ["dpkg-deb", "-x", str(archive), str(root / "extract")],
                 check=True, capture_output=True,
@@ -37,6 +39,23 @@ class DebianPackageTests(unittest.TestCase):
             self.assertTrue(launcher.is_file())
             self.assertTrue(launcher.stat().st_mode & stat.S_IXUSR)
             self.assertIn("/usr/bin/python3", launcher.read_text())
+            # Run the installed application payload, not the source tree.
+            env = dict(os.environ, PYTHONPATH=str(stage / "share/goreecloud/notepad"), PYTHONDONTWRITEBYTECODE="1")
+            probe = subprocess.run(
+                [
+                    sys.executable, "-c",
+                    "from goreecloud_notepad.app import NotepadApplication, main; "
+                    "from gi.repository import Gtk; "
+                    "assert Gtk.get_major_version() == 4 and Gtk.get_minor_version() >= 10; "
+                    "assert callable(main) and callable(NotepadApplication)"
+                ],
+                cwd=root,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=15,
+            )
+            self.assertEqual(probe.returncode, 0, probe.stderr)
             desktop = stage / "share/applications/com.goreecloud.Notepad.desktop"
             self.assertIn("Exec=goreecloud-notepad %F", desktop.read_text())
             package = stage / "share/goreecloud/notepad/goreecloud_notepad"
