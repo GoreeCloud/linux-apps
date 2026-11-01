@@ -896,7 +896,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         buf = page.buffer
         cursor = buf.get_iter_at_mark(buf.get_insert())
         words = len(re.findall(r"\S+", page.note.text))
-        lines = page.note.text.count("\n") + 1
+        lines = buf.get_line_count()
         self.words_status.set_text(f"{words} words" if words != 1 else "1 word")
         self.lines_status.set_text(
             f"{lines} lines" if lines != 1 else "1 line"
