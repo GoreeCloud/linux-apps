@@ -94,6 +94,9 @@ class NotePage:
             dark=window.has_css_class("dark"),
             enabled=window.prefs.get("live_markdown"),
         )
+        self.inline.bind_scroll(
+            self.scroller.get_vadjustment(), self.scroller.get_hadjustment()
+        )
         self.buffer.connect("changed", self._changed)
         self.buffer.connect("mark-set", self._mark_set)
         self.refresh_label()
