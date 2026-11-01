@@ -377,3 +377,127 @@ window.notepad-window.dark notebook > header tab:hover:not(:checked) .document-t
   color: #ffffff;
 }
 """
+
+
+STYLESHEET += """
+/* Founder mockup: pale blue chrome, bold blue actions, round tabs and paper. */
+window.notepad-window { background: #eef3fc; color: #111b38; }
+window.notepad-window headerbar {
+  background: linear-gradient(180deg, #fbfcff, #ecf3ff);
+  border-bottom: 1px solid #d4e2ff;
+  min-height: 67px;
+  padding: 0 12px 0 16px;
+}
+window.notepad-window .brand-mark {
+  background: #1265f5; border-radius: 11px;
+  min-width: 40px; min-height: 40px; margin-right: 9px;
+}
+window.notepad-window .brand-mark image { color: white; -gtk-icon-size: 23px; }
+window.notepad-window .toolbar-divider {
+  background: #b8cefa; min-width: 1px; min-height: 27px;
+  margin: 6px 10px;
+}
+window.notepad-window .toolbar-text-action {
+  background: transparent; border: 1px solid transparent;
+  box-shadow: none; color: #15213c; font-weight: 600;
+  border-radius: 999px; min-height: 38px; padding: 5px 12px;
+}
+window.notepad-window .toolbar-text-action image { -gtk-icon-size: 19px; }
+window.notepad-window .toolbar-text-action:hover { background: #e0e9fb; }
+window.notepad-window .toolbar-text-action.new-action {
+  background: #dce7ff; color: #005af1; font-weight: 700; padding: 5px 17px;
+}
+window.notepad-window .header-glyph {
+  background: transparent; color: #141b30; border: none; box-shadow: none;
+  border-radius: 12px; min-width: 34px; min-height: 37px;
+  padding: 4px 6px; margin: 1px;
+}
+window.notepad-window .header-glyph:hover { background: #dce7fb; }
+window.notepad-window .header-glyph.code-action {
+  font-weight: 800; font-size: 15px;
+}
+window.notepad-window .header-glyph.preview-active {
+  background: #d9e7ff; color: #0759d2;
+}
+window.notepad-window .header-glyph:focus-visible,
+window.notepad-window .toolbar-text-action:focus-visible {
+  outline: 2px solid #1265f5;
+}
+window.notepad-window notebook > header {
+  background: #edf3ff; border: 0;
+  padding: 5px 12px 3px 12px; min-height: 48px;
+}
+window.notepad-window notebook > header tab .document-tab {
+  background: #e6efff; border: 1px solid #b8ceff;
+  border-bottom: 3px solid transparent; border-radius: 999px;
+  min-width: 154px; min-height: 31px; padding: 5px 10px 3px 12px;
+  color: #2d4567; font-weight: 600;
+}
+window.notepad-window notebook > header tab:checked .document-tab {
+  background: #dce8ff; border-color: #a9c7ff;
+  border-bottom-color: #1265f5; color: #0059df; font-weight: 700;
+}
+window.notepad-window notebook > header tab .document-tab image { color: #1265f5; }
+window.notepad-window notebook > header tab .tab-close {
+  background: transparent; color: inherit; border-radius: 999px;
+}
+window.notepad-window .paper-pane {
+  background: #ffffff; border: 1px solid #b8ceff; border-radius: 19px;
+  box-shadow: 0 7px 22px rgba(30, 66, 130, 0.09);
+}
+window.notepad-window .editor-pane,
+window.notepad-window textview.notepad-editor,
+window.notepad-window textview.notepad-editor text,
+window.notepad-window textview.notepad-preview,
+window.notepad-window textview.notepad-preview text {
+  background: #ffffff; color: #1b2742; caret-color: #1265f5;
+}
+window.notepad-window .notepad-footer {
+  background: #edf3ff; border-top: 1px solid #d2e0fb;
+  min-height: 45px;
+}
+window.notepad-window .footer-label { color: #23304b; font-size: 12px; }
+window.notepad-window .save-state.saved,
+window.notepad-window .save-state.saved label,
+window.notepad-window .save-state.saved image { color: #07852e; font-weight: 700; }
+window.notepad-window .save-state.unsaved,
+window.notepad-window .save-state.unsaved label,
+window.notepad-window .save-state.unsaved image { color: #98610c; font-weight: 700; }
+window.notepad-window.dark { background: #121c30; color: #f0f5ff; }
+window.notepad-window.dark headerbar {
+  background: #202d46; border-bottom-color: #354b73;
+}
+window.notepad-window.dark .toolbar-divider { background: #465c80; }
+window.notepad-window.dark .toolbar-text-action { color: #edf3ff; }
+window.notepad-window.dark .toolbar-text-action.new-action {
+  color: #b5d0ff; background: #294875;
+}
+window.notepad-window.dark .toolbar-text-action:hover,
+window.notepad-window.dark .header-glyph:hover { background: #31476b; }
+window.notepad-window.dark .header-glyph { color: #edf3ff; }
+window.notepad-window.dark notebook > header { background: #18263d; }
+window.notepad-window.dark notebook > header tab .document-tab {
+  background: #263852; color: #d3e3ff; border-color: #425b82;
+}
+window.notepad-window.dark notebook > header tab:checked .document-tab {
+  background: #284d83; color: #ffffff;
+  border-color: #6b98e0; border-bottom-color: #74a7ff;
+}
+window.notepad-window.dark .paper-pane {
+  background: #19253b; border-color: #425b82;
+}
+window.notepad-window.dark .editor-pane,
+window.notepad-window.dark textview.notepad-editor,
+window.notepad-window.dark textview.notepad-editor text,
+window.notepad-window.dark textview.notepad-preview,
+window.notepad-window.dark textview.notepad-preview text {
+  background: #19253b; color: #f4f7ff; caret-color: #a8c8ff;
+}
+window.notepad-window.dark .notepad-footer {
+  background: #202d46; border-top-color: #405474;
+}
+window.notepad-window.dark .footer-label { color: #e1ebff; }
+window.notepad-window.dark .save-state.saved,
+window.notepad-window.dark .save-state.saved label,
+window.notepad-window.dark .save-state.saved image { color: #7ce89e; }
+"""
