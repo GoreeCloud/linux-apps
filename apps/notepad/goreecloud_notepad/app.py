@@ -148,6 +148,8 @@ class NotePage:
                 pcontext.remove_provider(self._preview_font_provider)
             pcontext.add_provider(pcss, Gtk.STYLE_PROVIDER_PRIORITY_USER)
             self._preview_font_provider = pcss
+        if hasattr(self, "inline"):
+            self.inline.schedule()
 
     def refresh_label(self):
         display_name = self.note.name if self.note.path else "Untitled.md"
@@ -561,6 +563,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             page.preview.view.set_wrap_mode(
                 Gtk.WrapMode.WORD_CHAR if enabled else Gtk.WrapMode.NONE
             )
+            page.inline.schedule()
         self.update_status()
 
     def show_preferences(self):

@@ -29,14 +29,42 @@ class InlineDecorations:
         self._rule_index = 0
         self._queued = False
         self._clearing = False
+        self._layout_watch_id = None
+        self._last_view_width = None
         # Tags affect paint, not text contents, offsets, or editability.
         self.marker_tag = buffer.create_tag("goreecloud-inline-marker")
         self.checked_tag = buffer.create_tag(
             "goreecloud-inline-checked", strikethrough=True,
         )
         self.set_dark(dark, refresh=False)
-        self.view.connect("map", lambda *_: self.schedule())
+        self.view.connect("map", self._on_map)
+        self.view.connect("unmap", self._on_unmap)
         self.schedule()
+
+    def _on_map(self, _view):
+        self.schedule()
+        if self._layout_watch_id is None:
+            # GTK4 does not expose a GtkWidget::size-allocate signal.
+            # Poll the *mapped* editor at low frequency to account for
+            # real window resizing without continuous frame-clock redraws.
+            self._layout_watch_id = GLib.timeout_add(200, self._sync_layout)
+
+    def _on_unmap(self, _view):
+        if self._layout_watch_id is not None:
+            GLib.source_remove(self._layout_watch_id)
+            self._layout_watch_id = None
+        self._last_view_width = None
+
+    def _sync_layout(self):
+        if not self.view.get_mapped():
+            self._layout_watch_id = None
+            return GLib.SOURCE_REMOVE
+        width = self.view.get_width()
+        if self._last_view_width != width:
+            self._last_view_width = width
+            if self.enabled and self.widgets:
+                self.schedule()
+        return GLib.SOURCE_CONTINUE
 
     def set_dark(self, dark: bool, *, refresh=True):
         self.dark = bool(dark)
@@ -170,6 +198,8 @@ class InlineDecorations:
             self.view.get_left_margin() + self.view.get_right_margin() + 12
         )
         separator.set_size_request(max(120, available), 1)
+        separator.queue_resize()
+        self.view.queue_allocate()
         rect = self.view.get_iter_location(begin)
         if is_new:
             self.view.add_overlay(separator, rect.x, rect.y + max(1, rect.height // 2))
