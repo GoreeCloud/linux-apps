@@ -17,6 +17,7 @@ A calm, **native GTK4 Linux** notepad for quick notes. Early preview **v0.1.0**;
 - Live word and source-line counts, cursor position, wrap state, and truthful **Saved / Unsaved / Not saved** status with a contextual icon and tooltip. The status changes to Saved only after data is persisted to a chosen local path. A wrapped paragraph may span several screen rows while still being one source line.
 - Both light and dark surfaces follow GoreeCloud UI's semantic color hierarchy.
 - Native quick Find searches the active note, highlights matches, shows counts, and wraps next/previous navigation without changing file contents.
+- **Native inline Markdown visuals (preview):** while editing Markdown, checklist markers render as accessible GTK checkboxes and horizontal rules render as thin separators. Clicking a checkbox changes only the `[ ]` / `[x]` source marker, preserving ordinary UTF-8 Markdown and undo/redo. Checked tasks have strike-through styling. Raw source remains in the text buffer; marker characters are only visually disguised, not deleted, so source positions and saving remain unchanged. Disable **Style Markdown while editing** in Settings for plain source display. This is not full WYSIWYG (other Markdown punctuation remains editable). Inline widgets are capped to 350 per note and disabled above 100,000 characters for responsiveness.
 - **Live Markdown styling while typing:** headings, emphasis, code, links, lists, and task markers are visually distinguished directly in the native editor. Formatting cues are enabled by default and may be switched off under Settings; source Markdown punctuation stays visible and editable. For responsiveness, notes above 100,000 characters or with more than 2,500 formatting spans remain unstyled but fully editable. The decoration never changes note text, creates a save, or downloads anything.
 - Native Undo/Redo, keyboard shortcuts to switch tabs, direct Bold/Italic controls, a preview toggle, and a Markdown tools menu. Bold, italic, inline code, and strikethrough actions wrap or unwrap selected text (or insert paired markers at the cursor). Bullet and checklist actions insert Markdown line prefixes. All are undoable source edits.
 - Optional **read-only native Markdown preview** for headings, bullets, numbered lists, checkbox symbols, blockquotes, code fences, emphasis, and inline links (display-only). Source text and local file format remain unchanged.
@@ -99,6 +100,7 @@ python3 -m compileall -q goreecloud_notepad
 xvfb-run -a python3 tests/gui_smoke.py
 xvfb-run -a python3 tests/gui_format_smoke.py
 xvfb-run -a python3 tests/gui_source_style_smoke.py
+xvfb-run -a python3 tests/gui_inline_smoke.py
 ```
 
 GTK4 and PyGObject are provided by the Linux system package manager, not downloaded executable packages. This app uses GC UI semantic design guidance, not a claimed stable GC UI native SDK. License decision for the broader monorepo remains pending; no third-party assets are copied here.
