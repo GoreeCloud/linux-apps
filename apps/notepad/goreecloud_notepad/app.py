@@ -18,6 +18,7 @@ from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
 from .formatting import inline_format
 from .source_styling import SourceStyling
+from .inline_decorations import InlineDecorations
 from .theme import install as install_theme
 
 
@@ -86,6 +87,11 @@ class NotePage:
         self.tab.append(self.tab_add)
         self.styling = SourceStyling(
             self.buffer, dark=window.has_css_class("dark"),
+            enabled=window.prefs.get("live_markdown"),
+        )
+        self.inline = InlineDecorations(
+            self.editor, self.buffer, self.toggle_task,
+            dark=window.has_css_class("dark"),
             enabled=window.prefs.get("live_markdown"),
         )
         self.buffer.connect("changed", self._changed)
@@ -163,6 +169,7 @@ class NotePage:
         if hasattr(self.window, "find_bar"):
             self.window.find_bar.refresh()
         self.styling.schedule()
+        self.inline.schedule()
 
     def _mark_set(self, _buffer, _iter, mark):
         if mark.get_name() == "insert":
@@ -514,6 +521,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         self.prefs.set("live_markdown", bool(enabled))
         for page in self.pages:
             page.styling.set_enabled(enabled)
+            page.inline.set_enabled(enabled)
 
     def _set_appearance(self, mode):
         self.prefs.set("appearance", mode)
@@ -542,6 +550,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
                 page.set_preview(True, dark)
         for page in self.pages:
             page.styling.set_dark(dark)
+            page.inline.set_dark(dark)
 
     def _set_wrap(self, enabled):
         self.prefs.set("word_wrap", bool(enabled))
