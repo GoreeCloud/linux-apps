@@ -31,6 +31,9 @@ class InlineDecorations:
         self._clearing = False
         self._layout_watch_id = None
         self._last_view_width = None
+        self._vadjustment = None
+        self._hadjustment = None
+        self._scroll_queued = False
         # Tags affect paint, not text contents, offsets, or editability.
         self.marker_tag = buffer.create_tag("goreecloud-inline-marker")
         self.checked_tag = buffer.create_tag(
@@ -65,6 +68,43 @@ class InlineDecorations:
             if self.enabled and self.widgets:
                 self.schedule()
         return GLib.SOURCE_CONTINUE
+
+    def bind_scroll(self, vertical, horizontal):
+        """Track source-buffer decorations as the editable viewport scrolls."""
+        self._vadjustment = vertical
+        self._hadjustment = horizontal
+        vertical.connect("value-changed", self._queue_scroll)
+        horizontal.connect("value-changed", self._queue_scroll)
+
+    def _overlay_coords(self, x, y):
+        # move_overlay takes buffer-relative positions and recalculates GTK's
+        # scroll offset when called. Subtracting the adjustment here would
+        # double-scroll the decoration.
+        return int(round(x)), int(round(y))
+
+    def _place_overlay(self, child, x, y, is_new):
+        child._gcn_base_coords = (x, y)
+        coords = self._overlay_coords(x, y)
+        if is_new:
+            self.view.add_overlay(child, *coords)
+        else:
+            self.view.move_overlay(child, *coords)
+
+    def _queue_scroll(self, _adjustment):
+        if not self._scroll_queued:
+            self._scroll_queued = True
+            GLib.idle_add(self._sync_scroll, priority=GLib.PRIORITY_DEFAULT_IDLE)
+
+    def _sync_scroll(self):
+        self._scroll_queued = False
+        for child in self.widgets:
+            if child.get_parent() is not None:
+                self.view.move_overlay(
+                    child, *self._overlay_coords(*child._gcn_base_coords)
+                )
+        if self.widgets:
+            self.view.queue_allocate()
+        return GLib.SOURCE_REMOVE
 
     def set_dark(self, dark: bool, *, refresh=True):
         self.dark = bool(dark)
@@ -170,10 +210,7 @@ class InlineDecorations:
         )
         rect = self.view.get_iter_location(begin)
         xpos, ypos = max(0, rect.x - 2), max(0, rect.y - 3)
-        if is_new:
-            self.view.add_overlay(checkbox, xpos, ypos)
-        else:
-            self.view.move_overlay(checkbox, xpos, ypos)
+        self._place_overlay(checkbox, xpos, ypos, is_new)
         checkbox.set_visible(True)
         self.widgets.append(checkbox)
 
@@ -201,9 +238,8 @@ class InlineDecorations:
         separator.queue_resize()
         self.view.queue_allocate()
         rect = self.view.get_iter_location(begin)
-        if is_new:
-            self.view.add_overlay(separator, rect.x, rect.y + max(1, rect.height // 2))
-        else:
-            self.view.move_overlay(separator, rect.x, rect.y + max(1, rect.height // 2))
+        self._place_overlay(
+            separator, rect.x, rect.y + max(1, rect.height // 2), is_new
+        )
         separator.set_visible(True)
         self.widgets.append(separator)
