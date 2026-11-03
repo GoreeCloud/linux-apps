@@ -16,7 +16,7 @@ from .storage import Note, Preferences
 from .find import FindBar
 from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
-from .formatting import inline_format
+from .formatting import heading_prefix_change, inline_format
 from .source_styling import SourceStyling
 from .inline_decorations import InlineDecorations
 from .wrap_policy import needs_fast_wrap
@@ -476,6 +476,9 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Italic", "Ctrl+I", "italic"),
             ("Inline code", "Ctrl+Shift+K", "code"),
             ("Strikethrough", "Ctrl+Shift+X", "strike"),
+            ("Heading 1", "Ctrl+Alt+1", "heading-1"),
+            ("Heading 2", "Ctrl+Alt+2", "heading-2"),
+            ("Heading 3", "Ctrl+Alt+3", "heading-3"),
             ("Bullet list", "", "bullet"),
             ("Checklist item", "", "checklist"),
         ]
@@ -493,6 +496,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
                 lambda _b, kind=style: (
                     pop.popdown(),
                     self.insert_list_item(kind == "checklist") if kind in ("bullet", "checklist")
+                    else self.toggle_heading(int(kind[-1])) if kind.startswith("heading-")
                     else self.format_current(kind),
                 ),
             )
@@ -758,6 +762,34 @@ class NotepadWindow(Gtk.ApplicationWindow):
             buffer.end_user_action()
         page.editor.grab_focus()
 
+    def toggle_heading(self, level: int):
+        """Toggle H1–H3 Markdown source markers as one native undoable edit."""
+        page = self.current()
+        if page is None:
+            return
+        if self.preview_enabled:
+            self.toggle_preview()
+        buffer = page.buffer
+        cursor = buffer.get_iter_at_mark(buffer.get_insert())
+        line_start = cursor.copy()
+        line_start.set_line_offset(0)
+        line_end = line_start.copy()
+        line_end.forward_to_line_end()
+        remove, replacement = heading_prefix_change(
+            buffer.get_text(line_start, line_end, False), level
+        )
+        offset = line_start.get_offset()
+        buffer.begin_user_action()
+        try:
+            if remove:
+                buffer.delete(buffer.get_iter_at_offset(offset),
+                              buffer.get_iter_at_offset(offset + remove))
+            if replacement:
+                buffer.insert(buffer.get_iter_at_offset(offset), replacement)
+        finally:
+            buffer.end_user_action()
+        page.editor.grab_focus()
+
     def insert_list_item(self, checklist: bool = False):
         """Prefix the current source line as an undoable Markdown list item."""
         page = self.current()
@@ -1000,6 +1032,9 @@ class NotepadApplication(Gtk.Application):
             "app.format-italic": ["<Primary>i"],
             "app.format-code": ["<Primary><Shift>k"],
             "app.format-strike": ["<Primary><Shift>x"],
+            "app.heading-1": ["<Primary><Alt>1"],
+            "app.heading-2": ["<Primary><Alt>2"],
+            "app.heading-3": ["<Primary><Alt>3"],
         }
         handlers = {
             "new": lambda: self.window.new_tab(),
@@ -1021,6 +1056,9 @@ class NotepadApplication(Gtk.Application):
             "format-italic": lambda: self.window.format_current("italic"),
             "format-code": lambda: self.window.format_current("code"),
             "format-strike": lambda: self.window.format_current("strike"),
+            "heading-1": lambda: self.window.toggle_heading(1),
+            "heading-2": lambda: self.window.toggle_heading(2),
+            "heading-3": lambda: self.window.toggle_heading(3),
         }
         for name, callback in handlers.items():
             action = Gio.SimpleAction.new(name, None)
