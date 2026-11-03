@@ -97,6 +97,24 @@ def main():
         assert page.note.text == "- [ ] task"
         window.undo_current()
         assert page.note.text == "task"
+        # Repeating list tools toggles markers rather than stacking duplicates;
+        # switching the kind preserves line indentation and plain text.
+        page.buffer.set_text("  task")
+        page.buffer.place_cursor(page.buffer.get_end_iter())
+        window.insert_list_item()
+        assert page.note.text == "  - task"
+        window.insert_list_item()
+        assert page.note.text == "  task"
+        window.undo_current()
+        assert page.note.text == "  - task"
+        window.redo_current()
+        assert page.note.text == "  task"
+        window.insert_list_item(checklist=True)
+        assert page.note.text == "  - [ ] task"
+        window.insert_list_item()
+        assert page.note.text == "  - task"
+        window.insert_list_item(checklist=True)
+        assert page.note.text == "  - [ ] task"
         # Headings are native, source-preserving, reversible editor actions.
         page.buffer.set_text("Welcome\\nNext line".replace("\\n", "\n"))
         page.buffer.place_cursor(page.buffer.get_iter_at_offset(4))
