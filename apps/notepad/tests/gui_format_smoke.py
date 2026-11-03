@@ -129,6 +129,23 @@ def main():
         window.redo_current()
         assert page.note.text == "Welcome\nNext line"
         assert all(app.lookup_action("heading-" + str(level)) for level in (1, 2, 3))
+        # Block quotes operate on one source line, preserve indentation,
+        # and remain independently undoable in the GTK text buffer.
+        page.buffer.set_text("  Intro\nNext line")
+        page.buffer.place_cursor(page.buffer.get_iter_at_offset(4))
+        window.toggle_blockquote()
+        assert page.note.text == "  > Intro\nNext line"
+        window.toggle_blockquote()
+        assert page.note.text == "  Intro\nNext line"
+        window.undo_current()
+        assert page.note.text == "  > Intro\nNext line"
+        window.redo_current()
+        assert page.note.text == "  Intro\nNext line"
+        window.toggle_preview()
+        assert window.preview_enabled
+        window.toggle_blockquote()
+        assert not window.preview_enabled
+        assert page.note.text == "  > Intro\nNext line"
         window._close_confirmed = True
         window.close()
         app.quit()
