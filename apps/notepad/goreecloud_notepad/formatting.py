@@ -102,3 +102,22 @@ def list_prefix_change(line: str, checklist: bool = False) -> tuple[int, int, st
     if is_task == checklist:
         return indent, remove, ""
     return indent, remove, prefix
+
+
+
+def blockquote_prefix_change(line: str) -> tuple[int, int, str]:
+    """Toggle one Markdown quote prefix without rewriting indentation or text.
+
+    The returned tuple is (indent, removed_characters, inserted_prefix). A
+    repeated action undoes the marker, preserving nested quote content and
+    any intentional extra whitespace after the first delimiter.
+    """
+    if not isinstance(line, str) or "\n" in line or "\r" in line:
+        raise ValueError("Block quote edit requires a single source line")
+    indent = len(line) - len(line.lstrip(" \t"))
+    content = line[indent:]
+    if content == ">":
+        return indent, 1, ""
+    if content.startswith(("> ", ">\t")):
+        return indent, 2, ""
+    return indent, 0, "> "
