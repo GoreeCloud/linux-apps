@@ -16,7 +16,8 @@ from .storage import Note, Preferences
 from .find import FindBar
 from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
-from .formatting import heading_prefix_change, inline_format, list_prefix_change
+from .formatting import (blockquote_prefix_change, heading_prefix_change,
+                         inline_format, list_prefix_change)
 from .source_styling import SourceStyling
 from .inline_decorations import InlineDecorations
 from .wrap_policy import needs_fast_wrap
@@ -481,6 +482,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
             ("Heading 3", "Ctrl+Alt+3", "heading-3"),
             ("Bullet list", "", "bullet"),
             ("Checklist item", "", "checklist"),
+            ("Block quote", "", "quote"),
         ]
         for label, shortcut, style in items:
             button = Gtk.Button()
@@ -496,6 +498,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
                 lambda _b, kind=style: (
                     pop.popdown(),
                     self.insert_list_item(kind == "checklist") if kind in ("bullet", "checklist")
+                    else self.toggle_blockquote() if kind == "quote"
                     else self.toggle_heading(int(kind[-1])) if kind.startswith("heading-")
                     else self.format_current(kind),
                 ),
@@ -805,6 +808,34 @@ class NotepadWindow(Gtk.ApplicationWindow):
         line_end.forward_to_line_end()
         indent, remove, replacement = list_prefix_change(
             buffer.get_text(line_start, line_end, False), checklist
+        )
+        offset = line_start.get_offset() + indent
+        buffer.begin_user_action()
+        try:
+            if remove:
+                buffer.delete(buffer.get_iter_at_offset(offset),
+                              buffer.get_iter_at_offset(offset + remove))
+            if replacement:
+                buffer.insert(buffer.get_iter_at_offset(offset), replacement)
+        finally:
+            buffer.end_user_action()
+        page.editor.grab_focus()
+
+    def toggle_blockquote(self):
+        """Toggle the current line's Markdown quote marker as one undoable edit."""
+        page = self.current()
+        if page is None:
+            return
+        if self.preview_enabled:
+            self.toggle_preview()
+        buffer = page.buffer
+        cursor = buffer.get_iter_at_mark(buffer.get_insert())
+        line_start = cursor.copy()
+        line_start.set_line_offset(0)
+        line_end = line_start.copy()
+        line_end.forward_to_line_end()
+        indent, remove, replacement = blockquote_prefix_change(
+            buffer.get_text(line_start, line_end, False)
         )
         offset = line_start.get_offset() + indent
         buffer.begin_user_action()
