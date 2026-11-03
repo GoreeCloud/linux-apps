@@ -97,6 +97,20 @@ def main():
         assert page.note.text == "- [ ] task"
         window.undo_current()
         assert page.note.text == "task"
+        # Headings are native, source-preserving, reversible editor actions.
+        page.buffer.set_text("Welcome\\nNext line".replace("\\n", "\n"))
+        page.buffer.place_cursor(page.buffer.get_iter_at_offset(4))
+        window.toggle_heading(2)
+        assert page.note.text == "## Welcome\nNext line"
+        window.toggle_heading(1)
+        assert page.note.text == "# Welcome\nNext line"
+        window.toggle_heading(1)
+        assert page.note.text == "Welcome\nNext line"
+        window.undo_current()
+        assert page.note.text == "# Welcome\nNext line"
+        window.redo_current()
+        assert page.note.text == "Welcome\nNext line"
+        assert all(app.lookup_action("heading-" + str(level)) for level in (1, 2, 3))
         window._close_confirmed = True
         window.close()
         app.quit()

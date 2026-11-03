@@ -1,6 +1,6 @@
 """Formatting transformations are deterministic, reversible, and local."""
 import unittest
-from goreecloud_notepad.formatting import MARKERS, inline_format
+from goreecloud_notepad.formatting import MARKERS, heading_prefix_change, inline_format
 
 
 class MarkdownFormattingTests(unittest.TestCase):
@@ -49,6 +49,32 @@ class MarkdownFormattingTests(unittest.TestCase):
         self.assertEqual(self._apply("🌟 **café** ☕", inline_format(
             "🌟 **café** ☕", changed.selection_start, changed.selection_end, "bold"
         )), value)
+
+
+class MarkdownHeadingTests(unittest.TestCase):
+    def test_toggle_and_switch_heading_levels_without_rewriting_content(self):
+        for level in (1, 2, 3):
+            with self.subTest(level=level):
+                removed, inserted = heading_prefix_change("GoreeCloud 🚀", level)
+                self.assertEqual((removed, inserted), (0, "#" * level + " "))
+                line = inserted + "GoreeCloud 🚀"
+                removed, inserted = heading_prefix_change(line, level)
+                self.assertEqual(line[removed:], "GoreeCloud 🚀")
+                self.assertEqual(inserted, "")
+        self.assertEqual(heading_prefix_change("## Project", 1), (2, "#"))
+        self.assertEqual(heading_prefix_change("###  Title", 2), (3, "##"))
+        self.assertEqual(heading_prefix_change("#  Title", 1), (2, ""))
+        self.assertEqual(heading_prefix_change("##\tTabbed", 3), (2, "###"))
+        original = "###  Title"
+        removed, replacement = heading_prefix_change(original, 2)
+        self.assertEqual(replacement + original[removed:], "##  Title")
+        self.assertEqual(heading_prefix_change("#hashtag", 1), (0, "# "))
+
+    def test_rejects_invalid_heading_requests(self):
+        for line, level in (("one\ntwo", 1), ("one\rtwo", 1), ("Heading", 0), ("Heading", 4), ("Heading", True), (None, 1)):
+            with self.subTest(line=line, level=level):
+                with self.assertRaises(ValueError):
+                    heading_prefix_change(line, level)
 
 
 if __name__ == "__main__":
