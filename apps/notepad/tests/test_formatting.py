@@ -61,8 +61,13 @@ class MarkdownHeadingTests(unittest.TestCase):
                 removed, inserted = heading_prefix_change(line, level)
                 self.assertEqual(line[removed:], "GoreeCloud 🚀")
                 self.assertEqual(inserted, "")
-        self.assertEqual(heading_prefix_change("## Project", 1), (3, "# "))
-        self.assertEqual(heading_prefix_change("###  Title", 2), (5, "## "))
+        self.assertEqual(heading_prefix_change("## Project", 1), (2, "#"))
+        self.assertEqual(heading_prefix_change("###  Title", 2), (3, "##"))
+        self.assertEqual(heading_prefix_change("#  Title", 1), (2, ""))
+        self.assertEqual(heading_prefix_change("##\tTabbed", 3), (2, "###"))
+        original = "###  Title"
+        removed, replacement = heading_prefix_change(original, 2)
+        self.assertEqual(replacement + original[removed:], "##  Title")
         self.assertEqual(heading_prefix_change("#hashtag", 1), (0, "# "))
 
     def test_rejects_invalid_heading_requests(self):
