@@ -74,3 +74,31 @@ def heading_prefix_change(line: str, level: int) -> tuple[int, str]:
         # original separator whitespace rather than normalizing user text.
         return marker_length, "#" * level
     return 0, desired
+
+
+
+_LIST_MARKER = re.compile(r"^([-+*])([ \t])(\[([ xX])\]([ \t]))?")
+
+
+def list_prefix_change(line: str, checklist: bool = False) -> tuple[int, int, str]:
+    """Describe an undoable bullet/checklist source edit on exactly one line.
+
+    Returns (indent_offset, characters_to_remove, replacement). Existing
+    indentation and user text are never rewritten. Repeating a matching list
+    action removes its marker; switching kinds replaces only the marker.
+    Checked status is only removed by an explicit switch to a plain bullet.
+    """
+    if not isinstance(line, str) or "\n" in line or "\r" in line or type(checklist) is not bool:
+        raise ValueError("List edit requires one source line and a boolean kind")
+
+    indent = len(line) - len(line.lstrip(" \t"))
+    matched = _LIST_MARKER.match(line[indent:])
+    prefix = "- [ ] " if checklist else "- "
+    if not matched:
+        return indent, 0, prefix
+
+    is_task = matched.group(3) is not None
+    remove = 6 if is_task else 2
+    if is_task == checklist:
+        return indent, remove, ""
+    return indent, remove, prefix
