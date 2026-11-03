@@ -1,6 +1,6 @@
 """Formatting transformations are deterministic, reversible, and local."""
 import unittest
-from goreecloud_notepad.formatting import MARKERS, heading_prefix_change, inline_format
+from goreecloud_notepad.formatting import MARKERS, heading_prefix_change, inline_format, list_prefix_change
 
 
 class MarkdownFormattingTests(unittest.TestCase):
@@ -75,6 +75,44 @@ class MarkdownHeadingTests(unittest.TestCase):
             with self.subTest(line=line, level=level):
                 with self.assertRaises(ValueError):
                     heading_prefix_change(line, level)
+
+
+class MarkdownListToolsTests(unittest.TestCase):
+    @staticmethod
+    def apply(line, checklist=False):
+        from goreecloud_notepad.formatting import list_prefix_change
+        indent, remove, insert = list_prefix_change(line, checklist)
+        return line[:indent] + insert + line[indent + remove:]
+
+    def test_repeat_actions_toggle_instead_of_doubling_prefixes(self):
+        for kind, marker in ((False, "- "), (True, "- [ ] ")):
+            with self.subTest(kind=kind):
+                text = "Task with 🌟 café"
+                created = self.apply(text, kind)
+                self.assertEqual(created, marker + text)
+                self.assertEqual(self.apply(created, kind), text)
+
+    def test_switching_list_kind_replaces_only_prefix(self):
+        self.assertEqual(self.apply("- Item", True), "- [ ] Item")
+        self.assertEqual(self.apply("- [ ] Item", False), "- Item")
+        self.assertEqual(self.apply("* Item", True), "- [ ] Item")
+        self.assertEqual(self.apply("+ [X] Done", False), "- Done")
+        self.assertEqual(self.apply("- [x] Done", True), "Done")
+
+    def test_preserves_indentation_and_existing_extra_separators(self):
+        self.assertEqual(self.apply("    indented", False), "    - indented")
+        self.assertEqual(self.apply("  -  more space", True), "  - [ ]  more space")
+        self.assertEqual(self.apply("  - [ ]  more space", True), "   more space")
+        self.assertEqual(self.apply("\t- [ ]\tTask", False), "\t- \tTask")
+        self.assertEqual(self.apply("# Heading", False), "- # Heading")
+
+    def test_rejects_multiline_and_wrong_boolean_without_changing_text(self):
+        from goreecloud_notepad.formatting import list_prefix_change
+        for line, kind in (("a\nb", False), ("a\rb", True), (None, False),
+                           ("one", 1), ("two", "yes")):
+            with self.subTest(line=line, kind=kind):
+                with self.assertRaises(ValueError):
+                    list_prefix_change(line, kind)
 
 
 if __name__ == "__main__":
