@@ -103,7 +103,7 @@ class MarkdownListToolsTests(unittest.TestCase):
         self.assertEqual(self.apply("    indented", False), "    - indented")
         self.assertEqual(self.apply("  -  more space", True), "  - [ ]  more space")
         self.assertEqual(self.apply("  - [ ]  more space", True), "   more space")
-        self.assertEqual(self.apply("\t- [ ]\tTask", False), "\t- \tTask")
+        self.assertEqual(self.apply("\t- [ ]\tTask", False), "\t- Task")  # required list separator normalized
         self.assertEqual(self.apply("# Heading", False), "- # Heading")
 
     def test_rejects_multiline_and_wrong_boolean_without_changing_text(self):
