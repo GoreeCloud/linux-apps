@@ -16,7 +16,7 @@ from .storage import Note, Preferences
 from .find import FindBar
 from .preview import MarkdownPreview
 from .checklists import task_marker_at_line
-from .formatting import heading_prefix_change, inline_format
+from .formatting import heading_prefix_change, inline_format, list_prefix_change
 from .source_styling import SourceStyling
 from .inline_decorations import InlineDecorations
 from .wrap_policy import needs_fast_wrap
@@ -791,7 +791,7 @@ class NotepadWindow(Gtk.ApplicationWindow):
         page.editor.grab_focus()
 
     def insert_list_item(self, checklist: bool = False):
-        """Prefix the current source line as an undoable Markdown list item."""
+        """Toggle a bullet/checklist marker as one undoable source edit."""
         page = self.current()
         if page is None:
             return
@@ -801,9 +801,19 @@ class NotepadWindow(Gtk.ApplicationWindow):
         cursor = buffer.get_iter_at_mark(buffer.get_insert())
         line_start = cursor.copy()
         line_start.set_line_offset(0)
+        line_end = line_start.copy()
+        line_end.forward_to_line_end()
+        indent, remove, replacement = list_prefix_change(
+            buffer.get_text(line_start, line_end, False), checklist
+        )
+        offset = line_start.get_offset() + indent
         buffer.begin_user_action()
         try:
-            buffer.insert(line_start, "- [ ] " if checklist else "- ")
+            if remove:
+                buffer.delete(buffer.get_iter_at_offset(offset),
+                              buffer.get_iter_at_offset(offset + remove))
+            if replacement:
+                buffer.insert(buffer.get_iter_at_offset(offset), replacement)
         finally:
             buffer.end_user_action()
         page.editor.grab_focus()
