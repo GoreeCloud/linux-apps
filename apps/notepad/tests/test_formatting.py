@@ -1,6 +1,8 @@
 """Formatting transformations are deterministic, reversible, and local."""
 import unittest
-from goreecloud_notepad.formatting import MARKERS, heading_prefix_change, inline_format, list_prefix_change
+from goreecloud_notepad.formatting import (MARKERS, blockquote_prefix_change,
+                                         heading_prefix_change, inline_format,
+                                         list_prefix_change)
 
 
 class MarkdownFormattingTests(unittest.TestCase):
@@ -113,6 +115,39 @@ class MarkdownListToolsTests(unittest.TestCase):
             with self.subTest(line=line, kind=kind):
                 with self.assertRaises(ValueError):
                     list_prefix_change(line, kind)
+
+
+class MarkdownBlockquoteTests(unittest.TestCase):
+    @staticmethod
+    def apply(line):
+        indent, remove, prefix = blockquote_prefix_change(line)
+        return line[:indent] + prefix + line[indent + remove:]
+
+    def test_toggle_is_reversible_for_unicode_and_indentation(self):
+        for line in ("Text", "  Nested café ☕", "\t🌟 note", "", "# heading"):
+            with self.subTest(line=line):
+                quoted = self.apply(line)
+                self.assertEqual(self.apply(quoted), line)
+                self.assertTrue(quoted.lstrip(" \t").startswith("> "))
+
+    def test_nested_quotes_and_intentional_whitespace_are_preserved(self):
+        self.assertEqual(self.apply("> > inner"), "> inner")
+        self.assertEqual(self.apply(">  extra"), " extra")
+        self.assertEqual(self.apply("\t> \tindented"), "\t\tindented")
+        self.assertEqual(self.apply("  >"), "  ")
+        self.assertEqual(self.apply(">> nested"), "> >> nested")
+        self.assertEqual(self.apply("> >> nested"), ">> nested")
+
+    def test_other_line_markup_is_not_silently_erased(self):
+        self.assertEqual(self.apply("- [ ] checklist"), "> - [ ] checklist")
+        self.assertEqual(self.apply("## Heading"), "> ## Heading")
+        self.assertEqual(self.apply(">no-delimiter"), "> >no-delimiter")
+
+    def test_rejects_multiline_and_nonstring_inputs(self):
+        for value in ("one\ntwo", "one\rtwo", None, 12, ["one"]):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    blockquote_prefix_change(value)
 
 
 if __name__ == "__main__":
