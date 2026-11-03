@@ -65,5 +65,12 @@ def heading_prefix_change(line: str, level: int) -> tuple[int, str]:
     match = _HEADING_PREFIX.match(line)
     desired = "#" * level + " "
     if match:
-        return len(match.group(0)), "" if len(match.group(1)) == level else desired
+        marker_length = len(match.group(1))
+        if marker_length == level:
+            # Remove the required first separator only; keep intentional
+            # extra spaces or tabs following the heading marker.
+            return marker_length + 1, ""
+        # Changing H1/H2/H3 replaces only the hashes and retains the
+        # original separator whitespace rather than normalizing user text.
+        return marker_length, "#" * level
     return 0, desired
